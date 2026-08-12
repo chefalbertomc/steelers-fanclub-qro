@@ -162,6 +162,11 @@
       <div id="nivelInfoContainer" style="margin-top:12px;"></div>
     </div>
 
+    <!-- Tienda Virtual -->
+    <a href="#" target="_blank" id="btnTienda" class="btn btn-gold" style="width:100%; margin-top:24px; margin-bottom:24px; text-decoration:none; display:flex; justify-content:center; align-items:center; gap:8px; font-size:16px;">
+      🛒 Tienda de Artículos Oficiales
+    </a>
+
     <!-- Calendarios 2026 -->
     <div class="card mt-4" style="margin-bottom: 24px;">
       <div class="card-title">Calendarios 2026 📅</div>
@@ -189,6 +194,15 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- Cumpleañeros de la Semana -->
+  <div id="cumplesContainer" class="card mt-4 hidden" style="margin-bottom: 24px; text-align:center; max-width:400px; margin-left:auto; margin-right:auto;">
+    <div class="card-title">Cumpleañeros de la Semana 🎉</div>
+    <p class="text-muted" id="cumplesMsg" style="font-size:13px; margin:8px 0 16px;">¡Dejen sus felicitaciones en el grupo!</p>
+    <div id="cumplesGrid" style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+      <!-- Se llenará dinámicamente -->
+    </div>
   </div>
 
 </div>
@@ -301,6 +315,7 @@ auth.onAuthStateChanged(async user => {
   renderCredencial(fan, user.uid);
   loadVisitas(user.uid, fan.totalVisitas);
   loadPromo();
+  loadCumples();
 });
 
 // ---- RENDER CREDENCIAL ----
@@ -475,6 +490,28 @@ async function loadPromo() {
     }
   } catch(e) {
     console.error('Error cargando promos', e);
+  }
+}
+
+// ---- CUMPLEAÑEROS ----
+async function loadCumples() {
+  try {
+    const snap = await db.collection('settings').doc('cumpleaneros').get();
+    if (snap.exists && snap.data().fans && snap.data().fans.length > 0) {
+      const fans = snap.data().fans;
+      const grid = document.getElementById('cumplesGrid');
+      grid.innerHTML = fans.map(f => {
+        const photo = f.photoURL || '';
+        const imgHtml = photo ? `<img src="${photo}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);"/>` : `<div style="width:60px; height:60px; border-radius:50%; background:#333; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:24px;">🥳</div>`;
+        return `<div style="display:flex; flex-direction:column; align-items:center; width:70px; text-align:center;">
+          ${imgHtml}
+          <span style="font-size:11px; font-weight:bold; margin-top:4px; color:#fff;">${f.nombre}</span>
+        </div>`;
+      }).join('');
+      document.getElementById('cumplesContainer').classList.remove('hidden');
+    }
+  } catch(e) {
+    console.error('Error cargando cumples', e);
   }
 }
 

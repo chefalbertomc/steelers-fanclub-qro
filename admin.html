@@ -71,6 +71,17 @@
       </div>
       <div id="promoStatus" style="margin-top:10px; font-size:13px;"></div>
     </div>
+    <!-- Sección de Cumpleañeros -->
+    <div class="card" style="margin-bottom:16px;">
+      <h3 style="font-size:16px; color:var(--gold); margin-bottom:12px;">🎉 Cumpleañeros de la Semana</h3>
+      <p class="text-muted" style="margin-bottom:12px; font-size:13px;">Calcula automáticamente quiénes cumplen años en estos 7 días y publícalo en la credencial de todos.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <button class="btn btn-outline btn-sm" id="btnCalcCumples" style="width:auto;">🔍 Calcular de esta semana</button>
+        <button class="btn btn-gold btn-sm" id="btnPubCumples" style="width:auto;" disabled>Publicar a todos</button>
+      </div>
+      <div id="cumplesPreview" style="margin-top:12px; font-size:13px; color:#fff;"></div>
+      <div id="cumplesStatus" style="margin-top:8px; font-size:13px;"></div>
+    </div>
 
     <!-- Filtros y acciones -->
     <div class="card" style="margin-bottom:16px;">
@@ -133,6 +144,10 @@
     <div class="form-group" style="text-align:left; margin-bottom:16px;">
       <label for="inputDesde">Miembro Desde (Año)</label>
       <input type="number" id="inputDesde" min="2000" max="2050" style="width:100%; padding:12px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:15px;" placeholder="Ej. 2023">
+    </div>
+    <div class="form-group" style="text-align:left; margin-bottom:16px;">
+      <label for="inputFoto">Actualizar Foto de Perfil (Opcional)</label>
+      <input type="file" id="inputFoto" accept="image/*" style="width:100%; padding:12px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:15px;">
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" id="btnModalCancel">Cancelar</button>
@@ -282,12 +297,41 @@ document.getElementById('btnModalSave').addEventListener('click', async () => {
   if (!editingUid) return;
   const newNivel = document.getElementById('selectNivel').value;
   const newDesde = document.getElementById('inputDesde').value;
+  const fileInput = document.getElementById('inputFoto');
   const btn = document.getElementById('btnModalSave');
   btn.disabled = true; btn.textContent = '⏳ Guardando…';
 
   try {
     const updateData = { nivel: newNivel };
     if (newDesde) updateData.memberSinceYear = parseInt(newDesde, 10);
+    
+    // Si hay foto, la convertimos a base64
+    if (fileInput.files && fileInput.files[0]) {
+      const file = fileInput.files[0];
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_SIZE = 200;
+            let width = img.width; let height = img.height;
+            if (width > height) {
+              if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+            } else {
+              if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+            }
+            canvas.width = width; canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+      updateData.photoURL = base64;
+    }
     
     await db.collection('fans').doc(editingUid).update(updateData);
     
@@ -296,11 +340,13 @@ document.getElementById('btnModalSave').addEventListener('click', async () => {
     if (fan) {
       fan.nivel = newNivel;
       if (newDesde) fan.memberSinceYear = parseInt(newDesde, 10);
+      if (updateData.photoURL) fan.photoURL = updateData.photoURL;
     }
     updateStats();
     applyFilters();
     document.getElementById('modalNivel').classList.add('hidden');
     editingUid = null;
+    fileInput.value = ''; // limpiar
   } catch(e) {
     alert('Error al guardar: ' + e.message);
   }
@@ -356,6 +402,63 @@ document.getElementById('btnUploadPromo').addEventListener('click', async () => 
     statusEl.style.color = '#ef4444';
   }
   document.getElementById('btnUploadPromo').disabled = false;
+});
+
+// ---- CUMPLEAÑEROS ----
+let calculatedCumples = [];
+document.getElementById('btnCalcCumples').addEventListener('click', () => {
+  const preview = document.getElementById('cumplesPreview');
+  const now = new Date();
+  // Semana actual: Lunes a Domingo
+  const start = new Date(now);
+  start.setDate(now.getDate() - now.getDay() + 1); // Lunes
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6); // Domingo
+  
+  calculatedCumples = [];
+  allFans.forEach(f => {
+    if (f.fechaNacimiento) {
+      // f.fechaNacimiento is "YYYY-MM-DD"
+      const parts = f.fechaNacimiento.split('-');
+      if (parts.length === 3) {
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        // Comparar mes y día (ignorando el año) creando una fecha en el año actual
+        const bday = new Date(now.getFullYear(), m, d);
+        if (bday >= start && bday <= end) {
+          calculatedCumples.push({ nombre: f.nombre, photoURL: f.photoURL || '' });
+        }
+      }
+    }
+  });
+  
+  if (calculatedCumples.length > 0) {
+    preview.innerHTML = 'Encontrados: ' + calculatedCumples.map(c => c.nombre).join(', ');
+    document.getElementById('btnPubCumples').disabled = false;
+  } else {
+    preview.innerHTML = 'Nadie cumple años esta semana.';
+    document.getElementById('btnPubCumples').disabled = true;
+  }
+});
+
+document.getElementById('btnPubCumples').addEventListener('click', async () => {
+  const btn = document.getElementById('btnPubCumples');
+  const st = document.getElementById('cumplesStatus');
+  btn.disabled = true; btn.textContent = '⏳';
+  
+  try {
+    await db.collection('settings').doc('cumpleaneros').set({
+      fans: calculatedCumples,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    st.textContent = '✅ Publicados con éxito';
+    st.style.color = '#22c55e';
+  } catch (e) {
+    st.textContent = '❌ Error: ' + e.message;
+    st.style.color = '#ef4444';
+  }
+  btn.textContent = 'Publicar a todos';
+  btn.disabled = false;
 });
 
 // ---- HELPERS ----
