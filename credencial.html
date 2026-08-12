@@ -101,9 +101,15 @@
               <div id="credNombreLine2" style="font-size:14px; font-weight:700; color:#ccc; line-height:1.2; margin-top:2px;"></div>
             </div>
 
-            <div style="margin-bottom:12px;">
-              <div style="font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">FAN ID</div>
-              <div id="credFanId" style="font-family:var(--font-display); font-size:24px; color:#FFB612; letter-spacing:2px; line-height:1;">SQ-JUR-???</div>
+            <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:flex-end;">
+              <div>
+                <div style="font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">FAN ID</div>
+                <div id="credFanId" style="font-family:var(--font-display); font-size:22px; color:#FFB612; letter-spacing:1px; line-height:1;">SQ-JUR-???</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">DESDE</div>
+                <div id="credDesde" style="font-size:18px; font-weight:900; color:#fff; line-height:1;">2026</div>
+              </div>
             </div>
             
             <div style="display:flex; justify-content:space-between; align-items:flex-end;">
@@ -261,8 +267,11 @@ function renderCredencial(fan, uid) {
   else if (fan.nivel === 'Organizador') nivelEl.style.color = '#aaa';
   else nivelEl.style.color = '#fff';
 
-  // Vigencia (Uppercase AGOSTO 2028)
-  const vigDate = new Date(fan.createdAt ? fan.createdAt.seconds * 1000 : Date.now());
+  // Miembro Desde y Vigencia (Uppercase AGOSTO 2028)
+  const regDate = new Date(fan.createdAt ? fan.createdAt.seconds * 1000 : Date.now());
+  document.getElementById('credDesde').textContent = regDate.getFullYear();
+  
+  const vigDate = new Date(regDate);
   vigDate.setFullYear(vigDate.getFullYear() + 2);
   document.getElementById('credVigencia').textContent = vigDate.toLocaleDateString('es-MX', {month:'long', year:'numeric'}).toUpperCase();
 
