@@ -20,6 +20,16 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Ignore non-GET requests (like POST uploads to Firebase)
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
+  // Ignore Firebase and Google API requests
+  if (event.request.url.includes('googleapis.com') || event.request.url.includes('firebase')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request).then(response => {
       return caches.open(CACHE_NAME).then(cache => {
