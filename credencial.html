@@ -28,7 +28,7 @@
   <!-- LOGIN -->
   <div id="sectionLogin">
     <div style="text-align:center; padding:32px 0 16px;">
-      <div style="font-size:56px; margin-bottom:12px;">🎫</div>
+      <img src="assets/logo.png" style="height:60px; margin-bottom:12px;" alt="Steelers"/>
       <h1 style="font-family:var(--font-display); font-size:30px; color:var(--gold);">MI CREDENCIAL</h1>
       <p class="text-muted" style="margin-top:8px;">Inicia sesión para ver tu membresía digital.</p>
     </div>
@@ -69,83 +69,75 @@
       ">
 
         <!-- TOP BAR: Logo + BWW Juriquilla -->
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px 10px;">
-          <img src="assets/steelers-nation-qro.png" style="height:44px; object-fit:contain;" alt="Steelers Nation Qro"/>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:16px 16px 10px;">
+          <img src="assets/steelers-nation-qro.png" style="height:50px; object-fit:contain;" alt="Steelers Nation Qro"/>
           <div style="text-align:right;">
-            <div style="font-size:10px; color:#888; letter-spacing:1px; text-transform:uppercase;">BWW</div>
-            <div style="font-size:13px; font-weight:800; color:#fff; letter-spacing:2px;">JURIQUILLA</div>
+            <div style="font-size:24px; font-weight:900; color:#fff; letter-spacing:3px; font-family:var(--font-display);">JURIQUILLA</div>
           </div>
         </div>
 
         <!-- BANNER AMARILLO PITTSBURGH STEELERS -->
-        <div style="background:#FFB612; padding:14px 16px; display:flex; align-items:center; justify-content:space-between;">
+        <div style="background:#FFB612; padding:16px; display:flex; align-items:center; justify-content:space-between;">
           <div>
-            <div style="font-size:9px; font-weight:900; letter-spacing:3px; color:#1a1a1a; text-transform:uppercase; line-height:1;">PITTSBURGH</div>
-            <div style="font-family:'Bebas Neue', var(--font-display), sans-serif; font-size:38px; font-weight:900; color:#000; line-height:1; letter-spacing:1px;">Steelers</div>
+            <div style="font-size:12px; font-weight:900; letter-spacing:4px; color:#1a1a1a; text-transform:uppercase; line-height:1;">PITTSBURGH</div>
+            <div style="font-family:'Bebas Neue', var(--font-display), sans-serif; font-size:48px; font-weight:900; color:#000; line-height:1; letter-spacing:1px; margin-top:2px;">Steelers</div>
           </div>
-          <img src="assets/steelers-logo.png" style="height:60px; object-fit:contain;" alt="Steelers"/>
+          <img src="assets/logo.png" style="height:64px; object-fit:contain;" alt="Steelers"/>
         </div>
 
-        <!-- INFO DEL FAN -->
-        <div style="padding:16px 16px 10px;">
-          <!-- Fila 1: Nombre + Roll -->
-          <div style="display:grid; grid-template-columns:1fr auto; gap:16px; margin-bottom:14px;">
-            <div>
-              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">NOMBRE</div>
-              <div id="credNombre" style="font-size:15px; font-weight:800; color:#fff;">—</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">ROLL</div>
-              <div id="credNivel" style="font-size:15px; font-weight:800; color:#FFB612;">—</div>
-            </div>
+        <!-- INFO DEL FAN (FOTO GIGANTE) -->
+        <div style="padding:20px 16px; display:flex; gap:16px; align-items:flex-start;">
+          <!-- Foto Izquierda -->
+          <div style="flex-shrink:0;">
+            <img id="credFoto" style="width:110px; height:130px; border-radius:12px; object-fit:cover; border:3px solid #FFB612; display:none; background:#222;" alt="Foto"/>
+            <div id="credFotoPlaceholder" style="width:110px; height:130px; border-radius:12px; background:#222; display:flex; align-items:center; justify-content:center; font-size:36px; border:3px solid #FFB612;">🏈</div>
           </div>
+          
+          <!-- Datos Derecha -->
+          <div style="flex-grow:1;">
+            <div style="margin-bottom:12px;">
+              <div style="font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">NOMBRE</div>
+              <div id="credNombreLine1" style="font-size:18px; font-weight:900; color:#fff; line-height:1.1;">—</div>
+              <div id="credNombreLine2" style="font-size:14px; font-weight:700; color:#ccc; line-height:1.2; margin-top:2px;"></div>
+            </div>
 
-          <!-- Fila 2: Miembro desde + Vigencia + Status -->
-          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
-            <div>
-              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">MIEMBRO DESDE</div>
-              <div id="credDesde" style="font-size:18px; font-weight:900; color:#fff;">—</div>
+            <div style="margin-bottom:12px;">
+              <div style="font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">FAN ID</div>
+              <div id="credFanId" style="font-family:var(--font-display); font-size:24px; color:#FFB612; letter-spacing:2px; line-height:1;">SQ-JUR-???</div>
             </div>
-            <div>
-              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">VIGENCIA</div>
-              <div id="credVigencia" style="font-size:15px; font-weight:800; color:#fff;">—</div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+              <div>
+                <div style="font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">VIGENCIA</div>
+                <div id="credVigencia" style="font-size:14px; font-weight:800; color:#22c55e; letter-spacing:1px; text-transform:uppercase;">AGOSTO 2028</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">NIVEL</div>
+                <div id="credNivel" style="font-size:14px; font-weight:900; color:#FFB612; text-transform:uppercase;">—</div>
+              </div>
             </div>
-            <div>
-              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">STATUS</div>
-              <div id="credStatus" style="font-size:15px; font-weight:800; color:#22c55e;">Activo</div>
-            </div>
-          </div>
-
-          <!-- Fan ID + QR -->
-          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #2a2a2a; padding-top:12px;">
-            <div>
-              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">FAN ID</div>
-              <div id="credFanId" style="font-family:var(--font-display); font-size:22px; color:#FFB612; letter-spacing:2px;">SQ-???</div>
-              <div id="credColonia" style="font-size:11px; color:#666; margin-top:2px;">—</div>
-            </div>
-            <div id="credQrBox" style="background:white; border-radius:10px; padding:6px; width:72px; height:72px; display:flex; align-items:center; justify-content:center;"></div>
-          </div>
-
-          <!-- Foto del fan pequeña abajo -->
-          <div style="display:flex; align-items:center; gap:10px; margin-top:12px; padding-top:10px; border-top:1px solid #2a2a2a;">
-            <img id="credFoto" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid #FFB612; display:none;" alt="Foto"/>
-            <div id="credFotoPlaceholder" style="width:38px; height:38px; border-radius:50%; background:#222; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🏈</div>
-            <div style="font-size:11px; color:#555; line-height:1.4;" id="credEmail">—</div>
           </div>
         </div>
 
         <!-- BWW BUFFALO logo bottom strip -->
-        <div style="background:#1a1a1a; padding:8px 16px; display:flex; align-items:center; justify-content:center; gap:8px; border-top:1px solid #2a2a2a;">
-          <img src="assets/bww-buffalo.png" style="height:22px; object-fit:contain; opacity:0.7;" alt="BWW"/>
-          <span style="font-size:10px; color:#555; letter-spacing:1px;">BUFFALO WILD WINGS JURIQUILLA</span>
+        <div style="background:#1a1a1a; padding:12px 16px; display:flex; align-items:center; justify-content:center; gap:8px; border-top:1px solid #2a2a2a;">
+          <img src="assets/bww-buffalo.png" style="height:26px; object-fit:contain; opacity:0.9;" alt="BWW"/>
+          <span style="font-size:11px; color:#888; letter-spacing:1px; font-weight:700;">BUFFALO WILD WINGS JURIQUILLA</span>
         </div>
 
       </div>
     </div>
 
-    <div style="margin-top:16px; display:flex; gap:10px;">
-      <button class="btn btn-gold" id="btnDescargar">⬇️ Descargar credencial</button>
-      <button class="btn btn-outline btn-sm" id="btnLogout" style="width:auto; flex-shrink:0;">Salir</button>
+    <!-- BOTON ESCANEAR VISITA -->
+    <div style="margin-top:20px; text-align:center;">
+      <button class="btn btn-gold" id="btnEscanearVisita" style="font-size:18px; padding:16px 24px; width:100%; max-width:400px; box-shadow:0 4px 15px rgba(255,182,18,0.4);">
+        📸 Escanear Asistencia (Código QR)
+      </button>
+    </div>
+
+    <div style="margin-top:16px; display:flex; justify-content:center; gap:12px;">
+      <button class="btn btn-outline btn-sm" id="btnDescargar" style="width:auto;">⬇️ Descargar credencial</button>
+      <button class="btn btn-outline btn-sm" id="btnLogout" style="width:auto;">Salir</button>
     </div>
 
     <!-- Historial de visitas -->
@@ -155,40 +147,11 @@
       <div id="visitasList" style="margin-top:8px;"></div>
     </div>
 
-    <!-- Info nivel -->
-    <div class="card">
-      <div class="card-title">Niveles de Membresía 🏆</div>
-      <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
-        <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border);">
-          <span style="font-size:22px;">🆕</span>
-          <div>
-            <div style="font-weight:700; font-size:14px;">Nuevo Fan</div>
-            <div class="text-muted" style="font-size:12px;">Miembros que se integran en temporada 2026</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border);">
-          <span style="font-size:22px;">🏈</span>
-          <div>
-            <div style="font-weight:700; font-size:14px;">Fan</div>
-            <div class="text-muted" style="font-size:12px;">Miembro activo del club de fans</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--gold); background:var(--gold-glow);">
-          <span style="font-size:22px;">⭐</span>
-          <div>
-            <div style="font-weight:700; font-size:14px; color:var(--gold);">Steel Fan</div>
-            <div class="text-muted" style="font-size:12px;">6+ visitas consecutivas a partidos</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:var(--radius-sm); border:1px solid #888;">
-          <span style="font-size:22px;">🏆</span>
-          <div>
-            <div style="font-weight:700; font-size:14px;">Organizador</div>
-            <div class="text-muted" style="font-size:12px;">Equipo organizador del club</div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Info nivel (Solo tu nivel actual) -->
+    <div class="card" id="cardNivelInfo" style="display:none;">
+      <div class="card-title">Mi Nivel de Membresía 🏆</div>
+      <div id="nivelInfoContainer" style="margin-top:12px;"></div>
+    </div></div>
 
   </div>
 
@@ -200,6 +163,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 <script src="js/firebase-config.js"></script>
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
 // ============================================================
 //  CREDENCIAL — Steelers Fan Club Querétaro
@@ -271,47 +235,99 @@ function renderCredencial(fan, uid) {
     if (fotoPlaceholder) fotoPlaceholder.style.display = 'none';
   }
 
-  // Fan ID y nombre
-  document.getElementById('credFanId').textContent  = fan.fanId || uid.slice(0,6).toUpperCase();
-  document.getElementById('credNombre').textContent  = `${fan.nombre || ''} ${fan.apellidoPaterno || ''} ${fan.apellidoMaterno || ''}`.trim();
-  document.getElementById('credColonia').textContent = fan.colonia || '';
-  document.getElementById('credEmail').textContent   = fan.email || '';
+  // Fan ID formatting (force SQ-JUR- if not present)
+  let fId = fan.fanId || uid.slice(0,6).toUpperCase();
+  if (!fId.startsWith('SQ-JUR-')) {
+    fId = fId.replace('SQ-', 'SQ-JUR-');
+    if (!fId.startsWith('SQ-JUR-')) fId = 'SQ-JUR-' + fId;
+  }
+  document.getElementById('credFanId').textContent = fId;
 
-  // Nivel / Roll
+  // Nombre (Split in 2 lines)
+  const full = `${fan.nombre || ''} ${fan.apellidoPaterno || ''} ${fan.apellidoMaterno || ''}`.trim();
+  const spaceIdx = full.indexOf(' ');
+  if (spaceIdx > 0) {
+    document.getElementById('credNombreLine1').textContent = full.substring(0, spaceIdx);
+    document.getElementById('credNombreLine2').textContent = full.substring(spaceIdx + 1);
+  } else {
+    document.getElementById('credNombreLine1').textContent = full;
+    document.getElementById('credNombreLine2').textContent = '';
+  }
+
+  // Nivel
   const nivelEl = document.getElementById('credNivel');
   nivelEl.textContent = fan.nivel || 'Fan';
   if (fan.nivel === 'Steel Fan') nivelEl.style.color = '#FFB612';
   else if (fan.nivel === 'Organizador') nivelEl.style.color = '#aaa';
-  else nivelEl.style.color = '#FFB612';
+  else nivelEl.style.color = '#fff';
 
-  // Miembro desde (año de registro)
-  if (fan.createdAt) {
-    const año = new Date(fan.createdAt.seconds * 1000).getFullYear();
-    document.getElementById('credDesde').textContent = año;
-    // Vigencia = 2 años desde registro
-    const vigDate = new Date(fan.createdAt.seconds * 1000);
-    vigDate.setFullYear(vigDate.getFullYear() + 2);
-    document.getElementById('credVigencia').textContent = vigDate.toLocaleDateString('es-MX', {month:'short', year:'numeric'});
-  } else {
-    document.getElementById('credDesde').textContent   = new Date().getFullYear();
-    document.getElementById('credVigencia').textContent = `${new Date().getFullYear() + 2}`;
+  // Vigencia (Uppercase AGOSTO 2028)
+  const vigDate = new Date(fan.createdAt ? fan.createdAt.seconds * 1000 : Date.now());
+  vigDate.setFullYear(vigDate.getFullYear() + 2);
+  document.getElementById('credVigencia').textContent = vigDate.toLocaleDateString('es-MX', {month:'long', year:'numeric'}).toUpperCase();
+
+  // Show only current level in info section
+  document.getElementById('cardNivelInfo').style.display = 'block';
+  const icono = NIVEL_ICON[fan.nivel] || '🏈';
+  let desc = 'Miembro activo del club';
+  if (fan.nivel === 'Nuevo Fan') desc = 'Miembros que se integran en temporada 2026';
+  if (fan.nivel === 'Steel Fan') desc = '6+ visitas a partidos';
+  if (fan.nivel === 'Organizador') desc = 'Equipo organizador del club';
+
+  document.getElementById('nivelInfoContainer').innerHTML = `
+    <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:var(--radius-sm); border:1px solid ${fan.nivel === 'Steel Fan' ? 'var(--gold)' : 'var(--border)'}; background:${fan.nivel === 'Steel Fan' ? 'var(--gold-glow)' : 'transparent'};">
+      <span style="font-size:22px;">${icono}</span>
+      <div>
+        <div style="font-weight:700; font-size:14px; color:${fan.nivel === 'Steel Fan' ? 'var(--gold)' : '#fff'}">${fan.nivel || 'Fan'}</div>
+        <div class="text-muted" style="font-size:12px;">${desc}</div>
+      </div>
+    </div>`;
+}
+
+// ---- ESCÁNER DE ASISTENCIA ----
+document.getElementById('btnEscanearVisita').addEventListener('click', () => {
+  // Check if camera permission is available or prompt
+  if (!document.getElementById('qr-reader')) {
+    // Add QR reader div dynamically inside a modal
+    const modalHtml = `
+      <div id="qrModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+        <h2 style="color:var(--gold); margin-bottom:20px; text-align:center;">Escanear Asistencia</h2>
+        <p style="color:#fff; text-align:center; margin-bottom:20px; font-size:14px;">Apunta la cámara al código QR proporcionado por el restaurante o el staff.</p>
+        <div id="qr-reader" style="width:300px; max-width:100%;"></div>
+        <button class="btn btn-outline mt-4" onclick="closeQrModal()">Cancelar</button>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
   }
-
-  // Status
-  document.getElementById('credStatus').textContent = fan.verificado ? 'Activo' : 'Pendiente';
-  document.getElementById('credStatus').style.color = fan.verificado ? '#22c55e' : '#FFB612';
-
-  // Generar QR
-  const qrBox = document.getElementById('credQrBox');
-  qrBox.innerHTML = '';
-  new QRCode(qrBox, {
-    text: fan.fanId || uid,
-    width: 72,
-    height: 72,
-    colorDark: '#000000',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
+  
+  document.getElementById('qrModal').style.display = 'flex';
+  
+  const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+  html5QrcodeScanner.render((decodedText, decodedResult) => {
+    // Handle the scanned code
+    html5QrcodeScanner.clear();
+    closeQrModal();
+    registrarVisitaManual(decodedText);
+  }, (error) => {
+    // parse error, ignore
   });
+});
+
+function closeQrModal() {
+  const modal = document.getElementById('qrModal');
+  if(modal) {
+    modal.style.display = 'none';
+  }
+}
+
+async function registrarVisitaManual(qrData) {
+  try {
+    alert('Buscando registrar asistencia para: ' + qrData + '
+(Funcionalidad backend en desarrollo)');
+    // TODO: implement actual db write here or in db.js
+  } catch(e) {
+    alert('Error al registrar visita');
+  }
 }
 
 // ---- VISITAS ----
