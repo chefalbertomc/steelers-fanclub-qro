@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Steelers Fan Club Querétaro</title>
+  <link rel="icon" href="assets/logo.png"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<div class="header-bar">
+  <img src="assets/logo.png" class="header-logo" alt="Steelers Fan Club Qro"/>
+  <div>
+    <div class="header-title">STEELERS QRO</div>
+    <div class="header-subtitle">Panel de Administración</div>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-outline btn-sm" id="btnLogout" style="width:auto; display:none;">Salir</button>
+  </div>
+</div>
+
+<div class="container wide">
+
+  <!-- LOGIN -->
+  <div id="sectionLogin">
+    <div style="text-align:center; padding:32px 0 16px; max-width:400px; margin:0 auto;">
+      <div style="font-size:56px; margin-bottom:12px;">⚙️</div>
+      <h1 style="font-family:var(--font-display); font-size:28px; color:var(--gold);">PANEL ADMIN</h1>
+      <p class="text-muted" style="margin-top:8px;">Acceso exclusivo para organizadores.</p>
+    </div>
+    <div class="card" style="max-width:400px; margin:0 auto;">
+      <div class="form-group">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" placeholder="admin@steelersqro.com"/>
+      </div>
+      <div class="form-group">
+        <label for="loginPw">Contraseña</label>
+        <input type="password" id="loginPw" placeholder="••••••••"/>
+      </div>
+      <div id="loginStatus" class="status-msg"></div>
+      <button class="btn btn-gold mt-4" id="btnLogin">Entrar →</button>
+    </div>
+  </div>
+
+  <!-- PANEL -->
+  <div id="sectionAdmin" class="hidden">
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-label">Fans Totales</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statNuevos">—</div>
+        <div class="stat-label">Nuevos Fan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statSteel">—</div>
+        <div class="stat-label">Steel Fans</div>
+      </div>
+    </div>
+
+    <!-- Filtros y acciones -->
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <input type="text" id="filterSearch" placeholder="🔍 Buscar nombre, Fan ID, colonia…"
+          style="flex:1; min-width:160px; padding:10px 14px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; outline:none;"/>
+        <select id="filterNivel" style="padding:10px 14px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; outline:none;">
+          <option value="">Todos los niveles</option>
+          <option value="Nuevo Fan">🆕 Nuevo Fan</option>
+          <option value="Fan">🏈 Fan</option>
+          <option value="Steel Fan">⭐ Steel Fan</option>
+          <option value="Organizador">🏆 Organizador</option>
+        </select>
+        <button class="btn btn-outline btn-sm" id="btnExportCSV" style="width:auto;">⬇️ Exportar CSV</button>
+      </div>
+    </div>
+
+    <!-- Tabla de fans -->
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div style="overflow-x:auto;">
+        <table class="fan-table">
+          <thead>
+            <tr>
+              <th>Fan</th>
+              <th>Fan ID</th>
+              <th>Nombre Completo</th>
+              <th>WhatsApp</th>
+              <th>Colonia</th>
+              <th>Visitas</th>
+              <th>Nivel</th>
+              <th>Editar Nivel</th>
+            </tr>
+          </thead>
+          <tbody id="fansTableBody">
+            <tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted);">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="text-muted" style="font-size:12px; text-align:center; margin-top:12px;" id="tableCount"></p>
+
+  </div>
+</div>
+
+<!-- MODAL EDITAR NIVEL -->
+<div class="modal-overlay hidden" id="modalNivel">
+  <div class="modal-box">
+    <div class="modal-icon">🏆</div>
+    <div class="modal-title" id="modalFanName">Nombre del Fan</div>
+    <div class="modal-msg" id="modalFanId">SQ-000</div>
+    <div class="form-group" style="text-align:left; margin-bottom:16px;">
+      <label for="selectNivel">Selecciona el nuevo nivel</label>
+      <select id="selectNivel" style="width:100%; padding:12px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:15px;">
+        <option value="Nuevo Fan">🆕 Nuevo Fan</option>
+        <option value="Fan">🏈 Fan</option>
+        <option value="Steel Fan">⭐ Steel Fan</option>
+        <option value="Organizador">🏆 Organizador</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="btnModalCancel">Cancelar</button>
+      <button class="btn btn-gold" id="btnModalSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+// ============================================================
+//  ADMIN — Steelers Fan Club Querétaro
+// ============================================================
+const NIVEL_ICON = { 'Nuevo Fan':'🆕','Fan':'🏈','Steel Fan':'⭐','Organizador':'🏆' };
+let allFans = [];
+let editingUid = null;
+
+// ---- LOGIN ----
+document.getElementById('btnLogin').addEventListener('click', async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  const st    = document.getElementById('loginStatus');
+  if (!email || !pw) { showSt(st,'Completa los campos.','error'); return; }
+  try {
+    await auth.signInWithEmailAndPassword(email, pw);
+  } catch(e) {
+    showSt(st,'❌ Email o contraseña incorrectos.','error');
+  }
+});
+
+// ---- AUTH ----
+auth.onAuthStateChanged(async user => {
+  if (!user) {
+    document.getElementById('sectionLogin').classList.remove('hidden');
+    document.getElementById('sectionAdmin').classList.add('hidden');
+    document.getElementById('btnLogout').style.display = 'none';
+    return;
+  }
+  const snap = await db.collection('fans').doc(user.uid).get();
+  if (!snap.exists || snap.data().nivel !== 'Organizador') {
+    await auth.signOut();
+    showSt(document.getElementById('loginStatus'),'❌ Solo los organizadores pueden acceder al panel.','error');
+    document.getElementById('sectionLogin').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('sectionLogin').classList.add('hidden');
+  document.getElementById('sectionAdmin').classList.remove('hidden');
+  document.getElementById('btnLogout').style.display = 'flex';
+  loadFans();
+});
+
+document.getElementById('btnLogout').addEventListener('click', () => auth.signOut());
+
+// ---- CARGAR FANS ----
+async function loadFans() {
+  const snap = await db.collection('fans').orderBy('createdAt', 'desc').get();
+  allFans = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
+  updateStats();
+  renderTable(allFans);
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent  = allFans.length;
+  document.getElementById('statNuevos').textContent = allFans.filter(f => f.nivel === 'Nuevo Fan').length;
+  document.getElementById('statSteel').textContent  = allFans.filter(f => f.nivel === 'Steel Fan').length;
+}
+
+// ---- FILTROS ----
+document.getElementById('filterSearch').addEventListener('input', applyFilters);
+document.getElementById('filterNivel').addEventListener('change', applyFilters);
+
+function applyFilters() {
+  const q = document.getElementById('filterSearch').value.toLowerCase().trim();
+  const n = document.getElementById('filterNivel').value;
+  const filtered = allFans.filter(f => {
+    const matchN = !n || f.nivel === n;
+    const matchQ = !q || [f.fanId, f.nombre, f.apellidoPaterno, f.apellidoMaterno, f.colonia, f.email, f.whatsapp]
+      .some(v => v && String(v).toLowerCase().includes(q));
+    return matchN && matchQ;
+  });
+  renderTable(filtered);
+}
+
+// ---- RENDER TABLA ----
+function renderTable(fans) {
+  document.getElementById('tableCount').textContent = `${fans.length} fan${fans.length !== 1 ? 's' : ''} encontrado${fans.length !== 1 ? 's' : ''}`;
+  if (fans.length === 0) {
+    document.getElementById('fansTableBody').innerHTML =
+      '<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted);">No se encontraron fans con ese filtro.</td></tr>';
+    return;
+  }
+  document.getElementById('fansTableBody').innerHTML = fans.map(f => `
+    <tr>
+      <td>
+        ${f.photoURL
+          ? `<img src="${f.photoURL}" class="fan-photo" alt="Foto"/>`
+          : `<div class="fan-photo" style="background:var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;">🏈</div>`}
+      </td>
+      <td><span class="badge badge-gold">${f.fanId || '—'}</span></td>
+      <td style="font-weight:600;">${f.nombre || ''} ${f.apellidoPaterno || ''} ${f.apellidoMaterno || ''}</td>
+      <td class="text-muted">${f.whatsapp || '—'}</td>
+      <td class="text-muted">${f.colonia || '—'}</td>
+      <td style="font-weight:700; color:var(--gold); text-align:center;">${f.totalVisitas || 0}</td>
+      <td><span class="badge ${nivelClass(f.nivel)}">${NIVEL_ICON[f.nivel]||'🏈'} ${f.nivel || '—'}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm"
+          onclick="openModalNivel('${f.uid}', '${f.fanId}', '${f.nombre} ${f.apellidoPaterno}', '${f.nivel}')"
+          style="width:auto;">
+          ✏️ Nivel
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function nivelClass(nivel) {
+  if (nivel === 'Steel Fan') return 'badge-gold';
+  if (nivel === 'Organizador') return '';
+  return 'badge-success';
+}
+
+// ---- MODAL EDITAR NIVEL ----
+function openModalNivel(uid, fanId, nombre, nivelActual) {
+  editingUid = uid;
+  document.getElementById('modalFanName').textContent = nombre;
+  document.getElementById('modalFanId').textContent   = fanId;
+  document.getElementById('selectNivel').value        = nivelActual;
+  document.getElementById('modalNivel').classList.remove('hidden');
+}
+
+document.getElementById('btnModalCancel').addEventListener('click', () => {
+  document.getElementById('modalNivel').classList.add('hidden');
+  editingUid = null;
+});
+
+document.getElementById('btnModalSave').addEventListener('click', async () => {
+  if (!editingUid) return;
+  const newNivel = document.getElementById('selectNivel').value;
+  const btn = document.getElementById('btnModalSave');
+  btn.disabled = true; btn.textContent = '⏳ Guardando…';
+
+  try {
+    await db.collection('fans').doc(editingUid).update({ nivel: newNivel });
+    // Actualizar localmente
+    const fan = allFans.find(f => f.uid === editingUid);
+    if (fan) fan.nivel = newNivel;
+    updateStats();
+    applyFilters();
+    document.getElementById('modalNivel').classList.add('hidden');
+    editingUid = null;
+  } catch(e) {
+    alert('Error al guardar: ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Guardar';
+});
+
+// ---- EXPORTAR CSV ----
+document.getElementById('btnExportCSV').addEventListener('click', () => {
+  const rows = [['Fan ID','Nombre','Apellido Paterno','Apellido Materno','WhatsApp','Email','Colonia','Nivel','Visitas','Fecha Registro']];
+  allFans.forEach(f => {
+    const fecha = f.createdAt ? new Date(f.createdAt.seconds * 1000).toLocaleDateString('es-MX') : '';
+    rows.push([f.fanId||'',f.nombre||'',f.apellidoPaterno||'',f.apellidoMaterno||'',f.whatsapp||'',f.email||'',f.colonia||'',f.nivel||'',f.totalVisitas||0,fecha]);
+  });
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'steelers-fanclub-fans.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ---- HELPERS ----
+function showSt(el, msg, type) {
+  el.textContent = msg;
+  el.className = 'status-msg ' + type;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro — Steelers Fan Club Querétaro</title>
+  <meta name="description" content="Únete al club de fans oficial de los Pittsburgh Steelers en Querétaro. Regístrate y obtén tu membresía digital."/>
+  <link rel="icon" href="assets/logo.png"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header-bar">
+  <img src="assets/logo.png" class="header-logo" alt="Steelers Fan Club Qro"/>
+  <div>
+    <div class="header-title">STEELERS QRO</div>
+    <div class="header-subtitle">Club de Fans Oficial</div>
+  </div>
+</div>
+
+<div class="container" id="appContainer">
+
+  <!-- PASO 1: BIENVENIDA -->
+  <div id="stepWelcome">
+    <div class="text-center" style="padding: 32px 0 16px;">
+      <img src="assets/logo.png" style="height:90px; margin-bottom:16px;" alt="Logo"/>
+      <h1 class="gradient-text" style="font-family:var(--font-display); font-size:36px; letter-spacing:2px;">
+        ÚNETE AL CLUB
+      </h1>
+      <p class="text-muted" style="margin-top:8px; font-size:15px;">
+        Regístrate y obtén tu membresía digital con código QR único.
+      </p>
+    </div>
+
+    <div class="card highlight">
+      <div class="card-title">Membresía Digital 🏈</div>
+      <div class="card-subtitle">Incluye credencial descargable y registro de asistencia en cada partido.</div>
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+        <div style="display:flex; align-items:center; gap:10px; font-size:14px;">
+          <span style="font-size:20px;">📸</span>
+          <span>Foto de perfil tomada en el momento</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:14px;">
+          <span style="font-size:20px;">🔐</span>
+          <span>Código QR único e intransferible</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:14px;">
+          <span style="font-size:20px;">✅</span>
+          <span>Verificación por email</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:14px;">
+          <span style="font-size:20px;">🏆</span>
+          <span>Niveles: Nuevo Fan · Fan · Steel Fan · Organizador</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-gold" id="btnStartRegister">
+      🏈 Quiero registrarme
+    </button>
+    <div style="text-align:center; margin-top:16px;">
+      <a href="credencial.html" class="text-muted" style="font-size:14px;">Ya soy miembro — Ver mi credencial</a>
+    </div>
+  </div>
+
+  <!-- PASOS DEL FORMULARIO -->
+  <div id="stepForm" class="hidden">
+
+    <!-- Indicador de pasos -->
+    <div class="steps" id="stepsIndicator">
+      <div class="step active" id="s1"></div>
+      <div class="step" id="s2"></div>
+      <div class="step" id="s3"></div>
+    </div>
+
+    <!-- PASO A: Foto -->
+    <div id="formStepA">
+      <div class="card">
+        <div class="card-title">Foto de Perfil 📸</div>
+        <div class="card-subtitle">Tómate una foto ahora para tu credencial. Usa buena iluminación.</div>
+
+        <!-- Visor de cámara -->
+        <div id="cameraSection">
+          <video id="videoPreview" autoplay playsinline
+            style="width:100%; max-width:300px; display:block; margin:0 auto; border-radius:var(--radius); border:2px solid var(--border); background:#000;"></video>
+          <div style="display:flex; gap:10px; margin-top:12px;">
+            <button class="btn btn-gold" id="btnCapture">📸 Tomar foto</button>
+            <button class="btn btn-outline btn-sm" id="btnSwitchCam" style="width:auto; flex-shrink:0;">🔄</button>
+          </div>
+        </div>
+
+        <!-- Canvas oculto para captura -->
+        <canvas id="captureCanvas" style="display:none;"></canvas>
+
+        <!-- Preview de la foto tomada -->
+        <div id="photoPreviewSection" class="hidden" style="text-align:center;">
+          <img id="photoPreviewImg" style="width:140px; height:140px; border-radius:50%; object-fit:cover; border:3px solid var(--gold); margin-bottom:12px;" alt="Tu foto"/>
+          <br/>
+          <button class="btn btn-outline btn-sm" id="btnRetake" style="width:auto; margin:0 auto;">🔄 Repetir foto</button>
+        </div>
+      </div>
+      <button class="btn btn-gold" id="btnNextA" disabled>Continuar →</button>
+    </div>
+
+    <!-- PASO B: Datos personales -->
+    <div id="formStepB" class="hidden">
+      <div class="card">
+        <div class="card-title">Tus Datos 📝</div>
+        <div class="card-subtitle">Todos los campos son requeridos.</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="inputNombre">Nombre(s)</label>
+            <input type="text" id="inputNombre" placeholder="Ej. Roberto" autocomplete="given-name"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="inputApaterno">Apellido Paterno</label>
+            <input type="text" id="inputApaterno" placeholder="García" autocomplete="family-name"/>
+          </div>
+          <div class="form-group">
+            <label for="inputAmaterno">Apellido Materno</label>
+            <input type="text" id="inputAmaterno" placeholder="López"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputNacimiento">Fecha de Nacimiento</label>
+          <input type="date" id="inputNacimiento"/>
+        </div>
+        <div class="form-group">
+          <label for="inputColonia">Colonia de donde nos visitas</label>
+          <input type="text" id="inputColonia" placeholder="Ej. Juriquilla, Centro…"/>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-outline" id="btnBackA" style="width:auto; padding:13px 20px;">← Atrás</button>
+        <button class="btn btn-gold" id="btnNextB">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- PASO C: Contacto y cuenta -->
+    <div id="formStepC" class="hidden">
+      <div class="card">
+        <div class="card-title">Contacto & Cuenta 📱</div>
+        <div class="card-subtitle">Recibirás un email de verificación para activar tu membresía.</div>
+
+        <div class="form-group">
+          <label for="inputWhatsapp">WhatsApp (10 dígitos)</label>
+          <input type="tel" id="inputWhatsapp" placeholder="4421234567" maxlength="10" inputmode="numeric"/>
+        </div>
+        <div class="form-group">
+          <label for="inputEmail">Correo Electrónico</label>
+          <input type="email" id="inputEmail" placeholder="tu@correo.com" autocomplete="email"/>
+        </div>
+        <div class="form-group">
+          <label for="inputPassword">Contraseña (mín. 6 caracteres)</label>
+          <input type="password" id="inputPassword" placeholder="••••••••" autocomplete="new-password"/>
+        </div>
+        <div class="form-group">
+          <label for="inputPasswordConfirm">Confirmar Contraseña</label>
+          <input type="password" id="inputPasswordConfirm" placeholder="••••••••" autocomplete="new-password"/>
+        </div>
+
+        <p class="text-muted" style="font-size:12px; margin-top:8px;">
+          Al registrarte aceptas que tus datos serán usados únicamente para la membresía del club de fans.
+        </p>
+      </div>
+
+      <div id="statusMsg" class="status-msg"></div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-outline" id="btnBackB" style="width:auto; padding:13px 20px;">← Atrás</button>
+        <button class="btn btn-gold" id="btnSubmit" >
+          <span id="btnSubmitText">✅ Registrarme</span>
+          <span id="btnSubmitLoader" class="hidden">⏳</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ÉXITO -->
+  <div id="stepSuccess" class="hidden" style="text-align:center; padding-top:32px;">
+    <div style="font-size:72px; margin-bottom:16px;">🏆</div>
+    <h2 class="gradient-text" style="font-family:var(--font-display); font-size:32px;">¡BIENVENIDO AL CLUB!</h2>
+    <p class="text-muted" style="margin:12px 0 24px; font-size:15px;">
+      Te enviamos un correo de verificación. Revisa tu bandeja y haz clic en el enlace para activar tu membresía.
+    </p>
+    <div class="card" style="margin-bottom:16px;" id="successFanCard">
+      <!-- Se llenará con JS -->
+    </div>
+    <a href="credencial.html" class="btn btn-gold">🎫 Ver mi credencial</a>
+    <p class="text-muted" style="margin-top:12px; font-size:13px;">También puedes iniciar sesión con tu email desde la pantalla de credencial.</p>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script>
+// ============================================================
+//  REGISTRO — Steelers Fan Club Querétaro
+// ============================================================
+let capturedPhotoBlob = null;
+let currentStream = null;
+let facingMode = 'user'; // frontal por defecto para selfie
+let formStep = 'A';
+
+// --------------- CÁMARA ---------------
+async function startCamera() {
+  if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+  try {
+    currentStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode, width: { ideal: 640 }, height: { ideal: 640 } },
+      audio: false
+    });
+    document.getElementById('videoPreview').srcObject = currentStream;
+  } catch (e) {
+    statusMsg('No se pudo acceder a la cámara. Verifica los permisos.', 'error');
+  }
+}
+
+document.getElementById('btnSwitchCam').addEventListener('click', () => {
+  facingMode = facingMode === 'user' ? 'environment' : 'user';
+  startCamera();
+});
+
+document.getElementById('btnCapture').addEventListener('click', () => {
+  const video = document.getElementById('videoPreview');
+  const canvas = document.getElementById('captureCanvas');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 640;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob(blob => {
+    capturedPhotoBlob = blob;
+    const url = URL.createObjectURL(blob);
+    document.getElementById('photoPreviewImg').src = url;
+    document.getElementById('cameraSection').classList.add('hidden');
+    document.getElementById('photoPreviewSection').classList.remove('hidden');
+    document.getElementById('btnNextA').disabled = false;
+    if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+  }, 'image/jpeg', 0.9);
+});
+
+document.getElementById('btnRetake').addEventListener('click', () => {
+  capturedPhotoBlob = null;
+  document.getElementById('btnNextA').disabled = true;
+  document.getElementById('photoPreviewSection').classList.add('hidden');
+  document.getElementById('cameraSection').classList.remove('hidden');
+  startCamera();
+});
+
+// --------------- NAVEGACIÓN DE PASOS ---------------
+function goStep(step) {
+  ['A','B','C'].forEach(s => document.getElementById('formStep'+s).classList.add('hidden'));
+  document.getElementById('formStep'+step).classList.remove('hidden');
+  ['s1','s2','s3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = 'step';
+    const curr = step === 'A' ? 0 : step === 'B' ? 1 : 2;
+    if (i < curr) el.classList.add('done');
+    else if (i === curr) el.classList.add('active');
+  });
+  formStep = step;
+}
+
+document.getElementById('btnStartRegister').addEventListener('click', () => {
+  document.getElementById('stepWelcome').classList.add('hidden');
+  document.getElementById('stepForm').classList.remove('hidden');
+  startCamera();
+});
+
+document.getElementById('btnNextA').addEventListener('click', () => goStep('B'));
+document.getElementById('btnBackA').addEventListener('click', () => goStep('A'));
+document.getElementById('btnNextB').addEventListener('click', () => {
+  if (!validate('B')) return;
+  goStep('C');
+});
+document.getElementById('btnBackB').addEventListener('click', () => goStep('B'));
+
+// --------------- VALIDACIONES ---------------
+function validate(step) {
+  if (step === 'B') {
+    const fields = ['inputNombre','inputApaterno','inputAmaterno','inputNacimiento','inputColonia'];
+    for (const f of fields) {
+      if (!document.getElementById(f).value.trim()) {
+        statusMsg('Por favor completa todos los campos.', 'error');
+        return false;
+      }
+    }
+    clearStatus();
+    return true;
+  }
+  if (step === 'C') {
+    const wa = document.getElementById('inputWhatsapp').value.trim();
+    const email = document.getElementById('inputEmail').value.trim();
+    const pw = document.getElementById('inputPassword').value;
+    const pw2 = document.getElementById('inputPasswordConfirm').value;
+    if (!/^\d{10}$/.test(wa)) { statusMsg('El WhatsApp debe tener 10 dígitos.', 'error'); return false; }
+    if (!email.includes('@')) { statusMsg('Ingresa un email válido.', 'error'); return false; }
+    if (pw.length < 6) { statusMsg('La contraseña debe tener al menos 6 caracteres.', 'error'); return false; }
+    if (pw !== pw2) { statusMsg('Las contraseñas no coinciden.', 'error'); return false; }
+    clearStatus();
+    return true;
+  }
+  return true;
+}
+
+function statusMsg(msg, type) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status-msg ' + type;
+}
+function clearStatus() {
+  const el = document.getElementById('statusMsg');
+  el.className = 'status-msg';
+}
+
+// --------------- SUBMIT ---------------
+document.getElementById('btnSubmit').addEventListener('click', async () => {
+  if (!validate('C')) return;
+
+  const email    = document.getElementById('inputEmail').value.trim().toLowerCase();
+  const password = document.getElementById('inputPassword').value;
+  const nombre   = document.getElementById('inputNombre').value.trim().toUpperCase();
+  const apPat    = document.getElementById('inputApaterno').value.trim().toUpperCase();
+  const apMat    = document.getElementById('inputAmaterno').value.trim().toUpperCase();
+  const wa       = document.getElementById('inputWhatsapp').value.trim();
+  const nacimiento = document.getElementById('inputNacimiento').value;
+  const colonia  = document.getElementById('inputColonia').value.trim().toUpperCase();
+
+  setLoading(true);
+
+  try {
+    // Verificar WhatsApp duplicado
+    const waCheck = await db.collection('fans')
+      .where('whatsapp', '==', wa).get();
+    if (!waCheck.empty) {
+      statusMsg('❌ Este número de WhatsApp ya está registrado en el club.', 'error');
+      setLoading(false); return;
+    }
+
+    // Crear cuenta Firebase Auth
+    let userCred;
+    try {
+      userCred = await auth.createUserWithEmailAndPassword(email, password);
+    } catch (e) {
+      if (e.code === 'auth/email-already-in-use') {
+        statusMsg('❌ Este email ya está registrado. ¿Ya eres miembro?', 'error');
+      } else {
+        statusMsg('❌ Error: ' + e.message, 'error');
+      }
+      setLoading(false); return;
+    }
+
+    const uid = userCred.user.uid;
+
+    // Generar Fan ID único (SQ-001, SQ-002...)
+    const counterRef = db.collection('_meta').doc('fanCounter');
+    let fanId;
+    await db.runTransaction(async tx => {
+      const snap = await tx.get(counterRef);
+      const current = snap.exists ? snap.data().count : 0;
+      const next = current + 1;
+      fanId = 'SQ-' + String(next).padStart(3, '0');
+      tx.set(counterRef, { count: next }, { merge: true });
+    });
+
+    // Subir foto — guardamos como base64 en Firestore (sin necesidad de Storage)
+    let photoURL = '';
+    if (capturedPhotoBlob) {
+      photoURL = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(capturedPhotoBlob);
+      });
+    }
+
+    // Guardar en Firestore
+    await db.collection('fans').doc(uid).set({
+      fanId,
+      nombre,
+      apellidoPaterno: apPat,
+      apellidoMaterno: apMat,
+      whatsapp: wa,
+      email,
+      fechaNacimiento: nacimiento,
+      colonia,
+      photoURL,
+      nivel: 'Nuevo Fan',
+      totalVisitas: 0,
+      visitasConsecutivas: 0,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      verificado: false
+    });
+
+    // Enviar email de verificación
+    await userCred.user.sendEmailVerification();
+
+    // Mostrar éxito
+    document.getElementById('stepForm').classList.add('hidden');
+    document.getElementById('stepSuccess').classList.remove('hidden');
+    document.getElementById('successFanCard').innerHTML = `
+      <div style="display:flex; align-items:center; gap:14px;">
+        ${photoURL ? `<img src="${photoURL}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);" alt="Foto"/>` : '<div style="width:56px;height:56px;border-radius:50%;background:var(--card-hover);display:flex;align-items:center;justify-content:center;font-size:24px;">🏈</div>'}
+        <div style="text-align:left;">
+          <div style="font-family:var(--font-display);font-size:22px;color:var(--gold);">${fanId}</div>
+          <div style="font-weight:800;">${nombre} ${apPat}</div>
+          <span class="badge badge-gold">Nuevo Fan</span>
+        </div>
+      </div>
+    `;
+
+  } catch (e) {
+    statusMsg('❌ ' + e.message, 'error');
+    setLoading(false);
+  }
+});
+
+function setLoading(on) {
+  document.getElementById('btnSubmit').disabled = on;
+  document.getElementById('btnSubmitText').classList.toggle('hidden', on);
+  document.getElementById('btnSubmitLoader').classList.toggle('hidden', !on);
+}
+</script>
+</body>
+</html>
