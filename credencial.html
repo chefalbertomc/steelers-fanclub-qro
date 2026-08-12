@@ -161,7 +161,13 @@
       <div class="card-title">Mi Nivel de Membresía 🏆</div>
       <div id="nivelInfoContainer" style="margin-top:12px;"></div>
     </div>
-
+    <!-- Avisos Importantes -->
+    <div id="avisoContainer" class="card mt-4 hidden" style="margin-bottom: 24px; border:2px solid #3b82f6;">
+      <div class="card-title" style="color:#3b82f6;">📢 Avisos / Convocatorias</div>
+      <div style="margin-top:16px;">
+        <img id="avisoImg" src="" style="width:100%; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="Aviso Importante"/>
+      </div>
+    </div>
     <!-- Tienda Virtual -->
     <a href="#" target="_blank" id="btnTienda" class="btn btn-gold" style="width:100%; margin-top:24px; margin-bottom:24px; text-decoration:none; display:flex; justify-content:center; align-items:center; gap:8px; font-size:16px;">
       🛒 Tienda de Artículos Oficiales
@@ -314,6 +320,7 @@ auth.onAuthStateChanged(async user => {
   const fan = snap.data();
   renderCredencial(fan, user.uid);
   loadVisitas(user.uid, fan.totalVisitas);
+  loadAviso();
   loadPromo();
   loadCumples();
 });
@@ -478,6 +485,32 @@ async function loadVisitas(uid, total) {
       <span style="color:#888; font-size:12px;">${v.timestamp ? new Date(v.timestamp.seconds*1000).toLocaleDateString() : 'Hoy'}</span>
     </div>`;
   }).join('');
+}
+
+// ---- AVISOS ----
+async function loadAviso() {
+  try {
+    const snap = await db.collection('settings').doc('aviso_principal').get();
+    if (snap.exists && snap.data().imageUrl) {
+      document.getElementById('avisoImg').src = snap.data().imageUrl;
+      document.getElementById('avisoContainer').classList.remove('hidden');
+    }
+  } catch(e) {
+    console.error('Error cargando aviso', e);
+  }
+}
+
+// ---- AVISOS ----
+async function loadAviso() {
+  try {
+    const snap = await db.collection('settings').doc('aviso_principal').get();
+    if (snap.exists && snap.data().imageUrl) {
+      document.getElementById('avisoImg').src = snap.data().imageUrl;
+      document.getElementById('avisoContainer').classList.remove('hidden');
+    }
+  } catch(e) {
+    console.error('Error cargando aviso', e);
+  }
 }
 
 // ---- PROMOS ----

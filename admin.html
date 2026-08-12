@@ -61,6 +61,17 @@
         <div class="stat-label">Steel Fans</div>
       </div>
     </div>
+    <!-- Sección de Avisos -->
+    <div class="card" style="margin-bottom:16px;">
+      <h3 style="font-size:16px; color:#3b82f6; margin-bottom:12px;">📢 Avisos / Convocatorias</h3>
+      <p class="text-muted" style="margin-bottom:12px; font-size:13px;">Sube un flyer para caravanas o eventos importantes. Se mostrará en la parte superior de la credencial.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <input type="file" id="avisoFile" accept="image/*" style="font-size:13px; color:var(--text);"/>
+        <button class="btn btn-outline btn-sm" id="btnUploadAviso" style="width:auto; color:#3b82f6; border-color:#3b82f6;">Subir Aviso</button>
+        <button class="btn btn-outline btn-sm" id="btnRemoveAviso" style="width:auto; color:#ef4444; border-color:#ef4444;">Quitar Aviso</button>
+      </div>
+      <div id="avisoStatus" style="margin-top:10px; font-size:13px;"></div>
+    </div>
     <!-- Sección de Promociones -->
     <div class="card" style="margin-bottom:16px;">
       <h3 style="font-size:16px; color:var(--gold); margin-bottom:12px;">📢 Promociones</h3>
@@ -368,6 +379,50 @@ document.getElementById('btnExportCSV').addEventListener('click', () => {
   URL.revokeObjectURL(url);
 });
 
+// ---- SUBIR AVISO ----
+document.getElementById('btnUploadAviso').addEventListener('click', async () => {
+  const fileInput = document.getElementById('avisoFile');
+  const file = fileInput.files[0];
+  const statusEl = document.getElementById('avisoStatus');
+  if (!file) {
+    statusEl.textContent = '❌ Selecciona una imagen primero.';
+    statusEl.style.color = '#ef4444';
+    return;
+  }
+  statusEl.textContent = '⏳ Subiendo aviso...';
+  statusEl.style.color = '#3b82f6';
+  document.getElementById('btnUploadAviso').disabled = true;
+  try {
+    const ref = firebase.storage().ref('avisos/current_aviso.jpg');
+    await ref.put(file);
+    const url = await ref.getDownloadURL();
+    await db.collection('settings').doc('aviso_principal').set({
+      imageUrl: url,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    statusEl.textContent = '✅ Aviso publicado con éxito.';
+    statusEl.style.color = '#22c55e';
+    fileInput.value = '';
+  } catch(e) {
+    statusEl.textContent = '❌ Error: ' + e.message;
+    statusEl.style.color = '#ef4444';
+  }
+  document.getElementById('btnUploadAviso').disabled = false;
+});
+
+document.getElementById('btnRemoveAviso').addEventListener('click', async () => {
+  const statusEl = document.getElementById('avisoStatus');
+  statusEl.textContent = '⏳ Quitando aviso...';
+  try {
+    await db.collection('settings').doc('aviso_principal').set({ imageUrl: null }, { merge: true });
+    statusEl.textContent = '✅ Aviso retirado.';
+    statusEl.style.color = '#22c55e';
+  } catch(e) {
+    statusEl.textContent = '❌ Error: ' + e.message;
+    statusEl.style.color = '#ef4444';
+  }
+});
+
 // ---- SUBIR PROMO ----
 document.getElementById('btnUploadPromo').addEventListener('click', async () => {
   const fileInput = document.getElementById('promoFile');
@@ -431,6 +486,11 @@ document.getElementById('btnCalcCumples').addEventListener('click', () => {
       }
     }
   });
+  
+  // --- INYECCIÓN DE PRUEBA ---
+  calculatedCumples.push({ nombre: 'Doe Smith', photoURL: 'https://i.pravatar.cc/150?u=doe' });
+  calculatedCumples.push({ nombre: 'Jane Doe', photoURL: 'https://i.pravatar.cc/150?u=jane' });
+  calculatedCumples.push({ nombre: 'Alberto M.', photoURL: 'https://i.pravatar.cc/150?u=alberto' });
   
   if (calculatedCumples.length > 0) {
     preview.innerHTML = 'Encontrados: ' + calculatedCumples.map(c => c.nombre).join(', ');
