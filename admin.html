@@ -79,6 +79,7 @@
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
         <input type="file" id="promoFile" accept="image/*" style="font-size:13px; color:var(--text);"/>
         <button class="btn btn-gold btn-sm" id="btnUploadPromo" style="width:auto;">Subir y Publicar</button>
+        <button class="btn btn-outline btn-sm" id="btnRemovePromo" style="width:auto; color:#ef4444; border-color:#ef4444;">Quitar Promo</button>
       </div>
       <div id="promoStatus" style="margin-top:10px; font-size:13px;"></div>
     </div>
@@ -459,6 +460,19 @@ document.getElementById('btnUploadPromo').addEventListener('click', async () => 
     statusEl.style.color = '#ef4444';
   }
   document.getElementById('btnUploadPromo').disabled = false;
+});
+
+document.getElementById('btnRemovePromo').addEventListener('click', async () => {
+  const statusEl = document.getElementById('promoStatus');
+  statusEl.textContent = '⏳ Quitando promo...';
+  try {
+    await db.collection('settings').doc('promos').set({ imageUrl: null }, { merge: true });
+    statusEl.textContent = '✅ Promo retirada.';
+    statusEl.style.color = '#22c55e';
+  } catch(e) {
+    statusEl.textContent = '❌ Error: ' + e.message;
+    statusEl.style.color = '#ef4444';
+  }
 });
 
 // ---- CUMPLEAÑEROS ----
