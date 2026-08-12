@@ -1,4 +1,4 @@
-const CACHE_NAME = 'steelers-qro-v1';
+const CACHE_NAME = 'steelers-qro-v2';
 const urlsToCache = [
   './',
   './index.html',
@@ -6,8 +6,6 @@ const urlsToCache = [
   './css/styles.css',
   './assets/logo.png',
   './assets/bww-buffalo.png',
-  './assets/calendario-temporada.jpg',
-  './assets/calendario-pretemporada.jpg',
   './assets/icon-192.png',
   './assets/icon-512.png'
 ];
@@ -23,12 +21,13 @@ self.addEventListener('install', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
+    fetch(event.request).then(response => {
+      return caches.open(CACHE_NAME).then(cache => {
+        cache.put(event.request, response.clone());
+        return response;
+      });
+    }).catch(() => {
+      return caches.match(event.request);
+    })
   );
 });

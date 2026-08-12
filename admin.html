@@ -483,16 +483,16 @@ document.getElementById('btnCalcCumples').addEventListener('click', () => {
         // Comparar mes y día (ignorando el año) creando una fecha en el año actual
         const bday = new Date(now.getFullYear(), m, d);
         if (bday >= start && bday <= end) {
-          calculatedCumples.push({ nombre: f.nombre, photoURL: f.photoURL || '' });
+          calculatedCumples.push({ nombre: f.nombre, photoURL: f.photoURL || '', fecha: f.fechaNacimiento });
         }
       }
     }
   });
   
   // --- INYECCIÓN DE PRUEBA ---
-  calculatedCumples.push({ nombre: 'Doe Smith', photoURL: 'https://i.pravatar.cc/150?u=doe' });
-  calculatedCumples.push({ nombre: 'Jane Doe', photoURL: 'https://i.pravatar.cc/150?u=jane' });
-  calculatedCumples.push({ nombre: 'Alberto M.', photoURL: 'https://i.pravatar.cc/150?u=alberto' });
+  calculatedCumples.push({ nombre: 'Doe Smith', photoURL: 'https://i.pravatar.cc/150?u=doe', fecha: '1990-08-15' });
+  calculatedCumples.push({ nombre: 'Jane Doe', photoURL: 'https://i.pravatar.cc/150?u=jane', fecha: '1992-08-16' });
+  calculatedCumples.push({ nombre: 'Alberto M.', photoURL: 'https://i.pravatar.cc/150?u=alberto', fecha: '1988-08-18' });
   
   if (calculatedCumples.length > 0) {
     preview.innerHTML = 'Encontrados: ' + calculatedCumples.map(c => c.nombre).join(', ');

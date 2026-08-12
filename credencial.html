@@ -90,11 +90,12 @@
 
         <!-- INFO DEL FAN (FOTO GIGANTE) -->
         <div style="padding:20px 16px; display:flex; gap:16px; align-items:flex-start;">
-          <!-- Foto Izquierda -->
-          <div style="flex-shrink:0;">
-            <img id="credFoto" style="width:110px; height:130px; border-radius:12px; object-fit:cover; border:3px solid #FFB612; display:none; background:#222;" alt="Foto"/>
-            <div id="credFotoPlaceholder" style="width:110px; height:130px; border-radius:12px; background:#222; display:flex; align-items:center; justify-content:center; font-size:36px; border:3px solid #FFB612;">🏈</div>
+          <div style="flex-shrink:0; position:relative; width:110px; height:130px; cursor:pointer;" onclick="document.getElementById('credPhotoInput').click()" title="Toca para cambiar tu foto">
+            <img id="credFoto" style="width:100%; height:100%; border-radius:12px; object-fit:cover; border:3px solid #FFB612; display:none; background:#222;" alt="Foto"/>
+            <div id="credFotoPlaceholder" style="width:100%; height:100%; border-radius:12px; background:#222; display:flex; align-items:center; justify-content:center; font-size:36px; border:3px solid #FFB612;">🏈</div>
+            <div style="position:absolute; bottom:-10px; right:-10px; background:#FFB612; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border:2px solid #000; font-size:14px; box-shadow:0 2px 5px rgba(0,0,0,0.5);">✏️</div>
           </div>
+          <input type="file" id="credPhotoInput" accept="image/*" style="display:none;">
           
           <!-- Datos Derecha -->
           <div style="flex-grow:1;">
@@ -536,9 +537,11 @@ async function loadCumples() {
       grid.innerHTML = fans.map(f => {
         const photo = f.photoURL || '';
         const imgHtml = photo ? `<img src="${photo}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);"/>` : `<div style="width:60px; height:60px; border-radius:50%; background:#333; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:24px;">🥳</div>`;
+        const dateHtml = f.fecha ? `<span style="font-size:10px; color:var(--gold); margin-top:2px;">${new Date(f.fecha + 'T12:00:00').toLocaleDateString('es-MX', {day: 'numeric', month: 'short'})}</span>` : '';
         return `<div style="display:flex; flex-direction:column; align-items:center; width:70px; text-align:center;">
           ${imgHtml}
-          <span style="font-size:11px; font-weight:bold; margin-top:4px; color:#fff;">${f.nombre}</span>
+          <span style="font-size:11px; font-weight:bold; margin-top:4px; color:#fff; line-height:1.2;">${f.nombre}</span>
+          ${dateHtml}
         </div>`;
       }).join('');
       document.getElementById('cumplesContainer').classList.remove('hidden');
@@ -584,6 +587,53 @@ function showStatus(el, msg, type) {
   el.textContent = msg;
   el.className = 'status-msg ' + type;
 }
+
+// ---- ACTUALIZAR FOTO DE PERFIL ----
+async function compressImage(file, maxSize) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Error al leer el archivo.'));
+    reader.onloadend = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Formato de imagen no soportado (ej. HEIC de iPhone). Usa JPG o PNG.'));
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width; let height = img.height;
+        if (width > height) {
+          if (width > maxSize) { height *= maxSize / width; width = maxSize; }
+        } else {
+          if (height > maxSize) { width *= maxSize / height; height = maxSize; }
+        }
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('credPhotoInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const originalSrc = document.getElementById('credFoto').src;
+  document.getElementById('credFoto').src = 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif'; // Loading spinner effect
+  try {
+    const base64 = await compressImage(file, 200);
+    document.getElementById('credFoto').src = base64; // Preview instantly
+    document.getElementById('credFoto').style.display = 'block';
+    document.getElementById('credFotoPlaceholder').style.display = 'none';
+    const user = auth.currentUser;
+    if (user) {
+      await db.collection('fans').doc(user.uid).update({ photoURL: base64 });
+    }
+  } catch (err) {
+    document.getElementById('credFoto').src = originalSrc;
+    alert(err.message);
+  }
+});
 </script>
 </body>
 </html>
