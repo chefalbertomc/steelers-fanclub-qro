@@ -154,6 +154,11 @@ function generarQR(eventId, eventName) {
   const qrTitle = document.getElementById('qrTitle');
   const qrSubtitle = document.getElementById('qrSubtitle');
   
+  qrTitle.textContent = eventName;
+  qrTitle.style.color = 'var(--gold)';
+  qrSubtitle.textContent = '¡Fans! Abran su credencial y presionen "Escanear Asistencia"';
+  
+  qrBox.style.display = 'inline-block';
   qrBox.innerHTML = ''; // Limpiar anterior
   
   // JSON data que escaneará el fan
@@ -173,11 +178,6 @@ function generarQR(eventId, eventName) {
     colorLight: '#ffffff',
     correctLevel: QRCode.CorrectLevel.H
   });
-  
-  qrTitle.textContent = eventName;
-  qrTitle.style.color = 'var(--gold)';
-  qrSubtitle.textContent = '¡Fans! Abran su credencial y presionen "Escanear Asistencia"';
-  qrBox.style.display = 'inline-block';
 }
 
 // ---- LOGOUT ----
