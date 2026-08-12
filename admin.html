@@ -168,6 +168,17 @@
   </div>
 </div>
 
+<!-- MODAL DETALLES -->
+<div class="modal-overlay hidden" id="modalDetalles">
+  <div class="modal-box" style="max-width:500px; text-align:left;">
+    <h3 style="color:var(--gold); margin-bottom:16px; border-bottom:1px solid #333; padding-bottom:10px;">👁️ Detalles Completos del Fan</h3>
+    <div id="detallesContent" style="font-size:14px; line-height:1.6; color:#ccc; display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn btn-outline" onclick="document.getElementById('modalDetalles').classList.add('hidden')" style="width:100%;">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -270,11 +281,14 @@ function renderTable(fans) {
       <td style="font-weight:700; color:var(--gold); text-align:center;">${f.totalVisitas || 0}</td>
       <td><span class="badge ${nivelClass(f.nivel)}">${NIVEL_ICON[f.nivel]||'🏈'} ${f.nivel || '—'}</span></td>
       <td>
-        <button class="btn btn-outline btn-sm"
-          onclick="openModalNivel('${f.uid}', '${f.fanId}', '${f.nombre} ${f.apellidoPaterno}', '${f.nivel}')"
-          style="width:auto;">
-          ✏️ Nivel
-        </button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-outline btn-sm" onclick="openDetalles('${f.uid}')" style="width:auto; border-color:#3b82f6; color:#3b82f6;">👁️ Info</button>
+          <button class="btn btn-outline btn-sm"
+            onclick="openModalNivel('${f.uid}', '${f.fanId}', '${f.nombre} ${f.apellidoPaterno}', '${f.nivel}')"
+            style="width:auto;">
+            ✏️ Nivel
+          </button>
+        </div>
       </td>
     </tr>
   `).join('');
@@ -284,6 +298,25 @@ function nivelClass(nivel) {
   if (nivel === 'Steel Fan') return 'badge-gold';
   if (nivel === 'Organizador') return '';
   return 'badge-success';
+}
+
+function openDetalles(uid) {
+  const f = allFans.find(x => x.uid === uid);
+  if(!f) return;
+  const content = `
+    <div><strong>Fan ID:</strong> <span style="color:var(--gold)">${f.fanId || '—'}</span></div>
+    <div><strong>Nivel:</strong> ${f.nivel || '—'}</div>
+    <div style="grid-column: span 2;"><strong>Nombre:</strong> ${f.nombre||''} ${f.apellidoPaterno||''} ${f.apellidoMaterno||''}</div>
+    <div style="grid-column: span 2;"><strong>Email:</strong> ${f.email || '—'}</div>
+    <div><strong>WhatsApp:</strong> ${f.whatsapp || '—'}</div>
+    <div><strong>F. Nacimiento:</strong> ${f.fechaNacimiento || '—'}</div>
+    <div style="grid-column: span 2;"><strong>Colonia:</strong> ${f.colonia || '—'}</div>
+    <div><strong>Miembro Desde:</strong> ${f.memberSinceYear || '—'}</div>
+    <div><strong>Visitas:</strong> ${f.totalVisitas || 0}</div>
+    <div style="grid-column: span 2; border-top:1px solid #333; margin-top:8px; padding-top:8px;"><strong>Fecha Registro:</strong> ${f.createdAt ? new Date(f.createdAt.seconds * 1000).toLocaleDateString('es-MX') : '—'}</div>
+  `;
+  document.getElementById('detallesContent').innerHTML = content;
+  document.getElementById('modalDetalles').classList.remove('hidden');
 }
 
 // ---- MODAL EDITAR NIVEL ----
