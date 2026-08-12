@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Scanner QR — Steelers Fan Club Querétaro</title>
+  <title>Generador QR — Steelers Fan Club Querétaro</title>
   <link rel="icon" href="assets/logo.png"/>
   <link rel="stylesheet" href="css/styles.css"/>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -18,16 +19,16 @@
   <img src="assets/bww-buffalo.png" style="height:44px; object-fit:contain; flex-shrink:0;" alt="Buffalo Wild Wings"/>
 </div>
 
-<div class="container">
+<div class="container wide">
 
   <!-- LOGIN STAFF -->
   <div id="sectionLogin">
-    <div style="text-align:center; padding:24px 0 16px;">
+    <div style="text-align:center; padding:24px 0 16px; max-width:400px; margin:0 auto;">
       <div style="font-size:48px; margin-bottom:12px;">📲</div>
-      <h1 style="font-family:var(--font-display); font-size:28px; color:var(--gold);">SCANNER STAFF</h1>
-      <p class="text-muted" style="margin-top:8px; font-size:14px;">Acceso exclusivo para organizadores del club.</p>
+      <h1 style="font-family:var(--font-display); font-size:28px; color:var(--gold);">GENERADOR QR STAFF</h1>
+      <p class="text-muted" style="margin-top:8px; font-size:14px;">Acceso exclusivo para el restaurante o staff.</p>
     </div>
-    <div class="card">
+    <div class="card" style="max-width:400px; margin:0 auto;">
       <div class="form-group">
         <label for="loginEmail">Email de Administrador</label>
         <input type="email" id="loginEmail" placeholder="admin@steelersqro.com"/>
@@ -41,239 +42,149 @@
     </div>
   </div>
 
-  <!-- SCANNER ACTIVO -->
-  <div id="sectionScanner" class="hidden">
-
+  <!-- PANEL GENERADOR -->
+  <div id="sectionGenerador" class="hidden">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
       <span class="badge badge-success">● STAFF ACTIVO</span>
       <button class="btn btn-outline btn-sm" id="btnLogout" style="width:auto;">Salir</button>
     </div>
-
-    <!-- Nombre del partido -->
-    <div class="card">
-      <div class="card-title">Partido Actual 🏟️</div>
-      <div class="form-group" style="margin-bottom:0;">
-        <input type="text" id="inputPartido" placeholder="Ej. Steelers vs Ravens — Semana 3" id="inputPartido"/>
-      </div>
-    </div>
-
-    <!-- Visor del scanner -->
-    <div class="card" style="padding:16px;">
-      <div class="card-title">Escanear QR 📷</div>
-      <div class="card-subtitle">Apunta la cámara al código QR de la credencial del fan.</div>
-      <div id="qrReader" style="width:100%; border-radius:var(--radius-sm); overflow:hidden; margin-top:8px;"></div>
-      <div id="scannerStatus" class="status-msg info" style="margin-top:12px;">Iniciando cámara…</div>
-      <button class="btn btn-outline btn-sm mt-4" id="btnRestartScan" style="display:none; width:auto; margin:12px auto 0;">🔄 Escanear otro</button>
-    </div>
-
-    <!-- Resultado del escaneo -->
-    <div id="scanResult" class="hidden">
-      <div class="scan-result">
-        <img id="resultFoto" class="scan-result-photo" src="" alt="Foto Fan"/>
-        <div>
-          <h3 id="resultNombre">—</h3>
-          <p id="resultFanId" style="color:var(--gold); font-weight:700; font-size:14px; margin-top:4px;">—</p>
-          <p id="resultDetalle">—</p>
-          <span class="badge badge-gold mt-4" id="resultNivel">—</span>
+    
+    <div style="display:flex; flex-direction:column; md:flex-row; gap:20px;">
+      <!-- Columna Izquierda: Botones de Evento -->
+      <div class="card" style="flex:1; max-height: 80vh; overflow-y:auto;">
+        <h2 style="font-size:18px; color:var(--gold); margin-bottom:12px;">Seleccionar Evento</h2>
+        
+        <button class="btn btn-outline" style="width:100%; justify-content:flex-start; margin-bottom:16px; font-weight:bold;" onclick="generarQR('VISITA_NORMAL', 'Visita Regular (Restaurante)')">🍔 Visita Normal (Restaurante)</button>
+        
+        <h3 style="font-size:14px; color:#888; margin-bottom:8px;">Pretemporada</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
+          <button class="btn btn-outline btn-sm" onclick="generarQR('PRE_SEM1', 'Pretemporada Sem 1: Packers')">Sem 1: Packers</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('PRE_SEM2', 'Pretemporada Sem 2: Jets')">Sem 2: Jets</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('PRE_SEM3', 'Pretemporada Sem 3: Bills')">Sem 3: Bills</button>
+        </div>
+        
+        <h3 style="font-size:14px; color:#888; margin-bottom:8px;">Temporada Regular 2026</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM1', 'Sem 1: Falcons')">Sem 1: Falcons</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM2', 'Sem 2: Patriots')">Sem 2: Patriots</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM3', 'Sem 3: Bengals')">Sem 3: Bengals</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM4', 'Sem 4: Browns')">Sem 4: Browns</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM5', 'Sem 5: Colts')">Sem 5: Colts</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM6', 'Sem 6: Buccaneers')">Sem 6: Buccaneers</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM7', 'Sem 7: Saints')">Sem 7: Saints</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM8', 'Sem 8: Browns')">Sem 8: Browns</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM9', 'Sem 9: BYE WEEK')" disabled style="opacity: 0.5;">Sem 9: BYE WEEK</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM10', 'Sem 10: Bengals')">Sem 10: Bengals</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM11', 'Sem 11: Eagles')">Sem 11: Eagles</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM12', 'Sem 12: Broncos')">Sem 12: Broncos</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM13', 'Sem 13: Texans')">Sem 13: Texans</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM14', 'Sem 14: Jaguars')">Sem 14: Jaguars</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM15', 'Sem 15: Ravens')">Sem 15: Ravens</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM16', 'Sem 16: Panthers')">Sem 16: Panthers</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM17', 'Sem 17: Titans')">Sem 17: Titans</button>
+          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM18', 'Sem 18: Ravens')">Sem 18: Ravens</button>
         </div>
       </div>
-      <div style="margin-top:12px; display:flex; gap:10px;">
-        <button class="btn btn-gold" id="btnConfirmVisit">✅ Registrar visita</button>
-        <button class="btn btn-outline btn-sm" id="btnCancelVisit" style="width:auto;">✕ Cancelar</button>
+      
+      <!-- Columna Derecha: Vista del QR -->
+      <div class="card" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 20px;">
+        <div id="qrHeader" style="margin-bottom:24px;">
+          <h2 style="font-size:20px; color:#fff;" id="qrTitle">Selecciona un evento</h2>
+          <p class="text-muted" id="qrSubtitle">El código QR aparecerá aquí abajo.</p>
+        </div>
+        <div id="qrBox" style="background:#fff; padding:20px; border-radius:12px; display:inline-block; border:4px solid var(--gold); display:none;"></div>
       </div>
-    </div>
-
-    <!-- Historial del día -->
-    <div class="card mt-4">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:0;">Registrados hoy</div>
-        <span class="badge badge-gold" id="countHoy">0</span>
-      </div>
-      <div id="listHoy" style="font-size:13px; color:var(--text-muted);">Ninguno aún.</div>
     </div>
 
   </div>
+
 </div>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 <script src="js/firebase-config.js"></script>
 <script>
 // ============================================================
-//  SCANNER — Steelers Fan Club Querétaro
+//  GENERADOR QR — Staff 
 // ============================================================
-const NIVEL_ICON = { 'Nuevo Fan':'🆕','Fan':'🏈','Steel Fan':'⭐','Organizador':'🏆' };
-let scanner = null;
-let currentFanData = null;
-let currentFanUid  = null;
-const visitasHoy = [];
 
 // ---- LOGIN ----
 document.getElementById('btnLogin').addEventListener('click', async () => {
   const email = document.getElementById('loginEmail').value.trim();
   const pw    = document.getElementById('loginPw').value;
+  const btn   = document.getElementById('btnLogin');
   const st    = document.getElementById('loginStatus');
-  if (!email || !pw) { showSt(st,'Completa los campos.','error'); return; }
+
+  if (!email || !pw) { showStatus(st, 'Completa email y contraseña.', 'error'); return; }
+  btn.disabled = true; btn.textContent = '⏳ Entrando...';
+
   try {
     await auth.signInWithEmailAndPassword(email, pw);
   } catch(e) {
-    showSt(st,'❌ Email o contraseña incorrectos.','error');
+    showStatus(st, '❌ Email o contraseña incorrectos.', 'error');
+    btn.disabled = false; btn.textContent = 'Entrar →';
   }
 });
 
-// ---- AUTH ----
+// ---- AUTH STATE ----
 auth.onAuthStateChanged(async user => {
   if (!user) {
     document.getElementById('sectionLogin').classList.remove('hidden');
-    document.getElementById('sectionScanner').classList.add('hidden');
+    document.getElementById('sectionGenerador').classList.add('hidden');
     return;
   }
-  // Verificar que sea admin/organizador
+  
+  // Validar admin/organizador
   const snap = await db.collection('fans').doc(user.uid).get();
-  if (!snap.exists || snap.data().nivel !== 'Organizador') {
-    await auth.signOut();
-    const st = document.getElementById('loginStatus');
-    showSt(st,'❌ Solo los organizadores pueden acceder al scanner.','error');
-    document.getElementById('sectionLogin').classList.remove('hidden');
-    document.getElementById('sectionScanner').classList.add('hidden');
-    return;
+  if (snap.exists && snap.data().nivel === 'Organizador') {
+    document.getElementById('sectionLogin').classList.add('hidden');
+    document.getElementById('sectionGenerador').classList.remove('hidden');
+  } else {
+    auth.signOut();
+    alert('No tienes permisos de organizador para usar esta herramienta.');
   }
-  document.getElementById('sectionLogin').classList.add('hidden');
-  document.getElementById('sectionScanner').classList.remove('hidden');
-  startScanner();
 });
 
+// ---- GENERAR QR ----
+function generarQR(eventId, eventName) {
+  const qrBox = document.getElementById('qrBox');
+  const qrTitle = document.getElementById('qrTitle');
+  const qrSubtitle = document.getElementById('qrSubtitle');
+  
+  qrBox.innerHTML = ''; // Limpiar anterior
+  
+  // JSON data que escaneará el fan
+  const data = {
+    t: "STQRO", // Validation token
+    id: eventId,
+    n: eventName
+  };
+  
+  const jsonStr = JSON.stringify(data);
+  
+  new QRCode(qrBox, {
+    text: jsonStr,
+    width: 300,
+    height: 300,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+  
+  qrTitle.textContent = eventName;
+  qrTitle.style.color = 'var(--gold)';
+  qrSubtitle.textContent = '¡Fans! Abran su credencial y presionen "Escanear Asistencia"';
+  qrBox.style.display = 'inline-block';
+}
+
+// ---- LOGOUT ----
 document.getElementById('btnLogout').addEventListener('click', () => {
-  if (scanner) scanner.stop();
   auth.signOut();
 });
 
-// ---- SCANNER ----
-function startScanner() {
-  scanner = new Html5Qrcode('qrReader');
-  showScanStatus('Iniciando cámara…', 'info');
-
-  scanner.start(
-    { facingMode: 'environment' },
-    { fps: 10, qrbox: { width: 220, height: 220 } },
-    onScanSuccess,
-    () => {}
-  ).then(() => {
-    showScanStatus('Listo para escanear.', 'info');
-  }).catch(() => {
-    showScanStatus('No se pudo iniciar la cámara. Verifica permisos.', 'error');
-  });
-}
-
-async function onScanSuccess(decodedText) {
-  // Pausar scanner
-  await scanner.pause(true);
-  showScanStatus('QR detectado. Buscando fan…', 'info');
-
-  // Buscar fan por fanId
-  const q = await db.collection('fans').where('fanId', '==', decodedText.trim()).get();
-  if (q.empty) {
-    showScanStatus('❌ No se encontró ningún fan con este QR.', 'error');
-    document.getElementById('btnRestartScan').style.display = 'block';
-    return;
-  }
-
-  const docSnap = q.docs[0];
-  currentFanUid  = docSnap.id;
-  currentFanData = docSnap.data();
-  showFanResult(currentFanData);
-}
-
-function showFanResult(fan) {
-  document.getElementById('scanResult').classList.remove('hidden');
-  showScanStatus('Fan encontrado. Confirma la visita.', 'info');
-
-  const foto = document.getElementById('resultFoto');
-  if (fan.photoURL) {
-    foto.src = fan.photoURL;
-  } else {
-    foto.src = '';
-    foto.style.display = 'none';
-  }
-  document.getElementById('resultNombre').textContent  = `${fan.nombre} ${fan.apellidoPaterno} ${fan.apellidoMaterno}`;
-  document.getElementById('resultFanId').textContent   = fan.fanId;
-  document.getElementById('resultDetalle').textContent = `${fan.colonia} · ${NIVEL_ICON[fan.nivel]||''} ${fan.nivel}`;
-  document.getElementById('resultNivel').textContent   = `${NIVEL_ICON[fan.nivel]||'🏈'} ${fan.nivel}`;
-}
-
-// ---- CONFIRMAR VISITA ----
-document.getElementById('btnConfirmVisit').addEventListener('click', async () => {
-  const btn = document.getElementById('btnConfirmVisit');
-  btn.disabled = true; btn.textContent = '⏳ Registrando…';
-  const partido = document.getElementById('inputPartido').value.trim() || 'Partido';
-
-  try {
-    const now = firebase.firestore.Timestamp.now();
-    // Agregar a subcolección visitas
-    await db.collection('fans').doc(currentFanUid)
-      .collection('visitas').add({
-        timestamp: now,
-        partido,
-        registradoPor: auth.currentUser.uid
-      });
-
-    // Incrementar contador
-    await db.collection('fans').doc(currentFanUid).update({
-      totalVisitas: firebase.firestore.FieldValue.increment(1),
-      visitasConsecutivas: firebase.firestore.FieldValue.increment(1),
-      ultimaVisita: now
-    });
-
-    showScanStatus(`✅ ¡Visita registrada para ${currentFanData.nombre}!`, 'success');
-
-    // Agregar al historial del día
-    visitasHoy.unshift(currentFanData);
-    renderHoy();
-
-    document.getElementById('scanResult').classList.add('hidden');
-    document.getElementById('btnRestartScan').style.display = 'block';
-  } catch(e) {
-    showScanStatus('❌ Error al registrar: ' + e.message, 'error');
-  }
-  btn.disabled = false; btn.textContent = '✅ Registrar visita';
-});
-
-document.getElementById('btnCancelVisit').addEventListener('click', () => {
-  document.getElementById('scanResult').classList.add('hidden');
-  document.getElementById('btnRestartScan').style.display = 'block';
-  showScanStatus('Cancelado. Listo para escanear.', 'info');
-});
-
-document.getElementById('btnRestartScan').addEventListener('click', () => {
-  document.getElementById('scanResult').classList.add('hidden');
-  document.getElementById('btnRestartScan').style.display = 'none';
-  if (scanner) scanner.resume();
-  showScanStatus('Listo para escanear.', 'info');
-});
-
-function renderHoy() {
-  document.getElementById('countHoy').textContent = visitasHoy.length;
-  document.getElementById('listHoy').innerHTML = visitasHoy.map(f =>
-    `<div style="padding:8px 0; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px;">
-      ${f.photoURL ? `<img src="${f.photoURL}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt=""/>` : '<div style="width:32px;height:32px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;">🏈</div>'}
-      <div>
-        <div style="font-weight:700;">${f.nombre} ${f.apellidoPaterno}</div>
-        <div class="text-muted">${f.fanId} · ${NIVEL_ICON[f.nivel]||''} ${f.nivel}</div>
-      </div>
-    </div>`
-  ).join('');
-}
-
-// ---- HELPERS ----
-function showScanStatus(msg, type) {
-  const el = document.getElementById('scannerStatus');
-  el.textContent = msg;
-  el.className = 'status-msg ' + type;
-}
-function showSt(el, msg, type) {
+function showStatus(el, msg, type) {
   el.textContent = msg;
   el.className = 'status-msg ' + type;
 }

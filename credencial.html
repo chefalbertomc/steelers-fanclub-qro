@@ -158,7 +158,26 @@
     <div class="card" id="cardNivelInfo" style="display:none;">
       <div class="card-title">Mi Nivel de Membresía 🏆</div>
       <div id="nivelInfoContainer" style="margin-top:12px;"></div>
-    </div></div>
+    </div>
+
+    <!-- Calendarios 2026 -->
+    <div class="card mt-4" style="margin-bottom: 24px;">
+      <div class="card-title">Calendarios 2026 📅</div>
+      <div style="display:flex; flex-direction:column; gap:20px; margin-top:16px;">
+        <div>
+          <div style="font-weight:700; color:var(--steelers-yellow); margin-bottom:8px; font-size:14px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Pretemporada</div>
+          <a href="assets/calendario-pretemporada.jpg" target="_blank">
+            <img src="assets/calendario-pretemporada.jpg" style="width:100%; border-radius:12px; border:2px solid #333; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="Pretemporada"/>
+          </a>
+        </div>
+        <div>
+          <div style="font-weight:700; color:var(--steelers-yellow); margin-bottom:8px; font-size:14px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Temporada Regular</div>
+          <a href="assets/calendario-temporada.jpg" target="_blank">
+            <img src="assets/calendario-temporada.jpg" style="width:100%; border-radius:12px; border:2px solid #333; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="Temporada Regular"/>
+          </a>
+        </div>
+      </div>
+    </div>
 
   </div>
 
@@ -340,10 +359,48 @@ function closeQrModal() {
 
 async function registrarVisitaManual(qrData) {
   try {
-    alert('Buscando registrar asistencia para: ' + qrData + '\\n(Funcionalidad backend en desarrollo)');
-    // TODO: implement actual db write here or in db.js
+    const data = JSON.parse(qrData);
+    if(data.t !== 'STQRO' || !data.id || !data.n) {
+      alert('❌ Código QR inválido o no reconocido por el sistema.');
+      return;
+    }
+    
+    const user = auth.currentUser;
+    if(!user) return alert('Error: No has iniciado sesión.');
+    
+    // 1. Verificar si ya se registró este evento (si no es VISITA_NORMAL que se puede repetir cada cierto tiempo, o simplemente usar ID único)
+    // Para VISITA_NORMAL le damos un sufijo de tiempo para que puedan escanearlo múltiples días.
+    let docId = data.id;
+    if (docId === 'VISITA_NORMAL') {
+      docId = 'VISITA_' + new Date().toISOString().split('T')[0]; // Solo 1 vez por día
+    }
+    
+    const visitaRef = db.collection('fans').doc(user.uid).collection('visitas').doc(docId);
+    const doc = await visitaRef.get();
+    
+    if (doc.exists) {
+      alert(`⚠️ Ya tienes registrada tu asistencia para: ${data.n} el día de hoy.`);
+      return;
+    }
+    
+    // 2. Guardar visita
+    await visitaRef.set({
+      partido: data.n,
+      partidoId: data.id,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // 3. Incrementar total
+    await db.collection('fans').doc(user.uid).update({
+      totalVisitas: firebase.firestore.FieldValue.increment(1)
+    });
+    
+    alert(`✅ ¡Éxito! Tu asistencia para "${data.n}" ha sido registrada.`);
+    location.reload(); // Recargar para ver los cambios
+    
   } catch(e) {
-    alert('Error al registrar visita');
+    alert('❌ Error al leer el código QR. Asegúrate de escanear el código oficial del restaurante.');
+    console.error(e);
   }
 }
 
@@ -357,7 +414,7 @@ async function loadVisitas(uid, total) {
 
   const list = document.getElementById('visitasList');
   if (snap.empty) {
-    list.innerHTML = '<p class="text-muted" style="font-size:13px;">Aún no tienes visitas registradas. ¡Muéstrale tu QR al staff en el próximo partido!</p>';
+    list.innerHTML = '<p class="text-muted" style="font-size:13px;">Aún no tienes visitas registradas. ¡Escanea el QR del staff en tu próxima visita!</p>';
     return;
   }
   list.innerHTML = snap.docs.map(d => {
