@@ -55,7 +55,8 @@
 
     <!-- Aviso verificación pendiente -->
     <div id="alertVerification" class="status-msg info hidden">
-      📧 Por favor verifica tu email para activar tu membresía. Revisa tu bandeja de entrada.
+      📧 Por favor verifica tu email para activar tu membresía. <br>
+      <a href="#" id="btnResendVerif" style="color:var(--gold); font-weight:bold; text-decoration:underline; display:inline-block; margin-top:4px;">Reenviar correo de verificación</a>
     </div>
 
     <!-- Tarjeta credencial estilo Apple Wallet -->
@@ -216,7 +217,15 @@ auth.onAuthStateChanged(async user => {
 
   if (!user.emailVerified) {
     document.getElementById('alertVerification').classList.remove('hidden');
-    // No bloqueamos el acceso — solo mostramos el aviso
+    document.getElementById('btnResendVerif').addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await user.sendEmailVerification();
+        alert('Se ha enviado un nuevo enlace de verificación a tu correo.');
+      } catch(error) {
+        alert('Demasiados intentos. Espera unos minutos y vuelve a intentar.');
+      }
+    });
   }
 
   // Cargar datos del fan
