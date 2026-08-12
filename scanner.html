@@ -170,14 +170,16 @@ function generarQR(eventId, eventName) {
   
   const jsonStr = JSON.stringify(data);
   
-  new QRCode(qrBox, {
-    text: jsonStr,
-    width: 300,
-    height: 300,
-    colorDark: '#000000',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.H
-  });
+  setTimeout(() => {
+    new QRCode(qrBox, {
+      text: jsonStr,
+      width: 300,
+      height: 300,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }, 50);
 }
 
 // ---- LOGOUT ----
