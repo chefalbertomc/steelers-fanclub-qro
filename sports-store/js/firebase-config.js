@@ -13,6 +13,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-window.db      = firebase.firestore();
-window.auth    = firebase.auth();
-window.storage = firebase.storage();
+window.db      = firebase.firestore ? firebase.firestore() : null;
+window.auth    = firebase.auth ? firebase.auth() : null;
+window.storage = firebase.storage ? firebase.storage() : null;

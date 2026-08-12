@@ -59,8 +59,7 @@ async function loadProducts() {
       queryRef = queryRef.where('team', '==', teamFilter.toLowerCase());
     }
     
-    // Default order by newest
-    queryRef = queryRef.orderBy('createdAt', 'desc');
+    // orderBy removed to avoid Firestore index error without manual configuration
 
     const snapshot = await queryRef.get();
     loader.style.display = 'none';
