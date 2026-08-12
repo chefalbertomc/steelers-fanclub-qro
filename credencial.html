@@ -46,6 +46,9 @@
       </div>
       <div id="loginStatus" class="status-msg"></div>
       <button class="btn btn-gold mt-4" id="btnLogin">Entrar →</button>
+      <div style="text-align:center; margin-top:12px;">
+        <a href="#" id="btnForgotPw" class="text-muted" style="font-size:13px; text-decoration:underline;">¿Olvidaste tu contraseña?</a>
+      </div>
     </div>
     <div style="text-align:center; margin-top:16px;">
       <a href="index.html" class="text-muted" style="font-size:14px;">¿No tienes cuenta? Regístrate aquí</a>
@@ -286,6 +289,25 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
     if (e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Intenta más tarde.';
     showStatus(st, '❌ ' + msg, 'error');
     btn.disabled = false; btn.textContent = 'Entrar →';
+  }
+});
+
+// ---- RECUPERAR CONTRASEÑA ----
+document.getElementById('btnForgotPw').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const st    = document.getElementById('loginStatus');
+  if (!email) {
+    showStatus(st, '⚠️ Ingresa tu correo arriba y presiona este botón de nuevo.', 'error');
+    return;
+  }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    showStatus(st, '✅ ¡Enlace enviado! Revisa tu correo (y tu carpeta de spam).', 'success');
+  } catch(err) {
+    let msg = err.message;
+    if (err.code === 'auth/user-not-found') msg = 'No hay ninguna cuenta con ese correo.';
+    showStatus(st, '❌ ' + msg, 'error');
   }
 });
 
