@@ -49,9 +49,9 @@
       <button class="btn btn-outline btn-sm" id="btnLogout" style="width:auto;">Salir</button>
     </div>
     
-    <div style="display:flex; flex-direction:column; md:flex-row; gap:20px;">
+    <div style="display:flex; flex-wrap:wrap; gap:20px;">
       <!-- Columna Izquierda: Botones de Evento -->
-      <div class="card" style="flex:1; max-height: 80vh; overflow-y:auto;">
+      <div class="card" style="flex:1 1 300px; max-height: 80vh; overflow-y:auto;">
         <h2 style="font-size:18px; color:var(--gold); margin-bottom:12px;">Seleccionar Evento</h2>
         
         <button class="btn btn-outline" style="width:100%; justify-content:flex-start; margin-bottom:16px; font-weight:bold;" onclick="generarQR('VISITA_NORMAL', 'Visita Regular (Restaurante)')">🍔 Visita Normal (Restaurante)</button>
@@ -87,7 +87,7 @@
       </div>
       
       <!-- Columna Derecha: Vista del QR -->
-      <div class="card" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 20px;">
+      <div class="card" style="flex:1 1 400px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 20px;">
         <div id="qrHeader" style="margin-bottom:24px;">
           <h2 style="font-size:20px; color:#fff;" id="qrTitle">Selecciona un evento</h2>
           <p class="text-muted" id="qrSubtitle">El código QR aparecerá aquí abajo.</p>
@@ -159,6 +159,7 @@ function generarQR(eventId, eventName) {
   qrSubtitle.textContent = '¡Fans! Abran su credencial y presionen "Escanear Asistencia"';
   
   qrBox.style.display = 'inline-block';
+  qrBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
   qrBox.innerHTML = ''; // Limpiar anterior
   
   // JSON data que escaneará el fan
