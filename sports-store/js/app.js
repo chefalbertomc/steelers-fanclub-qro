@@ -10,14 +10,24 @@ const storeSubtitle = document.getElementById('storeSubtitle');
 
 // Theme and text updates based on team
 function setupTheme() {
-  if (teamFilter === 'steelers') {
-    document.body.classList.add('theme-steelers');
-    storeTitle.textContent = 'Colección Steelers';
-    storeTitle.innerHTML = 'COLECCIÓN <span style="color: var(--accent-color);">STEELERS</span>';
-    storeSubtitle.textContent = 'Artículos oficiales de Pittsburgh';
-  } else if (teamFilter === 'patriots') {
-    document.body.classList.add('theme-patriots');
-    storeTitle.innerHTML = 'COLECCIÓN <span style="color: var(--accent-color);">PATRIOTS</span>';
+  if (teamFilter === 'all') {
+    storeTitle.textContent = 'Catálogo Completo';
+    storeSubtitle.textContent = 'Todos nuestros artículos deportivos';
+  } else {
+    // Attempt to use the teams.js catalog if available
+    if (typeof getTeamName !== 'undefined') {
+      const friendlyName = getTeamName(teamFilter);
+      const leagueName = getLeagueByTeam(teamFilter);
+      
+      storeTitle.innerHTML = `COLECCIÓN <span style="color: var(--accent-color); text-transform: uppercase;">${friendlyName}</span>`;
+      storeSubtitle.textContent = `Artículos oficiales de ${leagueName}`;
+    } else {
+      storeTitle.innerHTML = `COLECCIÓN <span style="color: var(--accent-color); text-transform: uppercase;">${teamFilter}</span>`;
+    }
+    
+    // Add specific CSS classes for legacy support
+    if (teamFilter === 'steelers') document.body.classList.add('theme-steelers');
+    if (teamFilter === 'patriots') document.body.classList.add('theme-patriots');
   }
 }
 
@@ -42,7 +52,7 @@ function createProductCard(product) {
       <p class="product-desc">${product.description}</p>
       <div class="product-footer">
         <div class="product-price">${formatPrice(product.price)}</div>
-        <button class="btn">Comprar</button>
+        <a href="https://wa.me/524423376955?text=Hola,%20me%20interesa%20comprar%20el%20producto:%20${encodeURIComponent(product.name)}%20por%20${encodeURIComponent(formatPrice(product.price))}" target="_blank" class="btn" style="text-decoration: none; text-align: center;">Comprar</a>
       </div>
     </div>
   `;

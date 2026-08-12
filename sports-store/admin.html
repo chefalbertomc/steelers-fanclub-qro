@@ -22,7 +22,9 @@
   <!-- Navbar -->
   <nav class="navbar">
     <a href="index.html" class="logo-container">
-      <div class="logo-icon">🎯</div>
+      <div class="logo-icon">
+        <img src="assets/catch_sports_logo.png" alt="Catch Sports Logo" style="height: 32px; width: 32px; border-radius: 50%; object-fit: cover;">
+      </div>
       <div class="logo-text">CATCH <span>SPORTS</span></div>
     </a>
     <a href="index.html" class="btn btn-outline" style="font-size: 12px; padding: 8px 16px;">Ver Tienda</a>
@@ -64,12 +66,7 @@
         <div class="form-group">
           <label>Equipo / Categoría</label>
           <select id="prodTeam" class="form-control" required>
-            <option value="steelers">Steelers</option>
-            <option value="patriots">Patriots</option>
-            <option value="cowboys">Cowboys</option>
-            <option value="raiders">Raiders</option>
-            <option value="niners">49ers</option>
-            <option value="otros">Otros</option>
+            <!-- Options will be populated dynamically from teams.js -->
           </select>
         </div>
         
@@ -99,6 +96,16 @@
         <button type="button" id="btnLogout" class="btn btn-outline" style="width: 100%; margin-top: 12px;">Cerrar Sesión</button>
       </form>
     </div>
+    
+    <!-- Product List Management -->
+    <div id="manageSection" class="admin-card" style="display: none; margin-top: 24px;">
+      <h2>Tus Productos</h2>
+      <p class="text-secondary" style="margin-bottom: 16px;">Administra o elimina los productos publicados.</p>
+      
+      <div id="adminProductList" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Admin products will be injected here -->
+      </div>
+    </div>
   </main>
 
   <!-- Firebase SDKs -->
@@ -108,6 +115,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
   
   <script src="js/firebase-config.js"></script>
+  <script src="js/teams.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

@@ -10,9 +10,13 @@ auth.onAuthStateChanged(user => {
   if (user) {
     loginSection.style.display = 'none';
     adminSection.style.display = 'block';
+    document.getElementById('manageSection').style.display = 'block';
+    populateTeams();
+    loadAdminProducts();
   } else {
     loginSection.style.display = 'block';
     adminSection.style.display = 'none';
+    document.getElementById('manageSection').style.display = 'none';
   }
 });
 
@@ -42,6 +46,106 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 document.getElementById('btnLogout').addEventListener('click', () => {
   auth.signOut();
 });
+
+// Populate Teams Select
+function populateTeams() {
+  const select = document.getElementById('prodTeam');
+  select.innerHTML = '<option value="">Selecciona una opción...</option>';
+  
+  if (typeof SPORTS_CATALOG === 'undefined') return;
+  
+  SPORTS_CATALOG.forEach(league => {
+    const group = document.createElement('optgroup');
+    group.label = league.league;
+    
+    league.teams.forEach(team => {
+      const option = document.createElement('option');
+      option.value = team.id;
+      option.textContent = team.name;
+      group.appendChild(option);
+    });
+    
+    select.appendChild(group);
+  });
+}
+
+// Load and manage products
+function loadAdminProducts() {
+  const list = document.getElementById('adminProductList');
+  
+  db.collection('products').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+    list.innerHTML = '';
+    
+    if (snapshot.empty) {
+      list.innerHTML = '<p class="text-secondary">No tienes productos publicados.</p>';
+      return;
+    }
+    
+    snapshot.forEach(doc => {
+      const product = doc.data();
+      const id = doc.id;
+      
+      const item = document.createElement('div');
+      item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--border-color);';
+      
+      // Get friendly team name
+      const teamName = typeof getTeamName !== 'undefined' ? getTeamName(product.team) : product.team;
+      
+      item.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="${product.imageUrl}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px;">
+          <div>
+            <div style="font-weight: bold; color: var(--text-color);">${product.name}</div>
+            <div style="font-size: 12px; color: var(--accent-color);">${teamName} - $${product.price}</div>
+          </div>
+        </div>
+        <button class="btn btn-outline" style="border-color: #ff6b6b; color: #ff6b6b; padding: 6px 12px; font-size: 12px;" onclick="deleteProduct('${id}')">Eliminar</button>
+      `;
+      
+      list.appendChild(item);
+    });
+  }, error => {
+    console.error("Error cargando productos de admin:", error);
+    // Ignore index error on admin panel so it still loads if no index exists
+    if (error.message.includes('index')) {
+       // Fallback without ordering
+       db.collection('products').onSnapshot(fallbackSnapshot => {
+         list.innerHTML = '';
+         fallbackSnapshot.forEach(doc => {
+           // Same render logic...
+           const product = doc.data();
+           const id = doc.id;
+           const item = document.createElement('div');
+           item.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--border-color);';
+           const teamName = typeof getTeamName !== 'undefined' ? getTeamName(product.team) : product.team;
+           item.innerHTML = \`
+             <div style="display: flex; align-items: center; gap: 12px;">
+               <img src="\${product.imageUrl}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px;">
+               <div>
+                 <div style="font-weight: bold; color: var(--text-color);">\${product.name}</div>
+                 <div style="font-size: 12px; color: var(--accent-color);">\${teamName} - $\${product.price}</div>
+               </div>
+             </div>
+             <button class="btn btn-outline" style="border-color: #ff6b6b; color: #ff6b6b; padding: 6px 12px; font-size: 12px;" onclick="deleteProduct('\${id}')">Eliminar</button>
+           \`;
+           list.appendChild(item);
+         });
+       });
+    }
+  });
+}
+
+// Delete product
+window.deleteProduct = async function(id) {
+  if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+    try {
+      await db.collection('products').doc(id).delete();
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+      alert("Hubo un error al eliminar. Intenta de nuevo.");
+    }
+  }
+};
 
 // Image Preview
 let selectedFile = null;
