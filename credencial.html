@@ -246,6 +246,7 @@ auth.onAuthStateChanged(async user => {
 
   if (!user.emailVerified) {
     document.getElementById('alertVerification').classList.remove('hidden');
+    // No bloqueamos el acceso — solo mostramos el aviso
   }
 
   // Cargar datos del fan
