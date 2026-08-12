@@ -1,14 +1,14 @@
 // ============================================
 // CATCH SPORTS — Firebase Config
-// Proyecto: catch-sports
+// Proyecto: catch-sports-qro
 // ============================================
 const firebaseConfig = {
-  apiKey: "AIzaSyArlH7H52SDcMk782LuGEhq9Qv2seAsuew",
-  authDomain: "catch-sports.firebaseapp.com",
-  projectId: "catch-sports",
-  storageBucket: "catch-sports.firebasestorage.app",
-  messagingSenderId: "986639523793",
-  appId: "1:986639523793:web:9c16bad61cae33774ecaf0"
+  apiKey: "AIzaSyBQydqYrIvvILGFgn30_C5WjPMjju_6dBA",
+  authDomain: "catch-sports-qro.firebaseapp.com",
+  projectId: "catch-sports-qro",
+  storageBucket: "catch-sports-qro.firebasestorage.app",
+  messagingSenderId: "621758448454",
+  appId: "1:621758448454:web:ef6789882269e924195b47"
 };
 
 firebase.initializeApp(firebaseConfig);
