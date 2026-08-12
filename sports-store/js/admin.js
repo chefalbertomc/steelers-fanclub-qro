@@ -58,6 +58,38 @@ document.getElementById('prodImage').addEventListener('change', (e) => {
   }
 });
 
+// Helper function to resize and convert image to Base64
+function resizeImage(file, maxWidth, maxHeight) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 // Submit Form
 document.getElementById('productForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -73,7 +105,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
   btnSubmit.disabled = true;
   btnSubmit.textContent = 'Subiendo...';
   uploadStatus.style.color = '#fff';
-  uploadStatus.textContent = 'Subiendo imagen...';
+  uploadStatus.textContent = 'Procesando imagen...';
   
   try {
     const name = document.getElementById('prodName').value.trim();
@@ -81,23 +113,18 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     const price = parseFloat(document.getElementById('prodPrice').value);
     const desc = document.getElementById('prodDesc').value.trim();
     
-    // Upload image to Firebase Storage
-    const storageRef = firebase.storage().ref();
-    const fileRef = storageRef.child(`products/${Date.now()}_${selectedFile.name}`);
-    await fileRef.put(selectedFile);
+    // Resize image and convert to Base64 to bypass Firebase Storage CORS entirely
+    const base64Image = await resizeImage(selectedFile, 800, 800);
     
-    // Get URL
-    const imageUrl = await fileRef.getDownloadURL();
+    uploadStatus.textContent = 'Guardando producto...';
     
-    uploadStatus.textContent = 'Guardando datos...';
-    
-    // Save to Firestore
+    // Save to Firestore directly
     await db.collection('products').add({
       name,
       team,
       price,
       description: desc,
-      imageUrl,
+      imageUrl: base64Image,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     
