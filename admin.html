@@ -303,7 +303,9 @@ function nivelClass(nivel) {
 function openDetalles(uid) {
   const f = allFans.find(x => x.uid === uid);
   if(!f) return;
+  const photoHtml = f.photoURL ? `<img src="${f.photoURL}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);">` : `<div style="width:80px; height:80px; border-radius:50%; background:#222; display:flex; align-items:center; justify-content:center; font-size:32px; border:2px solid var(--gold);">🏈</div>`;
   const content = `
+    <div style="grid-column: span 2; display:flex; justify-content:center; margin-bottom:10px;">${photoHtml}</div>
     <div><strong>Fan ID:</strong> <span style="color:var(--gold)">${f.fanId || '—'}</span></div>
     <div><strong>Nivel:</strong> ${f.nivel || '—'}</div>
     <div style="grid-column: span 2;"><strong>Nombre:</strong> ${f.nombre||''} ${f.apellidoPaterno||''} ${f.apellidoMaterno||''}</div>
@@ -535,11 +537,6 @@ document.getElementById('btnCalcCumples').addEventListener('click', () => {
       }
     }
   });
-  
-  // --- INYECCIÓN DE PRUEBA ---
-  calculatedCumples.push({ nombre: 'Doe Smith', photoURL: 'https://i.pravatar.cc/150?u=doe', fecha: '1990-08-15' });
-  calculatedCumples.push({ nombre: 'Jane Doe', photoURL: 'https://i.pravatar.cc/150?u=jane', fecha: '1992-08-16' });
-  calculatedCumples.push({ nombre: 'Alberto M.', photoURL: 'https://i.pravatar.cc/150?u=alberto', fecha: '1988-08-18' });
   
   if (calculatedCumples.length > 0) {
     preview.innerHTML = 'Encontrados: ' + calculatedCumples.map(c => c.nombre).join(', ');
