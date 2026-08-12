@@ -61,6 +61,16 @@
         <div class="stat-label">Steel Fans</div>
       </div>
     </div>
+    <!-- Sección de Promociones -->
+    <div class="card" style="margin-bottom:16px;">
+      <h3 style="font-size:16px; color:var(--gold); margin-bottom:12px;">📢 Promociones</h3>
+      <p class="text-muted" style="margin-bottom:12px; font-size:13px;">Sube una imagen para promociones o platillos. Se mostrará debajo de los calendarios en las credenciales.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <input type="file" id="promoFile" accept="image/*" style="font-size:13px; color:var(--text);"/>
+        <button class="btn btn-gold btn-sm" id="btnUploadPromo" style="width:auto;">Subir y Publicar</button>
+      </div>
+      <div id="promoStatus" style="margin-top:10px; font-size:13px;"></div>
+    </div>
 
     <!-- Filtros y acciones -->
     <div class="card" style="margin-bottom:16px;">
@@ -119,6 +129,10 @@
         <option value="Steel Fan">⭐ Steel Fan</option>
         <option value="Organizador">🏆 Organizador</option>
       </select>
+    </div>
+    <div class="form-group" style="text-align:left; margin-bottom:16px;">
+      <label for="inputDesde">Miembro Desde (Año)</label>
+      <input type="number" id="inputDesde" min="2000" max="2050" style="width:100%; padding:12px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:15px;" placeholder="Ej. 2023">
     </div>
     <div class="modal-actions">
       <button class="btn btn-outline" id="btnModalCancel">Cancelar</button>
@@ -248,9 +262,14 @@ function nivelClass(nivel) {
 // ---- MODAL EDITAR NIVEL ----
 function openModalNivel(uid, fanId, nombre, nivelActual) {
   editingUid = uid;
+  const fan = allFans.find(f => f.uid === uid);
+  const regDate = fan && fan.createdAt ? new Date(fan.createdAt.seconds * 1000).getFullYear() : new Date().getFullYear();
+  const desde = fan && fan.memberSinceYear ? fan.memberSinceYear : regDate;
+  
   document.getElementById('modalFanName').textContent = nombre;
   document.getElementById('modalFanId').textContent   = fanId;
   document.getElementById('selectNivel').value        = nivelActual;
+  document.getElementById('inputDesde').value         = desde;
   document.getElementById('modalNivel').classList.remove('hidden');
 }
 
@@ -262,14 +281,22 @@ document.getElementById('btnModalCancel').addEventListener('click', () => {
 document.getElementById('btnModalSave').addEventListener('click', async () => {
   if (!editingUid) return;
   const newNivel = document.getElementById('selectNivel').value;
+  const newDesde = document.getElementById('inputDesde').value;
   const btn = document.getElementById('btnModalSave');
   btn.disabled = true; btn.textContent = '⏳ Guardando…';
 
   try {
-    await db.collection('fans').doc(editingUid).update({ nivel: newNivel });
+    const updateData = { nivel: newNivel };
+    if (newDesde) updateData.memberSinceYear = parseInt(newDesde, 10);
+    
+    await db.collection('fans').doc(editingUid).update(updateData);
+    
     // Actualizar localmente
     const fan = allFans.find(f => f.uid === editingUid);
-    if (fan) fan.nivel = newNivel;
+    if (fan) {
+      fan.nivel = newNivel;
+      if (newDesde) fan.memberSinceYear = parseInt(newDesde, 10);
+    }
     updateStats();
     applyFilters();
     document.getElementById('modalNivel').classList.add('hidden');
@@ -293,6 +320,42 @@ document.getElementById('btnExportCSV').addEventListener('click', () => {
   const a = document.createElement('a');
   a.href = url; a.download = 'steelers-fanclub-fans.csv'; a.click();
   URL.revokeObjectURL(url);
+});
+
+// ---- SUBIR PROMO ----
+document.getElementById('btnUploadPromo').addEventListener('click', async () => {
+  const fileInput = document.getElementById('promoFile');
+  const file = fileInput.files[0];
+  const statusEl = document.getElementById('promoStatus');
+  
+  if (!file) {
+    statusEl.textContent = '❌ Selecciona una imagen primero.';
+    statusEl.style.color = '#ef4444';
+    return;
+  }
+  
+  statusEl.textContent = '⏳ Subiendo promo...';
+  statusEl.style.color = 'var(--gold)';
+  document.getElementById('btnUploadPromo').disabled = true;
+  
+  try {
+    const ref = firebase.storage().ref('promos/current_promo.jpg');
+    await ref.put(file);
+    const url = await ref.getDownloadURL();
+    
+    await db.collection('settings').doc('promos').set({
+      imageUrl: url,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    
+    statusEl.textContent = '✅ Promo publicada con éxito.';
+    statusEl.style.color = '#22c55e';
+    fileInput.value = ''; // clear
+  } catch(e) {
+    statusEl.textContent = '❌ Error al subir: ' + e.message;
+    statusEl.style.color = '#ef4444';
+  }
+  document.getElementById('btnUploadPromo').disabled = false;
 });
 
 // ---- HELPERS ----

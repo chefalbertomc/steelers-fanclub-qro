@@ -6,6 +6,8 @@
   <title>Registro — Steelers Fan Club Querétaro</title>
   <meta name="description" content="Únete al club de fans oficial de los Pittsburgh Steelers en Querétaro. Regístrate y obtén tu membresía digital."/>
   <link rel="icon" href="assets/logo.png"/>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
@@ -414,6 +416,10 @@ function setLoading(on) {
   document.getElementById('btnSubmit').disabled = on;
   document.getElementById('btnSubmitText').classList.toggle('hidden', on);
   document.getElementById('btnSubmitLoader').classList.toggle('hidden', !on);
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
 }
 </script>
 </body>

@@ -6,6 +6,8 @@
   <title>Mi Credencial — Steelers Fan Club Querétaro</title>
   <meta name="description" content="Credencial digital con código QR único para miembros del Steelers Fan Club Querétaro."/>
   <link rel="icon" href="assets/logo.png"/>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="stylesheet" href="css/styles.css"/>
   <!-- QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -116,7 +118,7 @@
             <div style="display:flex; justify-content:space-between; align-items:flex-end;">
               <div>
                 <div style="font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">VIGENCIA</div>
-                <div id="credVigencia" style="font-size:14px; font-weight:800; color:#22c55e; letter-spacing:1px; text-transform:uppercase;">AGOSTO 2028</div>
+                <div id="credVigencia" style="font-size:14px; font-weight:800; color:#fff; letter-spacing:1px; text-transform:uppercase;">AGOSTO 2028</div>
               </div>
               <div style="text-align:right;">
                 <div style="font-size:10px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:4px;">NIVEL</div>
@@ -179,6 +181,14 @@
       </div>
     </div>
 
+    <!-- Promociones -->
+    <div id="promosContainer" class="card mt-4 hidden" style="margin-bottom: 24px;">
+      <div class="card-title">Promociones Especiales 🔥</div>
+      <div style="margin-top:16px;">
+        <img id="promoImg" src="" style="width:100%; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="Promo Especial"/>
+      </div>
+    </div>
+
   </div>
 
 </div>
@@ -188,6 +198,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="js/firebase-config.js"></script>
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
@@ -201,6 +212,39 @@ const NIVEL_ICON = {
   'Steel Fan':   '⭐',
   'Organizador': '🏆'
 };
+
+// ---- DESCARGAR CREDENCIAL ----
+document.getElementById('btnDescargar').addEventListener('click', async () => {
+  const btn = document.getElementById('btnDescargar');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '⏳ Generando...';
+  btn.disabled = true;
+  
+  try {
+    const cardEl = document.getElementById('miCredencialCard');
+    const canvas = await html2canvas(cardEl, {
+      scale: 3, // Alta resolución
+      backgroundColor: '#111',
+      useCORS: true
+    });
+    
+    const link = document.createElement('a');
+    link.download = `Credencial-Steelers-${document.getElementById('credFanId').textContent}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    btn.innerHTML = '✅ Guardada';
+  } catch(e) {
+    console.error(e);
+    alert('Hubo un error al guardar tu credencial. Intenta tomar una captura de pantalla.');
+    btn.innerHTML = originalText;
+  }
+  
+  setTimeout(() => {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }, 3000);
+});
 
 // ---- LOGIN ----
 document.getElementById('btnLogin').addEventListener('click', async () => {
@@ -256,6 +300,7 @@ auth.onAuthStateChanged(async user => {
   const fan = snap.data();
   renderCredencial(fan, user.uid);
   loadVisitas(user.uid, fan.totalVisitas);
+  loadPromo();
 });
 
 // ---- RENDER CREDENCIAL ----
@@ -278,26 +323,20 @@ function renderCredencial(fan, uid) {
   document.getElementById('credFanId').textContent = fId;
 
   // Nombre (Split in 2 lines)
-  const full = `${fan.nombre || ''} ${fan.apellidoPaterno || ''} ${fan.apellidoMaterno || ''}`.trim();
-  const spaceIdx = full.indexOf(' ');
-  if (spaceIdx > 0) {
-    document.getElementById('credNombreLine1').textContent = full.substring(0, spaceIdx);
-    document.getElementById('credNombreLine2').textContent = full.substring(spaceIdx + 1);
-  } else {
-    document.getElementById('credNombreLine1').textContent = full;
-    document.getElementById('credNombreLine2').textContent = '';
-  }
+  const full = `${fan.nombre || ''} ${fan.apellidoPaterno || ''} ${fan.apellidoMaterno || ''}`.replace(/\s+/g, ' ').trim();
+  const words = full.split(' ');
+  const splitIdx = words.length > 2 ? 2 : 1;
+  document.getElementById('credNombreLine1').textContent = words.slice(0, splitIdx).join(' ');
+  document.getElementById('credNombreLine2').textContent = words.slice(splitIdx).join(' ');
 
   // Nivel
   const nivelEl = document.getElementById('credNivel');
   nivelEl.textContent = fan.nivel || 'Fan';
-  if (fan.nivel === 'Steel Fan') nivelEl.style.color = '#FFB612';
-  else if (fan.nivel === 'Organizador') nivelEl.style.color = '#aaa';
-  else nivelEl.style.color = '#fff';
+  nivelEl.style.color = 'var(--gold)';
 
   // Miembro Desde y Vigencia (Uppercase AGOSTO 2028)
   const regDate = new Date(fan.createdAt ? fan.createdAt.seconds * 1000 : Date.now());
-  document.getElementById('credDesde').textContent = regDate.getFullYear();
+  document.getElementById('credDesde').textContent = fan.memberSinceYear || regDate.getFullYear();
   
   const vigDate = new Date(regDate);
   vigDate.setFullYear(vigDate.getFullYear() + 2);
@@ -419,13 +458,28 @@ async function loadVisitas(uid, total) {
   }
   list.innerHTML = snap.docs.map(d => {
     const v = d.data();
-    const fecha = v.timestamp ? v.timestamp.toDate().toLocaleDateString('es-MX', {dateStyle:'medium'}) : '—';
-    const hora  = v.timestamp ? v.timestamp.toDate().toLocaleTimeString('es-MX', {timeStyle:'short'}) : '';
-    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px;">
-      <span>🏟️ ${v.partido || 'Partido'}</span>
-      <span class="text-muted">${fecha} ${hora}</span>
+    return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333;">
+      <span style="color:#fff; font-size:14px;">${v.partido}</span>
+      <span style="color:#888; font-size:12px;">${v.timestamp ? new Date(v.timestamp.seconds*1000).toLocaleDateString() : 'Hoy'}</span>
     </div>`;
   }).join('');
+}
+
+// ---- PROMOS ----
+async function loadPromo() {
+  try {
+    const snap = await db.collection('settings').doc('promos').get();
+    if (snap.exists && snap.data().imageUrl) {
+      document.getElementById('promoImg').src = snap.data().imageUrl;
+      document.getElementById('promosContainer').classList.remove('hidden');
+    }
+  } catch(e) {
+    console.error('Error cargando promos', e);
+  }
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
 }
 
 // ---- DESCARGAR CREDENCIAL ----
