@@ -58,22 +58,88 @@
       📧 Por favor verifica tu email para activar tu membresía. Revisa tu bandeja de entrada.
     </div>
 
-    <!-- Tarjeta credencial -->
-    <div id="credencialWrapper">
-      <div class="credencial-card" id="credencialCard">
-        <img id="credFoto" class="credencial-photo" src="" alt="Foto"/>
-        <div class="credencial-info">
-          <div class="credencial-fanid" id="credFanId">SQ-???</div>
-          <div class="credencial-name" id="credNombre">—</div>
-          <div class="credencial-detail" id="credDetalle">—</div>
-          <div style="margin-top:8px;">
-            <span class="badge badge-gold" id="credNivel">—</span>
+    <!-- Tarjeta credencial estilo Apple Wallet -->
+    <div id="credencialWrapper" style="max-width:400px; margin:0 auto;">
+      <div id="credencialCard" style="
+        background: #111;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 40px rgba(0,0,0,0.8), 0 0 0 1px #333;
+        font-family: var(--font);
+      ">
+
+        <!-- TOP BAR: Logo + BWW Juriquilla -->
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px 10px;">
+          <img src="assets/steelers-nation-qro.png" style="height:44px; object-fit:contain;" alt="Steelers Nation Qro"/>
+          <div style="text-align:right;">
+            <div style="font-size:10px; color:#888; letter-spacing:1px; text-transform:uppercase;">BWW</div>
+            <div style="font-size:13px; font-weight:800; color:#fff; letter-spacing:2px;">JURIQUILLA</div>
           </div>
         </div>
-        <div class="credencial-qr" id="credQrBox">
-          <!-- QR generado aquí -->
+
+        <!-- BANNER AMARILLO PITTSBURGH STEELERS -->
+        <div style="background:#FFB612; padding:14px 16px; display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-size:9px; font-weight:900; letter-spacing:3px; color:#1a1a1a; text-transform:uppercase; line-height:1;">PITTSBURGH</div>
+            <div style="font-family:'Bebas Neue', var(--font-display), sans-serif; font-size:38px; font-weight:900; color:#000; line-height:1; letter-spacing:1px;">Steelers</div>
+          </div>
+          <img src="assets/steelers-logo.png" style="height:60px; object-fit:contain;" alt="Steelers"/>
         </div>
-        <img src="assets/logo.png" class="credencial-logo" alt="Logo"/>
+
+        <!-- INFO DEL FAN -->
+        <div style="padding:16px 16px 10px;">
+          <!-- Fila 1: Nombre + Roll -->
+          <div style="display:grid; grid-template-columns:1fr auto; gap:16px; margin-bottom:14px;">
+            <div>
+              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">NOMBRE</div>
+              <div id="credNombre" style="font-size:15px; font-weight:800; color:#fff;">—</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">ROLL</div>
+              <div id="credNivel" style="font-size:15px; font-weight:800; color:#FFB612;">—</div>
+            </div>
+          </div>
+
+          <!-- Fila 2: Miembro desde + Vigencia + Status -->
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:14px;">
+            <div>
+              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">MIEMBRO DESDE</div>
+              <div id="credDesde" style="font-size:18px; font-weight:900; color:#fff;">—</div>
+            </div>
+            <div>
+              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">VIGENCIA</div>
+              <div id="credVigencia" style="font-size:15px; font-weight:800; color:#fff;">—</div>
+            </div>
+            <div>
+              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">STATUS</div>
+              <div id="credStatus" style="font-size:15px; font-weight:800; color:#22c55e;">Activo</div>
+            </div>
+          </div>
+
+          <!-- Fan ID + QR -->
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #2a2a2a; padding-top:12px;">
+            <div>
+              <div style="font-size:9px; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px;">FAN ID</div>
+              <div id="credFanId" style="font-family:var(--font-display); font-size:22px; color:#FFB612; letter-spacing:2px;">SQ-???</div>
+              <div id="credColonia" style="font-size:11px; color:#666; margin-top:2px;">—</div>
+            </div>
+            <div id="credQrBox" style="background:white; border-radius:10px; padding:6px; width:72px; height:72px; display:flex; align-items:center; justify-content:center;"></div>
+          </div>
+
+          <!-- Foto del fan pequeña abajo -->
+          <div style="display:flex; align-items:center; gap:10px; margin-top:12px; padding-top:10px; border-top:1px solid #2a2a2a;">
+            <img id="credFoto" style="width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid #FFB612; display:none;" alt="Foto"/>
+            <div id="credFotoPlaceholder" style="width:38px; height:38px; border-radius:50%; background:#222; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🏈</div>
+            <div style="font-size:11px; color:#555; line-height:1.4;" id="credEmail">—</div>
+          </div>
+        </div>
+
+        <!-- BWW BUFFALO logo bottom strip -->
+        <div style="background:#1a1a1a; padding:8px 16px; display:flex; align-items:center; justify-content:center; gap:8px; border-top:1px solid #2a2a2a;">
+          <img src="assets/bww-buffalo.png" style="height:22px; object-fit:contain; opacity:0.7;" alt="BWW"/>
+          <span style="font-size:10px; color:#555; letter-spacing:1px;">BUFFALO WILD WINGS JURIQUILLA</span>
+        </div>
+
       </div>
     </div>
 
@@ -195,34 +261,44 @@ auth.onAuthStateChanged(async user => {
 
 // ---- RENDER CREDENCIAL ----
 function renderCredencial(fan, uid) {
+  // Foto
   const foto = document.getElementById('credFoto');
+  const fotoPlaceholder = document.getElementById('credFotoPlaceholder');
   if (fan.photoURL) {
     foto.src = fan.photoURL;
-  } else {
-    foto.style.display = 'none';
-    const ph = document.createElement('div');
-    ph.className = 'credencial-photo-placeholder';
-    ph.textContent = '🏈';
-    foto.parentNode.insertBefore(ph, foto);
+    foto.style.display = 'block';
+    if (fotoPlaceholder) fotoPlaceholder.style.display = 'none';
   }
-  document.getElementById('credFanId').textContent  = fan.fanId || uid.slice(0,6).toUpperCase();
-  document.getElementById('credNombre').textContent  = `${fan.nombre} ${fan.apellidoPaterno} ${fan.apellidoMaterno}`;
-  document.getElementById('credDetalle').textContent = `${fan.colonia} • ${fan.email}`;
-  const nivelEl = document.getElementById('credNivel');
-  nivelEl.textContent = `${NIVEL_ICON[fan.nivel] || '🏈'} ${fan.nivel || 'Fan'}`;
 
-  // Estilo del nivel
-  if (fan.nivel === 'Steel Fan') {
-    nivelEl.className = 'badge badge-gold';
-    document.getElementById('credencialCard').style.borderColor = '#FFB612';
-  } else if (fan.nivel === 'Organizador') {
-    nivelEl.className = 'badge';
-    nivelEl.style.background = '#ffffff22';
-    nivelEl.style.borderColor = '#aaa';
-    nivelEl.style.color = '#eee';
+  // Fan ID y nombre
+  document.getElementById('credFanId').textContent  = fan.fanId || uid.slice(0,6).toUpperCase();
+  document.getElementById('credNombre').textContent  = `${fan.nombre || ''} ${fan.apellidoPaterno || ''} ${fan.apellidoMaterno || ''}`.trim();
+  document.getElementById('credColonia').textContent = fan.colonia || '';
+  document.getElementById('credEmail').textContent   = fan.email || '';
+
+  // Nivel / Roll
+  const nivelEl = document.getElementById('credNivel');
+  nivelEl.textContent = fan.nivel || 'Fan';
+  if (fan.nivel === 'Steel Fan') nivelEl.style.color = '#FFB612';
+  else if (fan.nivel === 'Organizador') nivelEl.style.color = '#aaa';
+  else nivelEl.style.color = '#FFB612';
+
+  // Miembro desde (año de registro)
+  if (fan.createdAt) {
+    const año = new Date(fan.createdAt.seconds * 1000).getFullYear();
+    document.getElementById('credDesde').textContent = año;
+    // Vigencia = 2 años desde registro
+    const vigDate = new Date(fan.createdAt.seconds * 1000);
+    vigDate.setFullYear(vigDate.getFullYear() + 2);
+    document.getElementById('credVigencia').textContent = vigDate.toLocaleDateString('es-MX', {month:'short', year:'numeric'});
   } else {
-    nivelEl.className = 'badge badge-success';
+    document.getElementById('credDesde').textContent   = new Date().getFullYear();
+    document.getElementById('credVigencia').textContent = `${new Date().getFullYear() + 2}`;
   }
+
+  // Status
+  document.getElementById('credStatus').textContent = fan.verificado ? 'Activo' : 'Pendiente';
+  document.getElementById('credStatus').style.color = fan.verificado ? '#22c55e' : '#FFB612';
 
   // Generar QR
   const qrBox = document.getElementById('credQrBox');
