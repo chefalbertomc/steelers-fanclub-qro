@@ -1,17 +1,22 @@
-const CACHE_NAME = 'steelers-qro-v5';
+const CACHE_NAME = 'steelers-qro-v6';
 const urlsToCache = [
   './',
   './index.html',
   './credencial.html',
   './admin.html',
+  './scanner.html',
   './manifest.json',
   './manifest-admin.json',
+  './manifest-qr.json',
   './css/styles.css',
   './assets/logo.png',
   './assets/bww-buffalo.png',
   './assets/icon-192.png',
   './assets/icon-512.png',
-  './assets/apple-touch-icon.png'
+  './assets/apple-touch-icon.png',
+  './assets/icon-qr-192.png',
+  './assets/icon-qr-512.png',
+  './assets/apple-touch-icon-qr.png'
 ];
 
 // Instalar y tomar control de inmediato
