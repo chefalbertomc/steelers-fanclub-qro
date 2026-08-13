@@ -64,24 +64,34 @@
     <!-- Sección de Avisos -->
     <div class="card" style="margin-bottom:16px;">
       <h3 style="font-size:16px; color:#3b82f6; margin-bottom:12px;">📢 Avisos / Convocatorias</h3>
-      <p class="text-muted" style="margin-bottom:12px; font-size:13px;">Sube un flyer para caravanas o eventos importantes. Se mostrará en la parte superior de la credencial.</p>
-      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <p class="text-muted" style="margin-bottom:12px; font-size:13px;">Sube flyers para caravanas o eventos importantes. Se mostrarán en la credencial de todos los fans. Puedes tener varios activos a la vez.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+        <div class="form-group" style="flex:1; min-width:160px; margin-bottom:0;">
+          <label for="avisoTitulo" style="font-size:12px;">Título del aviso</label>
+          <input type="text" id="avisoTitulo" placeholder="Ej. Caravana vs Cowboys" style="padding:8px 12px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:13px; width:100%;"/>
+        </div>
         <input type="file" id="avisoFile" accept="image/*" style="font-size:13px; color:var(--text);"/>
-        <button class="btn btn-outline btn-sm" id="btnUploadAviso" style="width:auto; color:#3b82f6; border-color:#3b82f6;">Subir Aviso</button>
-        <button class="btn btn-outline btn-sm" id="btnRemoveAviso" style="width:auto; color:#ef4444; border-color:#ef4444;">Quitar Aviso</button>
+        <button class="btn btn-outline btn-sm" id="btnUploadAviso" style="width:auto; color:#3b82f6; border-color:#3b82f6;">📤 Subir Aviso</button>
       </div>
       <div id="avisoStatus" style="margin-top:10px; font-size:13px;"></div>
+      <!-- Galería de avisos activos -->
+      <div id="avisosGallery" style="margin-top:16px; display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px;"></div>
     </div>
     <!-- Sección de Promociones -->
     <div class="card" style="margin-bottom:16px;">
-      <h3 style="font-size:16px; color:var(--gold); margin-bottom:12px;">📢 Promociones</h3>
-      <p class="text-muted" style="margin-bottom:12px; font-size:13px;">Sube una imagen para promociones o platillos. Se mostrará debajo de los calendarios en las credenciales.</p>
-      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <h3 style="font-size:16px; color:var(--gold); margin-bottom:12px;">🔥 Promociones</h3>
+      <p class="text-muted" style="margin-bottom:12px; font-size:13px;">Sube imágenes de promociones o platillos. Se mostrarán en la credencial. Puedes tener varias activas a la vez.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+        <div class="form-group" style="flex:1; min-width:160px; margin-bottom:0;">
+          <label for="promoTitulo" style="font-size:12px;">Título de la promo</label>
+          <input type="text" id="promoTitulo" placeholder="Ej. 2x1 en Alitas" style="padding:8px 12px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:13px; width:100%;"/>
+        </div>
         <input type="file" id="promoFile" accept="image/*" style="font-size:13px; color:var(--text);"/>
-        <button class="btn btn-gold btn-sm" id="btnUploadPromo" style="width:auto;">Subir y Publicar</button>
-        <button class="btn btn-outline btn-sm" id="btnRemovePromo" style="width:auto; color:#ef4444; border-color:#ef4444;">Quitar Promo</button>
+        <button class="btn btn-gold btn-sm" id="btnUploadPromo" style="width:auto;">📤 Subir Promo</button>
       </div>
       <div id="promoStatus" style="margin-top:10px; font-size:13px;"></div>
+      <!-- Galería de promos activas -->
+      <div id="promosGallery" style="margin-top:16px; display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:12px;"></div>
     </div>
     <!-- Sección de Cumpleañeros -->
     <div class="card" style="margin-bottom:16px;">
@@ -225,6 +235,8 @@ auth.onAuthStateChanged(async user => {
   document.getElementById('sectionAdmin').classList.remove('hidden');
   document.getElementById('btnLogout').style.display = 'flex';
   loadFans();
+  loadAvisosGallery();
+  loadPromosGallery();
 });
 
 document.getElementById('btnLogout').addEventListener('click', () => auth.signOut());
@@ -421,28 +433,41 @@ async function compressImage(file, maxSize) {
   });
 }
 
-// ---- SUBIR AVISO ----
+// ---- SUBIR AVISO (MÚLTIPLES) ----
 document.getElementById('btnUploadAviso').addEventListener('click', async () => {
   const fileInput = document.getElementById('avisoFile');
+  const tituloInput = document.getElementById('avisoTitulo');
   const file = fileInput.files[0];
+  const titulo = tituloInput.value.trim();
   const statusEl = document.getElementById('avisoStatus');
+
   if (!file) {
     statusEl.textContent = '❌ Selecciona una imagen primero.';
     statusEl.style.color = '#ef4444';
     return;
   }
+  if (!titulo) {
+    statusEl.textContent = '❌ Escribe un título para identificar el aviso.';
+    statusEl.style.color = '#ef4444';
+    return;
+  }
+
   statusEl.textContent = '⏳ Comprimiendo y publicando aviso...';
   statusEl.style.color = '#3b82f6';
   document.getElementById('btnUploadAviso').disabled = true;
+
   try {
-    const base64 = await compressImage(file, 800); // Max 800px
-    await db.collection('settings').doc('aviso_principal').set({
+    const base64 = await compressImage(file, 800);
+    await db.collection('settings').doc('avisos').collection('items').add({
+      titulo: titulo,
       imageUrl: base64,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    statusEl.textContent = '✅ Aviso publicado con éxito.';
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    statusEl.textContent = '✅ Aviso "' + titulo + '" publicado con éxito.';
     statusEl.style.color = '#22c55e';
     fileInput.value = '';
+    tituloInput.value = '';
+    loadAvisosGallery(); // Refrescar galería
   } catch(e) {
     statusEl.textContent = '❌ Error: ' + e.message;
     statusEl.style.color = '#ef4444';
@@ -450,46 +475,78 @@ document.getElementById('btnUploadAviso').addEventListener('click', async () => 
   document.getElementById('btnUploadAviso').disabled = false;
 });
 
-document.getElementById('btnRemoveAviso').addEventListener('click', async () => {
-  const statusEl = document.getElementById('avisoStatus');
-  statusEl.textContent = '⏳ Quitando aviso...';
+// Cargar galería de avisos activos
+async function loadAvisosGallery() {
+  const gallery = document.getElementById('avisosGallery');
+  gallery.innerHTML = '<p class="text-muted" style="font-size:12px;">Cargando avisos...</p>';
   try {
-    await db.collection('settings').doc('aviso_principal').set({ imageUrl: null }, { merge: true });
-    statusEl.textContent = '✅ Aviso retirado.';
-    statusEl.style.color = '#22c55e';
+    const snap = await db.collection('settings').doc('avisos').collection('items')
+      .orderBy('createdAt', 'desc').get();
+    if (snap.empty) {
+      gallery.innerHTML = '<p class="text-muted" style="font-size:12px;">No hay avisos activos.</p>';
+      return;
+    }
+    gallery.innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      return `
+        <div style="background:#1a1a1a; border-radius:12px; overflow:hidden; border:1px solid #333; position:relative;">
+          <img src="${d.imageUrl}" style="width:100%; aspect-ratio:4/3; object-fit:cover;" alt="${d.titulo || 'Aviso'}"/>
+          <div style="padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${d.titulo || 'Sin título'}</span>
+            <button onclick="deleteAviso('${doc.id}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:4px 8px; font-size:11px; cursor:pointer; flex-shrink:0; margin-left:6px;">🗑️</button>
+          </div>
+        </div>`;
+    }).join('');
   } catch(e) {
-    statusEl.textContent = '❌ Error: ' + e.message;
-    statusEl.style.color = '#ef4444';
+    gallery.innerHTML = '<p style="color:#ef4444; font-size:12px;">Error al cargar avisos.</p>';
   }
-});
+}
 
-// ---- SUBIR PROMO ----
+async function deleteAviso(docId) {
+  if (!confirm('¿Seguro que quieres quitar este aviso?')) return;
+  try {
+    await db.collection('settings').doc('avisos').collection('items').doc(docId).delete();
+    loadAvisosGallery();
+  } catch(e) {
+    alert('Error al eliminar: ' + e.message);
+  }
+}
+
+// ---- SUBIR PROMO (MÚLTIPLES) ----
 document.getElementById('btnUploadPromo').addEventListener('click', async () => {
   const fileInput = document.getElementById('promoFile');
+  const tituloInput = document.getElementById('promoTitulo');
   const file = fileInput.files[0];
+  const titulo = tituloInput.value.trim();
   const statusEl = document.getElementById('promoStatus');
-  
+
   if (!file) {
     statusEl.textContent = '❌ Selecciona una imagen primero.';
     statusEl.style.color = '#ef4444';
     return;
   }
-  
+  if (!titulo) {
+    statusEl.textContent = '❌ Escribe un título para identificar la promo.';
+    statusEl.style.color = '#ef4444';
+    return;
+  }
+
   statusEl.textContent = '⏳ Comprimiendo y publicando promo...';
   statusEl.style.color = 'var(--gold)';
   document.getElementById('btnUploadPromo').disabled = true;
-  
+
   try {
-    const base64 = await compressImage(file, 800); // Max 800px
-    
-    await db.collection('settings').doc('promos').set({
+    const base64 = await compressImage(file, 800);
+    await db.collection('settings').doc('promos').collection('items').add({
+      titulo: titulo,
       imageUrl: base64,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true });
-    
-    statusEl.textContent = '✅ Promo publicada con éxito.';
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    statusEl.textContent = '✅ Promo "' + titulo + '" publicada con éxito.';
     statusEl.style.color = '#22c55e';
-    fileInput.value = ''; // clear
+    fileInput.value = '';
+    tituloInput.value = '';
+    loadPromosGallery(); // Refrescar galería
   } catch(e) {
     statusEl.textContent = '❌ Error al subir: ' + e.message;
     statusEl.style.color = '#ef4444';
@@ -497,18 +554,42 @@ document.getElementById('btnUploadPromo').addEventListener('click', async () => 
   document.getElementById('btnUploadPromo').disabled = false;
 });
 
-document.getElementById('btnRemovePromo').addEventListener('click', async () => {
-  const statusEl = document.getElementById('promoStatus');
-  statusEl.textContent = '⏳ Quitando promo...';
+// Cargar galería de promos activas
+async function loadPromosGallery() {
+  const gallery = document.getElementById('promosGallery');
+  gallery.innerHTML = '<p class="text-muted" style="font-size:12px;">Cargando promos...</p>';
   try {
-    await db.collection('settings').doc('promos').set({ imageUrl: null }, { merge: true });
-    statusEl.textContent = '✅ Promo retirada.';
-    statusEl.style.color = '#22c55e';
+    const snap = await db.collection('settings').doc('promos').collection('items')
+      .orderBy('createdAt', 'desc').get();
+    if (snap.empty) {
+      gallery.innerHTML = '<p class="text-muted" style="font-size:12px;">No hay promociones activas.</p>';
+      return;
+    }
+    gallery.innerHTML = snap.docs.map(doc => {
+      const d = doc.data();
+      return `
+        <div style="background:#1a1a1a; border-radius:12px; overflow:hidden; border:1px solid #333; position:relative;">
+          <img src="${d.imageUrl}" style="width:100%; aspect-ratio:4/3; object-fit:cover;" alt="${d.titulo || 'Promo'}"/>
+          <div style="padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${d.titulo || 'Sin título'}</span>
+            <button onclick="deletePromo('${doc.id}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:4px 8px; font-size:11px; cursor:pointer; flex-shrink:0; margin-left:6px;">🗑️</button>
+          </div>
+        </div>`;
+    }).join('');
   } catch(e) {
-    statusEl.textContent = '❌ Error: ' + e.message;
-    statusEl.style.color = '#ef4444';
+    gallery.innerHTML = '<p style="color:#ef4444; font-size:12px;">Error al cargar promos.</p>';
   }
-});
+}
+
+async function deletePromo(docId) {
+  if (!confirm('¿Seguro que quieres quitar esta promoción?')) return;
+  try {
+    await db.collection('settings').doc('promos').collection('items').doc(docId).delete();
+    loadPromosGallery();
+  } catch(e) {
+    alert('Error al eliminar: ' + e.message);
+  }
+}
 
 // ---- CUMPLEAÑEROS ----
 let calculatedCumples = [];
