@@ -1,14 +1,17 @@
-const CACHE_NAME = 'steelers-qro-v4';
+const CACHE_NAME = 'steelers-qro-v5';
 const urlsToCache = [
   './',
   './index.html',
   './credencial.html',
   './admin.html',
+  './manifest.json',
+  './manifest-admin.json',
   './css/styles.css',
   './assets/logo.png',
   './assets/bww-buffalo.png',
   './assets/icon-192.png',
-  './assets/icon-512.png'
+  './assets/icon-512.png',
+  './assets/apple-touch-icon.png'
 ];
 
 // Instalar y tomar control de inmediato
