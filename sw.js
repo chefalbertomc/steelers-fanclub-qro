@@ -1,8 +1,9 @@
-const CACHE_NAME = 'steelers-qro-v3';
+const CACHE_NAME = 'steelers-qro-v4';
 const urlsToCache = [
   './',
   './index.html',
   './credencial.html',
+  './admin.html',
   './css/styles.css',
   './assets/logo.png',
   './assets/bww-buffalo.png',

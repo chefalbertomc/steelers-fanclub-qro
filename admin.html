@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin — Steelers Fan Club Querétaro</title>
   <link rel="icon" href="assets/logo.png"/>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
@@ -673,6 +675,10 @@ document.getElementById('btnCleanCumples').addEventListener('click', async () =>
 function showSt(el, msg, type) {
   el.textContent = msg;
   el.className = 'status-msg ' + type;
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
 }
 </script>
 </body>
