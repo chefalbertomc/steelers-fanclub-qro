@@ -100,6 +100,7 @@
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
         <button class="btn btn-outline btn-sm" id="btnCalcCumples" style="width:auto;">🔍 Calcular de esta semana</button>
         <button class="btn btn-gold btn-sm" id="btnPubCumples" style="width:auto;" disabled>Publicar a todos</button>
+        <button class="btn btn-outline btn-sm" id="btnCleanCumples" style="width:auto; color:#ef4444; border-color:#ef4444;">Quitar Cumpleañeros</button>
       </div>
       <div id="cumplesPreview" style="margin-top:12px; font-size:13px; color:#fff;"></div>
       <div id="cumplesStatus" style="margin-top:8px; font-size:13px;"></div>
@@ -645,6 +646,26 @@ document.getElementById('btnPubCumples').addEventListener('click', async () => {
     st.style.color = '#ef4444';
   }
   btn.textContent = 'Publicar a todos';
+  btn.disabled = false;
+});
+
+document.getElementById('btnCleanCumples').addEventListener('click', async () => {
+  const btn = document.getElementById('btnCleanCumples');
+  const st = document.getElementById('cumplesStatus');
+  if (!confirm('¿Quitar los cumpleañeros de la semana de todas las credenciales?')) return;
+  btn.disabled = true;
+  try {
+    await db.collection('settings').doc('cumpleaneros').set({
+      fans: [],
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    st.textContent = '✅ Cumpleañeros retirados.';
+    st.style.color = '#22c55e';
+    document.getElementById('cumplesPreview').textContent = '';
+  } catch (e) {
+    st.textContent = '❌ Error: ' + e.message;
+    st.style.color = '#ef4444';
+  }
   btn.disabled = false;
 });
 

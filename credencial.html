@@ -570,6 +570,8 @@ async function loadCumples() {
         </div>`;
       }).join('');
       document.getElementById('cumplesContainer').classList.remove('hidden');
+    } else {
+      document.getElementById('cumplesContainer').classList.add('hidden');
     }
   } catch(e) {
     console.error('Error cargando cumples', e);
