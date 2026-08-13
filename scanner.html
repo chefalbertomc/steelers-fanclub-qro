@@ -67,37 +67,42 @@
           </button>
         </div>
 
+        <!-- BANNER DE PARTIDO DE HOY -->
+        <div id="todayGameBanner" style="display:none; background: #22c55e; color: #000; padding: 12px; border-radius: 10px; font-weight: 900; margin-bottom: 16px; text-align: center; font-size: 14px; box-shadow: 0 4px 15px rgba(34,197,94,0.4);">
+          🏈 🔥 ¡HOY ES DÍA DE PARTIDO! El botón del juego de hoy está resaltado en verde abajo.
+        </div>
+
         <h2 style="font-size:18px; color:var(--gold); margin-bottom:12px;">Seleccionar Evento de Asistencia</h2>
         
         <button class="btn btn-outline" style="width:100%; justify-content:flex-start; margin-bottom:16px; font-weight:bold;" onclick="generarQR('VISITA_NORMAL', 'Visita Regular (Restaurante)')">🍔 Visita Normal (Cualquier Día)</button>
         
         <h3 style="font-size:14px; color:#888; margin-bottom:8px;">Pretemporada 2026</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
-          <button class="btn btn-outline btn-sm" onclick="generarQR('PRE_SEM1', 'Pretemporada Sem 1: Packers (Jue 13 Ago)')">Sem 1: Packers (Jue 13 Ago)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('PRE_SEM2', 'Pretemporada Sem 2: Jets (Vie 21 Ago)')">Sem 2: Jets (Vie 21 Ago)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('PRE_SEM3', 'Pretemporada Sem 3: Bills (Jue 27 Ago)')">Sem 3: Bills (Jue 27 Ago)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-08-13" onclick="generarQR('PRE_SEM1', 'Pretemporada Sem 1: Packers (Jue 13 Ago)')">Sem 1: Packers (Jue 13 Ago)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-08-21" onclick="generarQR('PRE_SEM2', 'Pretemporada Sem 2: Jets (Vie 21 Ago)')">Sem 2: Jets (Vie 21 Ago)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-08-27" onclick="generarQR('PRE_SEM3', 'Pretemporada Sem 3: Bills (Jue 27 Ago)')">Sem 3: Bills (Jue 27 Ago)</button>
         </div>
         
         <h3 style="font-size:14px; color:#888; margin-bottom:8px;">Temporada Regular 2026</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM1', 'Sem 1: Falcons (Dom 13 Sep)')">Sem 1: Falcons (Dom 13 Sep)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM2', 'Sem 2: Patriots (Dom 20 Sep)')">Sem 2: Patriots (Dom 20 Sep)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM3', 'Sem 3: Bengals (Dom 27 Sep)')">Sem 3: Bengals (Dom 27 Sep)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM4', 'Sem 4: Browns (Jue 01 Oct)')">Sem 4: Browns (Jue 01 Oct)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM5', 'Sem 5: Colts (Dom 11 Oct)')">Sem 5: Colts (Dom 11 Oct)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM6', 'Sem 6: Buccaneers (Dom 18 Oct)')">Sem 6: Buccaneers (Dom 18 Oct)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM7', 'Sem 7: Saints (Dom 25 Oct)')">Sem 7: Saints (Dom 25 Oct)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM8', 'Sem 8: Browns (Dom 01 Nov)')">Sem 8: Browns (Dom 01 Nov)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM9', 'Sem 9: BYE WEEK (Mar 10 Nov)')" disabled style="opacity: 0.5;">Sem 9: BYE WEEK (Mar 10 Nov)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM10', 'Sem 10: Bengals (Dom 15 Nov)')">Sem 10: Bengals (Dom 15 Nov)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM11', 'Sem 11: Eagles (Dom 22 Nov)')">Sem 11: Eagles (Dom 22 Nov)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM12', 'Sem 12: Broncos (Vie 27 Nov)')">Sem 12: Broncos (Vie 27 Nov)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM13', 'Sem 13: Texans (Dom 06 Dic)')">Sem 13: Texans (Dom 06 Dic)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM14', 'Sem 14: Jaguars (Lun 14 Dic)')">Sem 14: Jaguars (Lun 14 Dic)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM15', 'Sem 15: Ravens (Dom 20 Dic)')">Sem 15: Ravens (Dom 20 Dic)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM16', 'Sem 16: Panthers (Dom 27 Dic)')">Sem 16: Panthers (Dom 27 Dic)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM17', 'Sem 17: Titans (Dom 03 Ene)')">Sem 17: Titans (Dom 03 Ene)</button>
-          <button class="btn btn-outline btn-sm" onclick="generarQR('SEM18', 'Sem 18: Ravens (Dom 10 Ene)')">Sem 18: Ravens (Dom 10 Ene)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-09-13" onclick="generarQR('SEM1', 'Sem 1: Falcons (Dom 13 Sep)')">Sem 1: Falcons (Dom 13 Sep)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-09-20" onclick="generarQR('SEM2', 'Sem 2: Patriots (Dom 20 Sep)')">Sem 2: Patriots (Dom 20 Sep)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-09-27" onclick="generarQR('SEM3', 'Sem 3: Bengals (Dom 27 Sep)')">Sem 3: Bengals (Dom 27 Sep)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-10-01" onclick="generarQR('SEM4', 'Sem 4: Browns (Jue 01 Oct)')">Sem 4: Browns (Jue 01 Oct)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-10-11" onclick="generarQR('SEM5', 'Sem 5: Colts (Dom 11 Oct)')">Sem 5: Colts (Dom 11 Oct)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-10-18" onclick="generarQR('SEM6', 'Sem 6: Buccaneers (Dom 18 Oct)')">Sem 6: Buccaneers (Dom 18 Oct)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-10-25" onclick="generarQR('SEM7', 'Sem 7: Saints (Dom 25 Oct)')">Sem 7: Saints (Dom 25 Oct)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-01" onclick="generarQR('SEM8', 'Sem 8: Browns (Dom 01 Nov)')">Sem 8: Browns (Dom 01 Nov)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-10" onclick="generarQR('SEM9', 'Sem 9: BYE WEEK (Mar 10 Nov)')" disabled style="opacity: 0.5;">Sem 9: BYE WEEK (Mar 10 Nov)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-15" onclick="generarQR('SEM10', 'Sem 10: Bengals (Dom 15 Nov)')">Sem 10: Bengals (Dom 15 Nov)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-22" onclick="generarQR('SEM11', 'Sem 11: Eagles (Dom 22 Nov)')">Sem 11: Eagles (Dom 22 Nov)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-27" onclick="generarQR('SEM12', 'Sem 12: Broncos (Vie 27 Nov)')">Sem 12: Broncos (Vie 27 Nov)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-12-06" onclick="generarQR('SEM13', 'Sem 13: Texans (Dom 06 Dic)')">Sem 13: Texans (Dom 06 Dic)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-12-14" onclick="generarQR('SEM14', 'Sem 14: Jaguars (Lun 14 Dic)')">Sem 14: Jaguars (Lun 14 Dic)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-12-20" onclick="generarQR('SEM15', 'Sem 15: Ravens (Dom 20 Dic)')">Sem 15: Ravens (Dom 20 Dic)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-12-27" onclick="generarQR('SEM16', 'Sem 16: Panthers (Dom 27 Dic)')">Sem 16: Panthers (Dom 27 Dic)</button>
+          <button class="btn btn-outline btn-sm" data-date="2027-01-03" onclick="generarQR('SEM17', 'Sem 17: Titans (Dom 03 Ene)')">Sem 17: Titans (Dom 03 Ene)</button>
+          <button class="btn btn-outline btn-sm" data-date="2027-01-10" onclick="generarQR('SEM18', 'Sem 18: Ravens (Dom 10 Ene)')">Sem 18: Ravens (Dom 10 Ene)</button>
         </div>
       </div>
       
@@ -186,11 +191,41 @@ auth.onAuthStateChanged(async user => {
   if (snap.exists && snap.data().nivel === 'Organizador') {
     document.getElementById('sectionLogin').classList.add('hidden');
     document.getElementById('sectionGenerador').classList.remove('hidden');
+    highlightTodayGames();
   } else {
     auth.signOut();
     alert('No tienes permisos de organizador para usar esta herramienta.');
   }
 });
+
+// ---- RESALTAR PARTIDOS DE HOY ----
+function highlightTodayGames() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const todayStr = `${y}-${m}-${d}`;
+
+  let todayFound = false;
+
+  document.querySelectorAll('button[data-date]').forEach(btn => {
+    if (btn.dataset.date === todayStr) {
+      btn.style.background = '#22c55e';
+      btn.style.color = '#000000';
+      btn.style.borderColor = '#22c55e';
+      btn.style.fontWeight = '900';
+      btn.style.boxShadow = '0 0 20px rgba(34, 197, 94, 0.9)';
+      btn.style.transform = 'scale(1.03)';
+      btn.innerHTML = '🟢 ' + btn.innerHTML + ' <span style="background:#000; color:#22c55e; padding:2px 6px; border-radius:4px; font-size:10px; margin-left:4px; font-weight:bold;">¡HOY!</span>';
+      todayFound = true;
+    }
+  });
+
+  if (todayFound) {
+    const banner = document.getElementById('todayGameBanner');
+    if (banner) banner.style.display = 'block';
+  }
+}
 
 // ---- GENERAR QR DE URL (REGISTRO) ----
 function generarQRUrl(url, title) {
