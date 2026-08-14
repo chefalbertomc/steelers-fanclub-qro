@@ -161,6 +161,31 @@
       </div>
     </div>
 
+    <!-- DINÁMICA: EL FANÁTICO DEL PARTIDO -->
+    <div class="card mt-4" id="cardFanaticoPartido" style="border:2px solid #eab308; background: linear-gradient(180deg, #1c1917 0%, #111111 100%); margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <div style="font-weight:900; font-size:16px; color:#eab308; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
+          <span>🏆 El Fanático del Partido</span>
+        </div>
+        <span class="badge" style="background:#eab308; color:#000; font-weight:bold; font-size:11px;">DINÁMICA DE LA SEMANA</span>
+      </div>
+
+      <!-- Premios del Patrocinador -->
+      <div style="background:rgba(234, 179, 8, 0.1); border:1px solid rgba(234, 179, 8, 0.3); border-radius:10px; padding:12px; margin-bottom:16px;">
+        <div style="font-size:13px; font-weight:bold; color:#eab308; margin-bottom:6px;">🎁 Premios para el Ganador:</div>
+        <ul style="font-size:12px; color:#ddd; margin:0; padding-left:18px; line-height:1.6;">
+          <li><b>Buffalo Wild Wings:</b> 1 Orden de Nachos + 2 Bebidas (cerveza o refresco) + Mesa reservada para el próximo partido.</li>
+          <li><b>Steelers Nation Querétaro:</b> Regalo sorpresa oficial 🏈.</li>
+        </ul>
+        <div style="font-size:11px; color:#aaa; margin-top:8px;">⏳ <i>Votación abierta hasta mañana a las 23:59 PM. Solo participan y votan fans asistentes al partido.</i></div>
+      </div>
+
+      <!-- Estado de Votación / Formulario / Ganador -->
+      <div id="fanaticoVotingContent">
+        <p class="text-muted" style="font-size:12px;">Cargando votación...</p>
+      </div>
+    </div>
+
     <div style="margin-top:16px; display:flex; justify-content:center; gap:12px;">
       <button class="btn btn-outline btn-sm" id="btnDescargar" style="width:auto;">⬇️ Descargar credencial</button>
       <button class="btn btn-outline btn-sm" id="btnLogout" style="width:auto;">Salir</button>
@@ -381,6 +406,7 @@ auth.onAuthStateChanged(async user => {
   loadPromo();
   loadCumples();
   loadAsistenciaPartidoCredencial();
+  loadFanaticoPartidoCredencial(user.uid);
 });
 
 // ---- RENDER CREDENCIAL ----
@@ -669,6 +695,121 @@ async function loadAsistenciaPartidoCredencial() {
   } catch(e) {
     console.error('Error al cargar fans presentes:', e);
     if (modalGrid) modalGrid.innerHTML = '<p class="text-muted" style="font-size:12px;">Check-ins registrados en vivo.</p>';
+  }
+}
+
+// ---- DINÁMICA: EL FANÁTICO DEL PARTIDO ----
+async function loadFanaticoPartidoCredencial(uid) {
+  const targetId = 'PRE_SEM1'; // Partido actual
+  const container = document.getElementById('fanaticoVotingContent');
+  if (!container) return;
+
+  container.innerHTML = '<p class="text-muted" style="font-size:12px;">Cargando candidatos y votación...</p>';
+
+  try {
+    // 1. Verificar si hay un ganador oficial declarado
+    const winnerSnap = await db.collection('fanatico_ganadores').doc(targetId).get();
+    if (winnerSnap.exists) {
+      const wData = winnerSnap.data();
+      container.innerHTML = `
+        <div style="background:linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color:#000; border-radius:12px; padding:16px; text-align:center; box-shadow:0 4px 15px rgba(234,179,8,0.4);">
+          <div style="font-size:24px;">🏆</div>
+          <div style="font-weight:900; font-size:18px; text-transform:uppercase; margin-bottom:4px;">¡GANADOR DE LA SEMANA!</div>
+          <div style="font-size:16px; font-weight:800; margin-bottom:8px;">${wData.winnerNombre || 'Fan'}</div>
+          <div style="font-size:12px; font-weight:600; opacity:0.9;">¡Felicidades! Disfruta tu premio de BWW (1 Nachos + 2 Bebidas + Mesa Reservada) y tu regalo sorpresa de Steelers Nation Querétaro 🎉.</div>
+        </div>`;
+      return;
+    }
+
+    // 2. Verificar si el fan escaneó su asistencia
+    const visitasSnap = await db.collectionGroup('visitas').get();
+    const matchingDocs = visitasSnap.docs.filter(d => {
+      const data = d.data();
+      return data.partidoId === targetId || (targetId === 'VISITA_NORMAL' && (d.id === 'VISITA_NORMAL' || d.id.startsWith('VISITA_')));
+    });
+
+    const asistentesUids = [...new Set(matchingDocs.map(d => d.ref.parent.parent.id))];
+
+    if (!asistentesUids.includes(uid)) {
+      container.innerHTML = `
+        <div style="background:#1c1917; border:1px solid #333; padding:12px; border-radius:8px; text-align:center; font-size:12px; color:#aaa;">
+          🔒 <b>Para participar y votar por "El Fanático del Partido"</b>, primero debes escanear tu asistencia QR durante el evento.
+        </div>`;
+      return;
+    }
+
+    // 3. Candidatos (demás asistentes excluyéndome a mí)
+    const candidatosUids = asistentesUids.filter(uId => uId !== uid);
+    
+    // Check if user already voted
+    const userVoteSnap = await db.collection('fanatico_votos').doc(`${targetId}_${uid}`).get();
+
+    if (userVoteSnap.exists) {
+      const votedData = userVoteSnap.data();
+      container.innerHTML = `
+        <div style="background:#166534; border:1px solid #22c55e; color:#fff; padding:12px; border-radius:8px; font-size:13px; text-align:center;">
+          ✅ <b>¡Tu voto ha sido registrado!</b> Votaste por <b>${votedData.candidateNombre || 'tu candidato'}</b>.<br/>
+          <span style="font-size:11px; color:#bbf7d0;">Los resultados finales y el ganador se revelarán al cerrar la votación.</span>
+        </div>`;
+      return;
+    }
+
+    if (candidatosUids.length === 0) {
+      container.innerHTML = `
+        <div style="background:#1c1917; border:1px solid #333; padding:12px; border-radius:8px; text-align:center; font-size:12px; color:#aaa;">
+          🙌 ¡Eres el primer asistente registrado de hoy! En cuanto lleguen más fans podrás votar por ellos.
+        </div>`;
+      return;
+    }
+
+    // Fetch candidate profiles
+    const candidateSnaps = await Promise.all(candidatosUids.map(uId => db.collection('fans').doc(uId).get()));
+    const candidatos = candidateSnaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
+
+    container.innerHTML = `
+      <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:10px;">🗳️ Elige a tu candidato (no puedes votar por ti mismo):</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        ${candidatos.map(c => `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#262626; border:1px solid #404040; padding:8px 12px; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              ${c.photoURL 
+                ? `<img src="${c.photoURL}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #eab308;"/>`
+                : `<div style="width:40px; height:40px; border-radius:50%; background:#333; border:2px solid #eab308; display:flex; align-items:center; justify-content:center; font-size:16px;">🏈</div>`}
+              <div>
+                <div style="font-weight:bold; font-size:13px; color:#fff;">${c.nombre || 'Fan'}</div>
+                <div style="font-size:10px; color:#eab308;">${NIVEL_ICON[c.nivel] || '🏈'} ${c.nivel || 'Fan'}</div>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-sm" style="width:auto; padding:6px 14px; font-weight:bold;" onclick="votarFanatico('${targetId}', '${uid}', '${c.uid}', '${c.nombre || 'Fan'}')">
+              Votar 🗳️
+            </button>
+          </div>
+        `).join('')}
+      </div>`;
+
+  } catch(e) {
+    console.error('Error cargando dinámica fanático:', e);
+    container.innerHTML = '<p style="color:#ef4444; font-size:12px;">Error al cargar la dinámica.</p>';
+  }
+}
+
+async function votarFanatico(partidoId, voterUid, candidateUid, candidateNombre) {
+  if (!confirm(`¿Confirmas tu voto por ${candidateNombre} como El Fanático del Partido?`)) return;
+  const container = document.getElementById('fanaticoVotingContent');
+  container.innerHTML = '<p class="text-muted" style="font-size:12px;">Registrando tu voto...</p>';
+
+  try {
+    await db.collection('fanatico_votos').doc(`${partidoId}_${voterUid}`).set({
+      partidoId: partidoId,
+      voterUid: voterUid,
+      candidateUid: candidateUid,
+      candidateNombre: candidateNombre,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    loadFanaticoPartidoCredencial(voterUid);
+  } catch(e) {
+    alert('Error al votar: ' + e.message);
+    loadFanaticoPartidoCredencial(voterUid);
   }
 }
 

@@ -123,10 +123,15 @@
           <div style="font-size:22px; font-weight:900; color:var(--gold);" id="attSteel">0</div>
           <div style="font-size:11px; color:#888;">⭐ Steel Fan</div>
         </div>
-        <div>
-          <div style="font-size:22px; font-weight:900; color:#3b82f6;" id="attOrg">0</div>
-          <div style="font-size:11px; color:#888;">🏆 Organizador</div>
-        </div>
+    </div>
+
+    <!-- Sección Fanático del Partido Admin -->
+    <div class="card" style="margin-bottom:16px; border:2px solid #eab308; background:#161616;">
+      <h3 style="font-size:16px; color:#eab308; margin-bottom:8px;">🏆 El Fanático del Partido (Resultados y Desempate)</h3>
+      <p class="text-muted" style="margin-bottom:12px; font-size:13px;">Revisa los votos en tiempo real. En caso de empate entre candidatos, los Organizadores pueden otorgar el voto de desempate.</p>
+      
+      <div id="adminFanaticoContent">
+        <p class="text-muted" style="font-size:12px;">Cargando resultados de votación...</p>
       </div>
     </div>
     <!-- Sección de Avisos -->
@@ -342,6 +347,7 @@ async function loadFans() {
   updateStats();
   renderTable(allFans);
   loadAsistenciaPartidoAdmin();
+  loadFanaticoAdmin();
 }
 
 function updateStats() {
@@ -353,7 +359,10 @@ function updateStats() {
 }
 
 // ---- ASISTENCIA POR PARTIDO EN ADMIN ----
-document.getElementById('selectPartidoAdmin').addEventListener('change', loadAsistenciaPartidoAdmin);
+document.getElementById('selectPartidoAdmin').addEventListener('change', () => {
+  loadAsistenciaPartidoAdmin();
+  loadFanaticoAdmin();
+});
 
 async function loadAsistenciaPartidoAdmin() {
   const select = document.getElementById('selectPartidoAdmin');
@@ -379,6 +388,119 @@ async function loadAsistenciaPartidoAdmin() {
 
   } catch(e) {
     console.error('Error al cargar asistencia:', e);
+  }
+}
+
+// ---- EL FANÁTICO DEL PARTIDO (ADMIN CONTROL Y DESEMPATE) ----
+async function loadFanaticoAdmin() {
+  const select = document.getElementById('selectPartidoAdmin');
+  const container = document.getElementById('adminFanaticoContent');
+  if (!select || !container) return;
+  const targetId = select.value;
+
+  container.innerHTML = '<p class="text-muted" style="font-size:12px;">Cargando votos...</p>';
+
+  try {
+    // 1. Ganador declarado
+    const winnerSnap = await db.collection('fanatico_ganadores').doc(targetId).get();
+    let winnerData = winnerSnap.exists ? winnerSnap.data() : null;
+
+    // 2. Todos los votos del partido
+    const votesSnap = await db.collection('fanatico_votos').where('partidoId', '==', targetId).get();
+    
+    // Contar votos por candidato
+    const counts = {}; // candidateUid -> count
+    const names = {};  // candidateUid -> nombre
+
+    votesSnap.docs.forEach(d => {
+      const v = d.data();
+      counts[v.candidateUid] = (counts[v.candidateUid] || 0) + 1;
+      names[v.candidateUid] = v.candidateNombre || 'Fan';
+    });
+
+    const candidatesSorted = Object.keys(counts).map(cUid => ({
+      uid: cUid,
+      nombre: names[cUid],
+      votes: counts[cUid]
+    })).sort((a, b) => b.votes - a.votes);
+
+    let html = '';
+
+    if (winnerData) {
+      html += `
+        <div style="background:#15803d; color:#fff; padding:12px 16px; border-radius:8px; margin-bottom:12px; font-weight:bold; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
+          <span>🎉 Ganador Declarado: <b>${winnerData.winnerNombre}</b> (${winnerData.totalVotes || 0} voto(s) ${winnerData.isTieBreak ? '+ Voto Desempate Org' : ''})</span>
+          <button class="btn btn-outline btn-sm" onclick="resetFanaticoGanador('${targetId}')" style="color:#fff; border-color:#fff; width:auto; font-size:11px;">Reabrir Votación</button>
+        </div>`;
+    }
+
+    if (candidatesSorted.length === 0) {
+      html += '<p class="text-muted" style="font-size:12px;">Aún no hay votos registrados para este partido.</p>';
+    } else {
+      const topVotes = candidatesSorted[0].votes;
+      const topCandidates = candidatesSorted.filter(c => c.votes === topVotes);
+      const isTie = topCandidates.length > 1 && !winnerData;
+
+      if (isTie) {
+        html += `
+          <div style="background:#854d0e; border:1px solid #eab308; color:#fff; padding:12px; border-radius:8px; margin-bottom:12px;">
+            ⚠️ <b>¡Empate entre ${topCandidates.map(c => c.nombre).join(' y ')} con ${topVotes} voto(s)!</b><br/>
+            <span style="font-size:12px; opacity:0.9;">Como grupo de Organizadores, seleccionen al ganador oficial para aplicar el Voto de Desempate:</span>
+          </div>`;
+      }
+
+      html += `<div style="display:flex; flex-direction:column; gap:8px;">`;
+      candidatesSorted.forEach(c => {
+        const isTop = c.votes === topVotes;
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#222; border:1px solid ${isTop ? '#eab308' : '#333'}; padding:10px 14px; border-radius:8px;">
+            <div>
+              <span style="font-weight:bold; font-size:14px; color:#fff;">${c.nombre}</span>
+              <span style="font-size:12px; color:#eab308; margin-left:8px; font-weight:bold;">${c.votes} voto${c.votes!==1?'s':''}</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              ${(!winnerData) ? `
+                <button class="btn btn-gold btn-sm" style="width:auto; font-size:11px; padding:6px 12px;" onclick="declararGanadorFanatico('${targetId}', '${c.uid}', '${c.nombre}', ${c.votes}, ${isTie})">
+                  ${isTie ? '⚡ Voto Desempate Organizadores' : '🏆 Declarar Ganador'}
+                </button>` : ''}
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+
+    container.innerHTML = html;
+
+  } catch(e) {
+    console.error('Error en loadFanaticoAdmin:', e);
+    container.innerHTML = '<p style="color:#ef4444; font-size:12px;">Error al cargar datos.</p>';
+  }
+}
+
+async function declararGanadorFanatico(partidoId, winnerUid, winnerNombre, totalVotes, isTieBreak) {
+  if (!confirm(`¿Confirmas a ${winnerNombre} como el Ganador Oficial de la Semana?`)) return;
+  try {
+    await db.collection('fanatico_ganadores').doc(partidoId).set({
+      partidoId: partidoId,
+      winnerUid: winnerUid,
+      winnerNombre: winnerNombre,
+      totalVotes: totalVotes,
+      isTieBreak: isTieBreak,
+      declaredAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    loadFanaticoAdmin();
+  } catch(e) {
+    alert('Error al declarar ganador: ' + e.message);
+  }
+}
+
+async function resetFanaticoGanador(partidoId) {
+  if (!confirm('¿Reabrir la votación para este partido?')) return;
+  try {
+    await db.collection('fanatico_ganadores').doc(partidoId).delete();
+    loadFanaticoAdmin();
+  } catch(e) {
+    alert('Error al reiniciar: ' + e.message);
   }
 }
 
