@@ -237,10 +237,39 @@
     <!-- HEADER MODAL -->
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:14px;">
       <div>
-        <h3 style="color:var(--gold); margin:0;" id="modalPartyTitle">🏈 Partido vs Green Bay Packers</h3>
-        <p class="text-muted" style="font-size:12px; margin:2px 0 0;" id="modalPartySubTitle">Asistentes en vivo y Votación oficial</p>
+        <h3 style="color:var(--gold); margin:0;" id="modalPartyTitle">🏈 Pretemporada Sem 1: Packers (13 Ago)</h3>
+        <p class="text-muted" style="font-size:12px; margin:2px 0 0;">Asistentes en vivo y Votación oficial</p>
       </div>
       <button class="btn btn-outline btn-sm" onclick="closeModalAsistencia()" style="width:auto; padding:4px 10px;">✕ Cerrar</button>
+    </div>
+
+    <!-- SELECTOR DE PARTIDO EN CREDENCIAL -->
+    <div style="margin-bottom:14px; background:#1c1917; padding:10px; border-radius:8px; border:1px solid #333;">
+      <label style="font-size:11px; color:#eab308; font-weight:bold; margin-bottom:6px; display:block;">📅 Seleccionar Partido (Último por defecto / Elige anteriores):</label>
+      <select id="selectPartidoCredencial" onchange="onPartidoCredencialChange()" style="width:100%; padding:10px 12px; background:var(--black); border:1px solid var(--gold); border-radius:8px; color:var(--text); font-size:13px; font-weight:bold;">
+        <option value="PRE_SEM1" selected>Pretemporada Sem 1: Packers (13 Ago)</option>
+        <option value="PRE_SEM2">Pretemporada Sem 2: Jets (21 Ago)</option>
+        <option value="PRE_SEM3">Pretemporada Sem 3: Bills (27 Ago)</option>
+        <option value="SEM1">Sem 1: Falcons (13 Sep)</option>
+        <option value="SEM2">Sem 2: Patriots (20 Sep)</option>
+        <option value="SEM3">Sem 3: Bengals (27 Sep)</option>
+        <option value="SEM4">Sem 4: Browns (01 Oct)</option>
+        <option value="SEM5">Sem 5: Colts (11 Oct)</option>
+        <option value="SEM6">Sem 6: Buccaneers (18 Oct)</option>
+        <option value="SEM7">Sem 7: Saints (25 Oct)</option>
+        <option value="SEM8">Sem 8: Browns (01 Nov)</option>
+        <option value="SEM9">Sem 9: BYE WEEK (10 Nov)</option>
+        <option value="SEM10">Sem 10: Bengals (15 Nov)</option>
+        <option value="SEM11">Sem 11: Eagles (22 Nov)</option>
+        <option value="SEM12">Sem 12: Broncos (27 Nov)</option>
+        <option value="SEM13">Sem 13: Texans (06 Dic)</option>
+        <option value="SEM14">Sem 14: Jaguars (14 Dic)</option>
+        <option value="SEM15">Sem 15: Ravens (20 Dic)</option>
+        <option value="SEM16">Sem 16: Panthers (27 Dic)</option>
+        <option value="SEM17">Sem 17: Titans (03 Ene)</option>
+        <option value="SEM18">Sem 18: Ravens (10 Ene)</option>
+        <option value="VISITA_NORMAL">Visita Regular (Restaurante)</option>
+      </select>
     </div>
 
     <!-- DINÁMICA EL FANÁTICO DEL PARTIDO Y LISTA DE ASISTENTES -->
@@ -403,8 +432,7 @@ auth.onAuthStateChanged(async user => {
   loadAviso();
   loadPromo();
   loadCumples();
-  loadAsistenciaPartidoCredencial();
-  loadFanaticoPartidoCredencial(user.uid);
+  onPartidoCredencialChange();
 });
 
 // ---- RENDER CREDENCIAL ----
@@ -648,14 +676,31 @@ function closeModalAsistencia() {
   if (modal) modal.classList.add('hidden');
 }
 
+// ---- SELECTOR Y ESTADO DE PARTIDO EN CREDENCIAL ----
+let currentCredencialPartidoId = 'PRE_SEM1';
+
+function onPartidoCredencialChange() {
+  const select = document.getElementById('selectPartidoCredencial');
+  if (select) {
+    currentCredencialPartidoId = select.value;
+    const selectedText = select.options[select.selectedIndex].text;
+    
+    const partyTitle = document.getElementById('partyTitle');
+    const modalPartyTitle = document.getElementById('modalPartyTitle');
+    if (partyTitle) partyTitle.textContent = '🏈 ' + selectedText;
+    if (modalPartyTitle) modalPartyTitle.textContent = '🏈 ' + selectedText;
+
+    loadAsistenciaPartidoCredencial();
+    if (auth.currentUser) {
+      loadFanaticoPartidoCredencial(auth.currentUser.uid);
+    }
+  }
+}
+
 // ---- ASISTENCIA EN VIVO AL PARTIDO ----
 async function loadAsistenciaPartidoCredencial() {
-  const targetId = 'PRE_SEM1'; // Partido actual (Green Bay Packers)
+  const targetId = currentCredencialPartidoId;
   const countEl = document.getElementById('partyFanCount');
-  const modalTitle = document.getElementById('modalPartyTitle');
-  const modalGrid = document.getElementById('modalPartyPhotosGrid');
-
-  if (modalGrid) modalGrid.innerHTML = '<p class="text-muted" style="font-size:12px;">Cargando check-ins...</p>';
 
   try {
     const snap = await db.collectionGroup('visitas').get();
@@ -666,39 +711,15 @@ async function loadAsistenciaPartidoCredencial() {
 
     const asistentesUids = [...new Set(matchingDocs.map(d => d.ref.parent.parent.id))];
     if (countEl) countEl.textContent = `${asistentesUids.length} Asistente${asistentesUids.length !== 1 ? 's' : ''}`;
-    if (modalTitle) modalTitle.textContent = `👥 Fans Presentes (${asistentesUids.length})`;
-
-    if (asistentesUids.length === 0) {
-      if (modalGrid) modalGrid.innerHTML = '<p class="text-muted" style="font-size:12px; text-align:center; width:100%; padding:16px 0;">Sé el primero en escanear tu asistencia para el partido de hoy.</p>';
-      return;
-    }
-
-    const fanSnaps = await Promise.all(asistentesUids.map(uid => db.collection('fans').doc(uid).get()));
-    const fans = fanSnaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
-
-    if (modalGrid) {
-      modalGrid.innerHTML = fans.map(f => {
-        const photo = f.photoURL
-          ? `<img src="${f.photoURL}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);"/>`
-          : `<div style="width:50px; height:50px; border-radius:50%; background:#222; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:20px;">🏈</div>`;
-        return `
-          <div style="display:flex; flex-direction:column; align-items:center; width:65px; text-align:center;" title="${f.nombre} (${f.nivel||'Fan'})">
-            ${photo}
-            <span style="font-size:10px; font-weight:bold; margin-top:4px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:65px;">${f.nombre || 'Fan'}</span>
-            <span style="font-size:9px; color:var(--gold);">${NIVEL_ICON[f.nivel] || '🏈'}</span>
-          </div>`;
-      }).join('');
-    }
 
   } catch(e) {
     console.error('Error al cargar fans presentes:', e);
-    if (modalGrid) modalGrid.innerHTML = '<p class="text-muted" style="font-size:12px;">Check-ins registrados en vivo.</p>';
   }
 }
 
 // ---- DINÁMICA: EL FANÁTICO DEL PARTIDO ----
 async function loadFanaticoPartidoCredencial(uid) {
-  const targetId = 'PRE_SEM1'; // Partido actual
+  const targetId = currentCredencialPartidoId;
   const container = document.getElementById('fanaticoVotingContent');
   if (!container) return;
 
