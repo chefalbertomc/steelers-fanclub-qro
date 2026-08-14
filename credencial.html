@@ -243,17 +243,8 @@
       <button class="btn btn-outline btn-sm" onclick="closeModalAsistencia()" style="width:auto; padding:4px 10px;">✕ Cerrar</button>
     </div>
 
-    <!-- SECCIÓN 1: FANS PRESENTES -->
-    <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-      <span>👥 Fans Presentes (Check-In)</span>
-      <span id="modalFanCountBadge" style="font-size:11px; color:var(--gold); font-weight:bold;">0 Fans</span>
-    </div>
-    <div id="modalPartyPhotosGrid" style="display:flex; flex-wrap:wrap; gap:10px; padding:6px 0; margin-bottom:16px; border-bottom:1px solid #262626;">
-      <!-- Fotos y nombres de los asistentes -->
-    </div>
-
-    <!-- SECCIÓN 2: DINÁMICA EL FANÁTICO DEL PARTIDO -->
-    <div style="border:1px solid #eab308; background: linear-gradient(180deg, #1c1917 0%, #111111 100%); border-radius:10px; padding:14px; margin-top:8px;">
+    <!-- DINÁMICA EL FANÁTICO DEL PARTIDO Y LISTA DE ASISTENTES -->
+    <div style="border:1px solid #eab308; background: linear-gradient(180deg, #1c1917 0%, #111111 100%); border-radius:10px; padding:14px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <div style="font-weight:900; font-size:15px; color:#eab308; text-transform:uppercase; display:flex; align-items:center; gap:6px;">
           <span>🏆 El Fanático del Partido</span>
@@ -271,9 +262,9 @@
         <div style="font-size:10px; color:#aaa; margin-top:6px;">⏳ <i>Votación abierta hasta mañana a las 23:59 PM. Solo participan y votan fans asistentes al partido.</i></div>
       </div>
 
-      <!-- Estado de Votación / Formulario / Ganador -->
+      <!-- Lista de Asistentes / Formulario de Voto / Ganador -->
       <div id="fanaticoVotingContent">
-        <p class="text-muted" style="font-size:12px;">Cargando candidatos y votación...</p>
+        <p class="text-muted" style="font-size:12px;">Cargando lista de asistentes...</p>
       </div>
     </div>
 
@@ -751,12 +742,32 @@ async function loadFanaticoPartidoCredencial(uid) {
     // Check if user already voted
     const userVoteSnap = await db.collection('fanatico_votos').doc(`${targetId}_${uid}`).get();
 
+    // Fetch all attendee profiles
+    const allAttendeeSnaps = await Promise.all(asistentesUids.map(uId => db.collection('fans').doc(uId).get()));
+    const todosAsistentes = allAttendeeSnaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
+
     if (userVoteSnap.exists) {
       const votedData = userVoteSnap.data();
       container.innerHTML = `
-        <div style="background:#166534; border:1px solid #22c55e; color:#fff; padding:12px; border-radius:8px; font-size:13px; text-align:center;">
-          ✅ <b>¡Tu voto ha sido registrado!</b> Votaste por <b>${votedData.candidateNombre || 'tu candidato'}</b>.<br/>
-          <span style="font-size:11px; color:#bbf7d0;">Los resultados finales y el ganador se revelarán al cerrar la votación.</span>
+        <div style="background:#166534; border:1px solid #22c55e; color:#fff; padding:10px 12px; border-radius:8px; font-size:12px; text-align:center; margin-bottom:12px;">
+          ✅ <b>¡Tu voto ha sido registrado!</b> Votaste por <b>${votedData.candidateNombre || 'tu candidato'}</b>.
+        </div>
+        <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:8px;">👥 Lista de Asistentes al Partido (${asistentesUids.length}):</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${todosAsistentes.map(c => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#222; border:1px solid ${c.uid === votedData.candidateUid ? '#22c55e' : '#333'}; padding:8px 12px; border-radius:8px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                ${c.photoURL 
+                  ? `<img src="${c.photoURL}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #eab308;"/>`
+                  : `<div style="width:40px; height:40px; border-radius:50%; background:#333; border:2px solid #eab308; display:flex; align-items:center; justify-content:center; font-size:16px;">🏈</div>`}
+                <div>
+                  <div style="font-weight:bold; font-size:13px; color:#fff;">${c.nombre || 'Fan'} ${c.uid === uid ? '<span style="font-size:10px; color:#aaa;">(Tú)</span>' : ''}</div>
+                  <div style="font-size:10px; color:#eab308;">${NIVEL_ICON[c.nivel] || '🏈'} ${c.nivel || 'Fan'}</div>
+                </div>
+              </div>
+              ${c.uid === votedData.candidateUid ? `<span style="font-size:11px; font-weight:bold; color:#22c55e; background:rgba(34,197,94,0.2); padding:4px 8px; border-radius:6px;">Tu Voto ✅</span>` : ''}
+            </div>
+          `).join('')}
         </div>`;
       return;
     }
@@ -769,9 +780,7 @@ async function loadFanaticoPartidoCredencial(uid) {
       return;
     }
 
-    // Fetch candidate profiles
-    const candidateSnaps = await Promise.all(candidatosUids.map(uId => db.collection('fans').doc(uId).get()));
-    const candidatos = candidateSnaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
+    const candidatos = todosAsistentes.filter(c => c.uid !== uid);
 
     container.innerHTML = `
       <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:10px;">🗳️ Elige a tu candidato (no puedes votar por ti mismo):</div>
