@@ -106,7 +106,7 @@
       </div>
 
       <!-- Desglose Asistentes -->
-      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:10px; margin-bottom:16px; background:#181818; padding:12px; border-radius:10px; text-align:center;">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:10px; background:#181818; padding:12px; border-radius:10px; text-align:center;">
         <div>
           <div style="font-size:22px; font-weight:900; color:var(--gold);" id="attTotal">0</div>
           <div style="font-size:11px; color:#888;">Asistieron</div>
@@ -128,10 +128,6 @@
           <div style="font-size:11px; color:#888;">🏆 Organizador</div>
         </div>
       </div>
-
-      <!-- Galería de fotos de los fans presentes -->
-      <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:10px;">📸 Fans que hicieron Check-In en este partido:</div>
-      <div id="asistenciaFotosAdmin" style="display:flex; flex-wrap:wrap; gap:12px; min-height:40px;"></div>
     </div>
     <!-- Sección de Avisos -->
     <div class="card" style="margin-bottom:16px;">
@@ -360,10 +356,9 @@ function updateStats() {
 document.getElementById('selectPartidoAdmin').addEventListener('change', loadAsistenciaPartidoAdmin);
 
 async function loadAsistenciaPartidoAdmin() {
-  const targetId = document.getElementById('selectPartidoAdmin').value;
-  const fotosContainer = document.getElementById('asistenciaFotosAdmin');
-  if (!fotosContainer) return;
-  fotosContainer.innerHTML = '<p class="text-muted" style="font-size:12px;">Cargando asistencia...</p>';
+  const select = document.getElementById('selectPartidoAdmin');
+  if (!select) return;
+  const targetId = select.value;
 
   try {
     const snap = await db.collectionGroup('visitas').get();
@@ -375,33 +370,15 @@ async function loadAsistenciaPartidoAdmin() {
     const asistentesUids = [...new Set(matchingDocs.map(d => d.ref.parent.parent.id))];
     const asistentesFans = allFans.filter(f => asistentesUids.includes(f.uid));
 
-    // Desglose por nivel
+    // Desglose numérico por nivel
     document.getElementById('attTotal').textContent  = asistentesFans.length;
     document.getElementById('attNuevos').textContent = asistentesFans.filter(f => f.nivel === 'Nuevo Fan').length;
     document.getElementById('attFans').textContent   = asistentesFans.filter(f => f.nivel === 'Fan' || !f.nivel).length;
     document.getElementById('attSteel').textContent  = asistentesFans.filter(f => f.nivel === 'Steel Fan').length;
     document.getElementById('attOrg').textContent    = asistentesFans.filter(f => f.nivel === 'Organizador').length;
 
-    if (asistentesFans.length === 0) {
-      fotosContainer.innerHTML = '<p class="text-muted" style="font-size:12px;">Aún no hay check-ins registrados para este partido.</p>';
-      return;
-    }
-
-    fotosContainer.innerHTML = asistentesFans.map(f => {
-      const photo = f.photoURL
-        ? `<img src="${f.photoURL}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);"/>`
-        : `<div style="width:50px; height:50px; border-radius:50%; background:#222; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:20px;">🏈</div>`;
-      return `
-        <div style="display:flex; flex-direction:column; align-items:center; width:65px; text-align:center;" title="${f.nombre} (${f.nivel||'Fan'})">
-          ${photo}
-          <span style="font-size:10px; font-weight:bold; margin-top:4px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:65px;">${f.nombre || 'Fan'}</span>
-          <span style="font-size:9px; color:var(--gold);">${NIVEL_ICON[f.nivel] || '🏈'}</span>
-        </div>`;
-    }).join('');
-
   } catch(e) {
     console.error('Error al cargar asistencia:', e);
-    fotosContainer.innerHTML = '<p style="color:#ef4444; font-size:12px;">Error al cargar asistencia.</p>';
   }
 }
 
