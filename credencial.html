@@ -148,41 +148,16 @@
       </button>
     </div>
 
-    <!-- ASISTENCIA AL PARTIDO (COMPACTO Y TOCABLE) -->
+    <!-- ASISTENCIA AL PARTIDO (COMPACTO Y TOCABLE CON MODAL UNIFICADO) -->
     <div class="card mt-4" id="cardAsistenciaPartido" style="border:2px solid var(--gold); margin-bottom:16px; cursor:pointer;" onclick="openModalAsistencia()">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
         <div>
           <div style="font-weight:900; color:var(--gold); font-size:15px;" id="partyTitle">🏈 Partido vs Green Bay Packers</div>
-          <div class="text-muted" style="font-size:12px; margin-top:2px;">Toca para ver quiénes están aquí 👁️</div>
+          <div class="text-muted" style="font-size:12px; margin-top:2px;">Toca para ver asistentes y votar en "El Fanático del Partido" 🏆👁️</div>
         </div>
         <div style="text-align:right;">
           <span id="partyFanCount" style="font-size:13px; background:var(--gold); color:#000; padding:4px 12px; border-radius:14px; font-weight:900; display:inline-block;">0 Asistentes</span>
         </div>
-      </div>
-    </div>
-
-    <!-- DINÁMICA: EL FANÁTICO DEL PARTIDO -->
-    <div class="card mt-4" id="cardFanaticoPartido" style="border:2px solid #eab308; background: linear-gradient(180deg, #1c1917 0%, #111111 100%); margin-bottom:16px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
-        <div style="font-weight:900; font-size:16px; color:#eab308; text-transform:uppercase; letter-spacing:1px; display:flex; align-items:center; gap:8px;">
-          <span>🏆 El Fanático del Partido</span>
-        </div>
-        <span class="badge" style="background:#eab308; color:#000; font-weight:bold; font-size:11px;">DINÁMICA DE LA SEMANA</span>
-      </div>
-
-      <!-- Premios del Patrocinador -->
-      <div style="background:rgba(234, 179, 8, 0.1); border:1px solid rgba(234, 179, 8, 0.3); border-radius:10px; padding:12px; margin-bottom:16px;">
-        <div style="font-size:13px; font-weight:bold; color:#eab308; margin-bottom:6px;">🎁 Premios para el Ganador:</div>
-        <ul style="font-size:12px; color:#ddd; margin:0; padding-left:18px; line-height:1.6;">
-          <li><b>Buffalo Wild Wings:</b> 1 Orden de Nachos + 2 Bebidas (cerveza o refresco) + Mesa reservada para el próximo partido.</li>
-          <li><b>Steelers Nation Querétaro:</b> Regalo sorpresa oficial 🏈.</li>
-        </ul>
-        <div style="font-size:11px; color:#aaa; margin-top:8px;">⏳ <i>Votación abierta hasta mañana a las 23:59 PM. Solo participan y votan fans asistentes al partido.</i></div>
-      </div>
-
-      <!-- Estado de Votación / Formulario / Ganador -->
-      <div id="fanaticoVotingContent">
-        <p class="text-muted" style="font-size:12px;">Cargando votación...</p>
       </div>
     </div>
 
@@ -255,19 +230,51 @@
 
 </div>
 
-<!-- MODAL ASISTENTES PARTIDO -->
+<!-- MODAL ASISTENCIA Y DINÁMICA DE PARTIDO -->
 <div class="modal-overlay hidden" id="modalAsistencia" style="z-index:10000;">
-  <div class="modal-box" style="max-width:500px; text-align:left;">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:12px;">
+  <div class="modal-box" style="max-width:550px; text-align:left; max-height:85vh; overflow-y:auto;">
+    
+    <!-- HEADER MODAL -->
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:14px;">
       <div>
-        <h3 style="color:var(--gold); margin:0;" id="modalPartyTitle">👥 Fans Presentes (0)</h3>
-        <p class="text-muted" style="font-size:12px; margin:2px 0 0;" id="modalPartySubTitle">Partido vs Green Bay Packers</p>
+        <h3 style="color:var(--gold); margin:0;" id="modalPartyTitle">🏈 Partido vs Green Bay Packers</h3>
+        <p class="text-muted" style="font-size:12px; margin:2px 0 0;" id="modalPartySubTitle">Asistentes en vivo y Votación oficial</p>
       </div>
       <button class="btn btn-outline btn-sm" onclick="closeModalAsistencia()" style="width:auto; padding:4px 10px;">✕ Cerrar</button>
     </div>
-    
-    <div id="modalPartyPhotosGrid" style="display:flex; flex-wrap:wrap; gap:12px; max-height:55vh; overflow-y:auto; padding:4px 0;">
+
+    <!-- SECCIÓN 1: FANS PRESENTES -->
+    <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+      <span>👥 Fans Presentes (Check-In)</span>
+      <span id="modalFanCountBadge" style="font-size:11px; color:var(--gold); font-weight:bold;">0 Fans</span>
+    </div>
+    <div id="modalPartyPhotosGrid" style="display:flex; flex-wrap:wrap; gap:10px; padding:6px 0; margin-bottom:16px; border-bottom:1px solid #262626;">
       <!-- Fotos y nombres de los asistentes -->
+    </div>
+
+    <!-- SECCIÓN 2: DINÁMICA EL FANÁTICO DEL PARTIDO -->
+    <div style="border:1px solid #eab308; background: linear-gradient(180deg, #1c1917 0%, #111111 100%); border-radius:10px; padding:14px; margin-top:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+        <div style="font-weight:900; font-size:15px; color:#eab308; text-transform:uppercase; display:flex; align-items:center; gap:6px;">
+          <span>🏆 El Fanático del Partido</span>
+        </div>
+        <span class="badge" style="background:#eab308; color:#000; font-weight:bold; font-size:10px;">DINÁMICA DE LA SEMANA</span>
+      </div>
+
+      <!-- Premios del Patrocinador -->
+      <div style="background:rgba(234, 179, 8, 0.1); border:1px solid rgba(234, 179, 8, 0.3); border-radius:8px; padding:10px; margin-bottom:12px;">
+        <div style="font-size:12px; font-weight:bold; color:#eab308; margin-bottom:4px;">🎁 Premios para el Ganador:</div>
+        <ul style="font-size:11px; color:#ddd; margin:0; padding-left:16px; line-height:1.5;">
+          <li><b>Buffalo Wild Wings:</b> 1 Orden de Nachos + 2 Bebidas (cerveza o refresco) + Mesa reservada para el próximo partido.</li>
+          <li><b>Steelers Nation Querétaro:</b> Regalo sorpresa oficial 🏈.</li>
+        </ul>
+        <div style="font-size:10px; color:#aaa; margin-top:6px;">⏳ <i>Votación abierta hasta mañana a las 23:59 PM. Solo participan y votan fans asistentes al partido.</i></div>
+      </div>
+
+      <!-- Estado de Votación / Formulario / Ganador -->
+      <div id="fanaticoVotingContent">
+        <p class="text-muted" style="font-size:12px;">Cargando candidatos y votación...</p>
+      </div>
     </div>
 
     <div class="modal-actions" style="margin-top:16px;">
