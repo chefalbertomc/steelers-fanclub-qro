@@ -52,19 +52,86 @@
   <div id="sectionAdmin" class="hidden">
 
     <!-- Stats -->
-    <div class="stats-grid" id="statsGrid">
+    <div class="stats-grid" id="statsGrid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px; margin-bottom:16px;">
       <div class="stat-card">
         <div class="stat-value" id="statTotal">—</div>
         <div class="stat-label">Fans Totales</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="statNuevos">—</div>
-        <div class="stat-label">Nuevos Fan</div>
+        <div class="stat-label">🆕 Nuevos Fan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statFan">—</div>
+        <div class="stat-label">🏈 Fans</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="statSteel">—</div>
-        <div class="stat-label">Steel Fans</div>
+        <div class="stat-label">⭐ Steel Fans</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statOrg">—</div>
+        <div class="stat-label">🏆 Organizadores</div>
+      </div>
+    </div>
+
+    <!-- Sección de Asistencia en Tiempo Real por Partido -->
+    <div class="card" style="margin-bottom:16px; border:2px solid var(--gold);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+        <h3 style="font-size:18px; color:var(--gold); margin:0;">📊 Asistencia por Partido (Check-In)</h3>
+        <select id="selectPartidoAdmin" style="padding:8px 12px; background:var(--black); border:1px solid var(--gold); border-radius:var(--radius-sm); color:var(--text); font-size:13px; font-weight:bold;">
+          <option value="PRE_SEM1">Pretemporada Sem 1: Packers (13 Ago)</option>
+          <option value="PRE_SEM2">Pretemporada Sem 2: Jets (21 Ago)</option>
+          <option value="PRE_SEM3">Pretemporada Sem 3: Bills (27 Ago)</option>
+          <option value="SEM1">Sem 1: Falcons (13 Sep)</option>
+          <option value="SEM2">Sem 2: Patriots (20 Sep)</option>
+          <option value="SEM3">Sem 3: Bengals (27 Sep)</option>
+          <option value="SEM4">Sem 4: Browns (01 Oct)</option>
+          <option value="SEM5">Sem 5: Colts (11 Oct)</option>
+          <option value="SEM6">Sem 6: Buccaneers (18 Oct)</option>
+          <option value="SEM7">Sem 7: Saints (25 Oct)</option>
+          <option value="SEM8">Sem 8: Browns (01 Nov)</option>
+          <option value="SEM9">Sem 9: BYE WEEK (10 Nov)</option>
+          <option value="SEM10">Sem 10: Bengals (15 Nov)</option>
+          <option value="SEM11">Sem 11: Eagles (22 Nov)</option>
+          <option value="SEM12">Sem 12: Broncos (27 Nov)</option>
+          <option value="SEM13">Sem 13: Texans (06 Dic)</option>
+          <option value="SEM14">Sem 14: Jaguars (14 Dic)</option>
+          <option value="SEM15">Sem 15: Ravens (20 Dic)</option>
+          <option value="SEM16">Sem 16: Panthers (27 Dic)</option>
+          <option value="SEM17">Sem 17: Titans (03 Ene)</option>
+          <option value="SEM18">Sem 18: Ravens (10 Ene)</option>
+          <option value="VISITA_NORMAL">Visita Regular (Restaurante)</option>
+        </select>
+      </div>
+
+      <!-- Desglose Asistentes -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:10px; margin-bottom:16px; background:#181818; padding:12px; border-radius:10px; text-align:center;">
+        <div>
+          <div style="font-size:22px; font-weight:900; color:var(--gold);" id="attTotal">0</div>
+          <div style="font-size:11px; color:#888;">Asistieron</div>
+        </div>
+        <div>
+          <div style="font-size:22px; font-weight:900; color:#fff;" id="attNuevos">0</div>
+          <div style="font-size:11px; color:#888;">🆕 Nuevos</div>
+        </div>
+        <div>
+          <div style="font-size:22px; font-weight:900; color:#fff;" id="attFans">0</div>
+          <div style="font-size:11px; color:#888;">🏈 Fans</div>
+        </div>
+        <div>
+          <div style="font-size:22px; font-weight:900; color:var(--gold);" id="attSteel">0</div>
+          <div style="font-size:11px; color:#888;">⭐ Steel Fan</div>
+        </div>
+        <div>
+          <div style="font-size:22px; font-weight:900; color:#3b82f6;" id="attOrg">0</div>
+          <div style="font-size:11px; color:#888;">🏆 Organizador</div>
+        </div>
+      </div>
+
+      <!-- Galería de fotos de los fans presentes -->
+      <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:10px;">📸 Fans que hicieron Check-In en este partido:</div>
+      <div id="asistenciaFotosAdmin" style="display:flex; flex-wrap:wrap; gap:12px; min-height:40px;"></div>
     </div>
     <!-- Sección de Avisos -->
     <div class="card" style="margin-bottom:16px;">
@@ -278,12 +345,64 @@ async function loadFans() {
   allFans = snap.docs.map(d => ({ uid: d.id, ...d.data() }));
   updateStats();
   renderTable(allFans);
+  loadAsistenciaPartidoAdmin();
 }
 
 function updateStats() {
   document.getElementById('statTotal').textContent  = allFans.length;
   document.getElementById('statNuevos').textContent = allFans.filter(f => f.nivel === 'Nuevo Fan').length;
+  document.getElementById('statFan').textContent    = allFans.filter(f => f.nivel === 'Fan' || !f.nivel).length;
   document.getElementById('statSteel').textContent  = allFans.filter(f => f.nivel === 'Steel Fan').length;
+  document.getElementById('statOrg').textContent    = allFans.filter(f => f.nivel === 'Organizador').length;
+}
+
+// ---- ASISTENCIA POR PARTIDO EN ADMIN ----
+document.getElementById('selectPartidoAdmin').addEventListener('change', loadAsistenciaPartidoAdmin);
+
+async function loadAsistenciaPartidoAdmin() {
+  const targetId = document.getElementById('selectPartidoAdmin').value;
+  const fotosContainer = document.getElementById('asistenciaFotosAdmin');
+  if (!fotosContainer) return;
+  fotosContainer.innerHTML = '<p class="text-muted" style="font-size:12px;">Cargando asistencia...</p>';
+
+  try {
+    const snap = await db.collectionGroup('visitas').get();
+    const matchingDocs = snap.docs.filter(d => {
+      const data = d.data();
+      return data.partidoId === targetId || (targetId === 'VISITA_NORMAL' && (d.id === 'VISITA_NORMAL' || d.id.startsWith('VISITA_')));
+    });
+
+    const asistentesUids = [...new Set(matchingDocs.map(d => d.ref.parent.parent.id))];
+    const asistentesFans = allFans.filter(f => asistentesUids.includes(f.uid));
+
+    // Desglose por nivel
+    document.getElementById('attTotal').textContent  = asistentesFans.length;
+    document.getElementById('attNuevos').textContent = asistentesFans.filter(f => f.nivel === 'Nuevo Fan').length;
+    document.getElementById('attFans').textContent   = asistentesFans.filter(f => f.nivel === 'Fan' || !f.nivel).length;
+    document.getElementById('attSteel').textContent  = asistentesFans.filter(f => f.nivel === 'Steel Fan').length;
+    document.getElementById('attOrg').textContent    = asistentesFans.filter(f => f.nivel === 'Organizador').length;
+
+    if (asistentesFans.length === 0) {
+      fotosContainer.innerHTML = '<p class="text-muted" style="font-size:12px;">Aún no hay check-ins registrados para este partido.</p>';
+      return;
+    }
+
+    fotosContainer.innerHTML = asistentesFans.map(f => {
+      const photo = f.photoURL
+        ? `<img src="${f.photoURL}" style="width:50px; height:50px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);"/>`
+        : `<div style="width:50px; height:50px; border-radius:50%; background:#222; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:20px;">🏈</div>`;
+      return `
+        <div style="display:flex; flex-direction:column; align-items:center; width:65px; text-align:center;" title="${f.nombre} (${f.nivel||'Fan'})">
+          ${photo}
+          <span style="font-size:10px; font-weight:bold; margin-top:4px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:65px;">${f.nombre || 'Fan'}</span>
+          <span style="font-size:9px; color:var(--gold);">${NIVEL_ICON[f.nivel] || '🏈'}</span>
+        </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.error('Error al cargar asistencia:', e);
+    fotosContainer.innerHTML = '<p style="color:#ef4444; font-size:12px;">Error al cargar asistencia.</p>';
+  }
 }
 
 // ---- FILTROS ----
