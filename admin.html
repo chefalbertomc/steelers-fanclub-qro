@@ -105,6 +105,8 @@
         </select>
       </div>
 
+      <div id="adminMatchHeader" style="margin-bottom:12px; text-align:center;"></div>
+
       <!-- Desglose Asistentes -->
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:10px; background:#181818; padding:12px; border-radius:10px; text-align:center;">
         <div>
@@ -368,12 +370,17 @@ async function loadAsistenciaPartidoAdmin() {
   const select = document.getElementById('selectPartidoAdmin');
   if (!select) return;
   const targetId = select.value;
+  
+  const headerEl = document.getElementById('adminMatchHeader');
+  if (headerEl && window.getMatchHeaderHTML) {
+    headerEl.innerHTML = window.getMatchHeaderHTML(targetId, { size: 26 });
+  }
 
   try {
     const snap = await db.collectionGroup('visitas').get();
     const matchingDocs = snap.docs.filter(d => {
       const data = d.data();
-      return data.partidoId === targetId || (targetId === 'VISITA_NORMAL' && (d.id === 'VISITA_NORMAL' || d.id.startsWith('VISITA_')));
+      return data.partidoId === targetId || d.id === targetId || (targetId === 'VISITA_NORMAL' && (d.id === 'VISITA_NORMAL' || d.id.startsWith('VISITA_')));
     });
 
     const asistentesUids = [...new Set(matchingDocs.map(d => d.ref.parent.parent.id))];

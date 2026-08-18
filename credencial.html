@@ -272,7 +272,22 @@
       </select>
     </div>
 
-    <!-- DINÁMICA EL FANÁTICO DEL PARTIDO Y LISTA DE ASISTENTES -->
+    <!-- LISTA DE ASISTENTES AL PARTIDO -->
+    <div style="border:1px solid #333; background: #161616; border-radius:10px; padding:14px; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+        <div style="font-weight:900; font-size:15px; color:#fff; display:flex; align-items:center; gap:6px;">
+          <span>👥 Asistentes al Partido (<span id="modalAsistentesCount" style="color:var(--gold);">0</span>)</span>
+        </div>
+        <span class="badge" style="background:#333; color:#aaa; font-weight:bold; font-size:10px;">REGISTRO DE ASISTENCIA</span>
+      </div>
+
+      <!-- Contenedor donde se listarán todos los asistentes siempre -->
+      <div id="asistentesListContent">
+        <p class="text-muted" style="font-size:12px;">Cargando asistentes...</p>
+      </div>
+    </div>
+
+    <!-- DINÁMICA EL FANÁTICO DEL PARTIDO -->
     <div style="border:1px solid #eab308; background: linear-gradient(180deg, #1c1917 0%, #111111 100%); border-radius:10px; padding:14px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <div style="font-weight:900; font-size:15px; color:#eab308; text-transform:uppercase; display:flex; align-items:center; gap:6px;">
@@ -291,9 +306,9 @@
         <div style="font-size:10px; color:#aaa; margin-top:6px;">⏳ <i>Votación abierta hasta mañana a las 23:59 PM. Solo participan y votan fans asistentes al partido.</i></div>
       </div>
 
-      <!-- Lista de Asistentes / Formulario de Voto / Ganador -->
+      <!-- Formulario de Voto / Ganador -->
       <div id="fanaticoVotingContent">
-        <p class="text-muted" style="font-size:12px;">Cargando lista de asistentes...</p>
+        <p class="text-muted" style="font-size:12px;">Cargando votación...</p>
       </div>
     </div>
 
@@ -683,17 +698,20 @@ function onPartidoCredencialChange() {
   const select = document.getElementById('selectPartidoCredencial');
   if (select) {
     currentCredencialPartidoId = select.value;
-    const selectedText = select.options[select.selectedIndex].text;
     
     const partyTitle = document.getElementById('partyTitle');
     const modalPartyTitle = document.getElementById('modalPartyTitle');
-    if (partyTitle) partyTitle.textContent = '🏈 ' + selectedText;
-    if (modalPartyTitle) modalPartyTitle.textContent = '🏈 ' + selectedText;
-
-    loadAsistenciaPartidoCredencial();
-    if (auth.currentUser) {
-      loadFanaticoPartidoCredencial(auth.currentUser.uid);
+    
+    if (window.getMatchHeaderHTML) {
+      if (partyTitle) partyTitle.innerHTML = window.getMatchHeaderHTML(currentCredencialPartidoId);
+      if (modalPartyTitle) modalPartyTitle.innerHTML = window.getMatchHeaderHTML(currentCredencialPartidoId);
     }
+
+    loadAsistenciaPartidoCredencial().then(data => {
+      if (auth.currentUser && data) {
+        loadFanaticoPartidoCredencial(auth.currentUser.uid, data.asistentesUids, data.todosAsistentes);
+      }
+    });
   }
 }
 
@@ -701,29 +719,83 @@ function onPartidoCredencialChange() {
 async function loadAsistenciaPartidoCredencial() {
   const targetId = currentCredencialPartidoId;
   const countEl = document.getElementById('partyFanCount');
+  const modalCountEl = document.getElementById('modalAsistentesCount');
+  const asistentesContainer = document.getElementById('asistentesListContent');
+
+  if (countEl) countEl.textContent = 'Cargando...';
+  if (asistentesContainer) asistentesContainer.innerHTML = '<p class="text-muted" style="font-size:12px; text-align:center; padding:12px;">⏳ Cargando asistentes...</p>';
 
   try {
     const snap = await db.collectionGroup('visitas').get();
     const matchingDocs = snap.docs.filter(d => {
       const data = d.data();
-      return data.partidoId === targetId || (targetId === 'VISITA_NORMAL' && (d.id === 'VISITA_NORMAL' || d.id.startsWith('VISITA_')));
+      return data.partidoId === targetId || d.id === targetId || (targetId === 'VISITA_NORMAL' && (d.id === 'VISITA_NORMAL' || d.id.startsWith('VISITA_')));
     });
 
     const asistentesUids = [...new Set(matchingDocs.map(d => d.ref.parent.parent.id))];
-    if (countEl) countEl.textContent = `${asistentesUids.length} Asistente${asistentesUids.length !== 1 ? 's' : ''}`;
+    const totalCount = asistentesUids.length;
+
+    if (countEl) countEl.textContent = `${totalCount} Asistente${totalCount !== 1 ? 's' : ''}`;
+    if (modalCountEl) modalCountEl.textContent = totalCount;
+
+    if (totalCount === 0) {
+      if (asistentesContainer) {
+        asistentesContainer.innerHTML = `
+          <div style="background:#1c1917; border:1px solid #333; padding:16px; border-radius:8px; text-align:center; color:#aaa; font-size:12px;">
+            🏈 Aún no hay asistentes registrados para este partido.<br/>¡Escanea tu QR durante el juego para registrar tu asistencia!
+          </div>`;
+      }
+      return { asistentesUids: [], todosAsistentes: [] };
+    }
+
+    // Cargar información de los fans asistentes
+    const profileSnaps = await Promise.all(asistentesUids.map(uid => db.collection('fans').doc(uid).get()));
+    const todosAsistentes = profileSnaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
+    const currentUid = auth.currentUser ? auth.currentUser.uid : null;
+
+    if (asistentesContainer) {
+      asistentesContainer.innerHTML = `
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap:10px; max-height:240px; overflow-y:auto; padding:4px;">
+          ${todosAsistentes.map(fan => {
+            const isMe = fan.uid === currentUid;
+            const photo = fan.photoURL || '';
+            const imgHtml = photo 
+              ? `<img src="${photo}" style="width:46px; height:46px; border-radius:50%; object-fit:cover; border:2px solid ${isMe ? 'var(--gold)' : '#555'};"/>` 
+              : `<div style="width:46px; height:46px; border-radius:50%; background:#262626; border:2px solid ${isMe ? 'var(--gold)' : '#555'}; display:flex; align-items:center; justify-content:center; font-size:20px;">🏈</div>`;
+            
+            return `
+              <div style="background:#222; border:1px solid ${isMe ? 'var(--gold)' : '#333'}; border-radius:10px; padding:8px 6px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;">
+                ${isMe ? `<span style="position:absolute; top:2px; right:4px; font-size:8px; background:var(--gold); color:#000; font-weight:bold; padding:1px 4px; border-radius:4px;">TÚ</span>` : ''}
+                ${imgHtml}
+                <div style="font-weight:bold; font-size:11px; color:#fff; margin-top:4px; line-height:1.2; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${fan.nombre || ''} ${fan.apellidoPaterno || ''}">
+                  ${fan.nombre || 'Fan'} ${fan.apellidoPaterno ? fan.apellidoPaterno.charAt(0) + '.' : ''}
+                </div>
+                <div style="font-size:9px; color:var(--gold); margin-top:2px;">
+                  ${NIVEL_ICON[fan.nivel] || '🏈'} ${fan.nivel || 'Fan'}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    return { asistentesUids, todosAsistentes };
 
   } catch(e) {
     console.error('Error al cargar fans presentes:', e);
+    if (asistentesContainer) {
+      asistentesContainer.innerHTML = '<p style="color:#ef4444; font-size:12px; text-align:center;">Error al cargar lista de asistentes.</p>';
+    }
+    return { asistentesUids: [], todosAsistentes: [] };
   }
 }
 
 // ---- DINÁMICA: EL FANÁTICO DEL PARTIDO ----
-async function loadFanaticoPartidoCredencial(uid) {
+async function loadFanaticoPartidoCredencial(uid, preloadedUids, preloadedAsistentes) {
   const targetId = currentCredencialPartidoId;
   const container = document.getElementById('fanaticoVotingContent');
   if (!container) return;
-
-  container.innerHTML = '<p class="text-muted" style="font-size:12px;">Cargando candidatos y votación...</p>';
 
   try {
     // 1. Verificar si hay un ganador oficial declarado
@@ -731,64 +803,48 @@ async function loadFanaticoPartidoCredencial(uid) {
     if (winnerSnap.exists) {
       const wData = winnerSnap.data();
       container.innerHTML = `
-        <div style="background:linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color:#000; border-radius:12px; padding:16px; text-align:center; box-shadow:0 4px 15px rgba(234,179,8,0.4);">
-          <div style="font-size:24px;">🏆</div>
-          <div style="font-weight:900; font-size:18px; text-transform:uppercase; margin-bottom:4px;">¡GANADOR DE LA SEMANA!</div>
-          <div style="font-size:16px; font-weight:800; margin-bottom:8px;">${wData.winnerNombre || 'Fan'}</div>
-          <div style="font-size:12px; font-weight:600; opacity:0.9;">¡Felicidades! Disfruta tu premio de BWW (1 Nachos + 2 Bebidas + Mesa Reservada) y tu regalo sorpresa de Steelers Nation Querétaro 🎉.</div>
+        <div style="background:linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color:#000; border-radius:12px; padding:14px; text-align:center; box-shadow:0 4px 15px rgba(234,179,8,0.4);">
+          <div style="font-size:22px;">🏆</div>
+          <div style="font-weight:900; font-size:16px; text-transform:uppercase; margin-bottom:4px;">¡GANADOR OFICIAL DEL PARTIDO!</div>
+          <div style="font-size:15px; font-weight:800; margin-bottom:6px;">${wData.winnerNombre || 'Fan'}</div>
+          <div style="font-size:11px; font-weight:600; opacity:0.9;">¡Felicidades! Disfruta tu premio de BWW (1 Nachos + 2 Bebidas + Mesa Reservada) y regalo sorpresa 🎉.</div>
         </div>`;
       return;
     }
 
-    // 2. Verificar si el fan escaneó su asistencia
-    const visitasSnap = await db.collectionGroup('visitas').get();
-    const matchingDocs = visitasSnap.docs.filter(d => {
-      const data = d.data();
-      return data.partidoId === targetId || (targetId === 'VISITA_NORMAL' && (d.id === 'VISITA_NORMAL' || d.id.startsWith('VISITA_')));
-    });
+    let asistentesUids = preloadedUids;
+    let todosAsistentes = preloadedAsistentes;
 
-    const asistentesUids = [...new Set(matchingDocs.map(d => d.ref.parent.parent.id))];
+    if (!asistentesUids) {
+      const visitasSnap = await db.collectionGroup('visitas').get();
+      const matchingDocs = visitasSnap.docs.filter(d => {
+        const data = d.data();
+        return data.partidoId === targetId || d.id === targetId || (targetId === 'VISITA_NORMAL' && (d.id === 'VISITA_NORMAL' || d.id.startsWith('VISITA_')));
+      });
+      asistentesUids = [...new Set(matchingDocs.map(d => d.ref.parent.parent.id))];
+      const allAttendeeSnaps = await Promise.all(asistentesUids.map(uId => db.collection('fans').doc(uId).get()));
+      todosAsistentes = allAttendeeSnaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
+    }
 
     if (!asistentesUids.includes(uid)) {
       container.innerHTML = `
         <div style="background:#1c1917; border:1px solid #333; padding:12px; border-radius:8px; text-align:center; font-size:12px; color:#aaa;">
-          🔒 <b>Para participar y votar por "El Fanático del Partido"</b>, primero debes escanear tu asistencia QR durante el evento.
+          🔒 <b>Votación de "El Fanático del Partido"</b>: Reservada únicamente para fans que registraron su asistencia en este partido.
         </div>`;
       return;
     }
 
-    // 3. Candidatos (demás asistentes excluyéndome a mí)
+    // Candidatos (demás asistentes excluyéndome a mí)
     const candidatosUids = asistentesUids.filter(uId => uId !== uid);
     
     // Check if user already voted
     const userVoteSnap = await db.collection('fanatico_votos').doc(`${targetId}_${uid}`).get();
 
-    // Fetch all attendee profiles
-    const allAttendeeSnaps = await Promise.all(asistentesUids.map(uId => db.collection('fans').doc(uId).get()));
-    const todosAsistentes = allAttendeeSnaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
-
     if (userVoteSnap.exists) {
       const votedData = userVoteSnap.data();
       container.innerHTML = `
-        <div style="background:#166534; border:1px solid #22c55e; color:#fff; padding:10px 12px; border-radius:8px; font-size:12px; text-align:center; margin-bottom:12px;">
+        <div style="background:#166534; border:1px solid #22c55e; color:#fff; padding:10px 12px; border-radius:8px; font-size:12px; text-align:center;">
           ✅ <b>¡Tu voto ha sido registrado!</b> Votaste por <b>${votedData.candidateNombre || 'tu candidato'}</b>.
-        </div>
-        <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:8px;">👥 Lista de Asistentes al Partido (${asistentesUids.length}):</div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          ${todosAsistentes.map(c => `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#222; border:1px solid ${c.uid === votedData.candidateUid ? '#22c55e' : '#333'}; padding:8px 12px; border-radius:8px;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                ${c.photoURL 
-                  ? `<img src="${c.photoURL}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #eab308;"/>`
-                  : `<div style="width:40px; height:40px; border-radius:50%; background:#333; border:2px solid #eab308; display:flex; align-items:center; justify-content:center; font-size:16px;">🏈</div>`}
-                <div>
-                  <div style="font-weight:bold; font-size:13px; color:#fff;">${c.nombre || 'Fan'} ${c.uid === uid ? '<span style="font-size:10px; color:#aaa;">(Tú)</span>' : ''}</div>
-                  <div style="font-size:10px; color:#eab308;">${NIVEL_ICON[c.nivel] || '🏈'} ${c.nivel || 'Fan'}</div>
-                </div>
-              </div>
-              ${c.uid === votedData.candidateUid ? `<span style="font-size:11px; font-weight:bold; color:#22c55e; background:rgba(34,197,94,0.2); padding:4px 8px; border-radius:6px;">Tu Voto ✅</span>` : ''}
-            </div>
-          `).join('')}
         </div>`;
       return;
     }
@@ -804,20 +860,20 @@ async function loadFanaticoPartidoCredencial(uid) {
     const candidatos = todosAsistentes.filter(c => c.uid !== uid);
 
     container.innerHTML = `
-      <div style="font-size:13px; font-weight:bold; color:#fff; margin-bottom:10px;">🗳️ Elige a tu candidato (no puedes votar por ti mismo):</div>
-      <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="font-size:12px; font-weight:bold; color:#fff; margin-bottom:8px;">🗳️ Elige a tu candidato (no puedes votar por ti mismo):</div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
         ${candidatos.map(c => `
-          <div style="display:flex; justify-content:space-between; align-items:center; background:#262626; border:1px solid #404040; padding:8px 12px; border-radius:8px;">
-            <div style="display:flex; align-items:center; gap:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#262626; border:1px solid #404040; padding:6px 10px; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
               ${c.photoURL 
-                ? `<img src="${c.photoURL}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #eab308;"/>`
-                : `<div style="width:40px; height:40px; border-radius:50%; background:#333; border:2px solid #eab308; display:flex; align-items:center; justify-content:center; font-size:16px;">🏈</div>`}
+                ? `<img src="${c.photoURL}" style="width:34px; height:34px; border-radius:50%; object-fit:cover; border:2px solid #eab308;"/>`
+                : `<div style="width:34px; height:34px; border-radius:50%; background:#333; border:2px solid #eab308; display:flex; align-items:center; justify-content:center; font-size:14px;">🏈</div>`}
               <div>
-                <div style="font-weight:bold; font-size:13px; color:#fff;">${c.nombre || 'Fan'}</div>
+                <div style="font-weight:bold; font-size:12px; color:#fff;">${c.nombre || 'Fan'} ${c.apellidoPaterno || ''}</div>
                 <div style="font-size:10px; color:#eab308;">${NIVEL_ICON[c.nivel] || '🏈'} ${c.nivel || 'Fan'}</div>
               </div>
             </div>
-            <button class="btn btn-gold btn-sm" style="width:auto; padding:6px 14px; font-weight:bold;" onclick="votarFanatico('${targetId}', '${uid}', '${c.uid}', '${c.nombre || 'Fan'}')">
+            <button class="btn btn-gold btn-sm" style="width:auto; padding:4px 10px; font-weight:bold; font-size:11px;" onclick="votarFanatico('${targetId}', '${uid}', '${c.uid}', '${c.nombre || 'Fan'}')">
               Votar 🗳️
             </button>
           </div>

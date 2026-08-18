@@ -74,35 +74,79 @@
 
         <h2 style="font-size:18px; color:var(--gold); margin-bottom:12px;">Seleccionar Evento de Asistencia</h2>
         
-        <button class="btn btn-outline" style="width:100%; justify-content:flex-start; margin-bottom:16px; font-weight:bold;" onclick="generarQR('VISITA_NORMAL', 'Visita Regular (Restaurante)')">🍔 Visita Normal (Cualquier Día)</button>
+        <button class="btn btn-outline" style="width:100%; justify-content:flex-start; margin-bottom:16px; font-weight:bold; gap:8px;" onclick="generarQR('VISITA_NORMAL', 'Visita Regular (Restaurante)')">
+          <img src="assets/bww-buffalo.png" style="height:22px; width:22px; object-fit:contain;"/> Visita Normal (Cualquier Día)
+        </button>
         
         <h3 style="font-size:14px; color:#888; margin-bottom:8px;">Pretemporada 2026</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px;">
-          <button class="btn btn-outline btn-sm" data-date="2026-08-13" onclick="generarQR('PRE_SEM1', 'Pretemporada Sem 1: Packers (Jue 13 Ago)')">Sem 1: Packers (Jue 13 Ago)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-08-21" onclick="generarQR('PRE_SEM2', 'Pretemporada Sem 2: Jets (Vie 21 Ago)')">Sem 2: Jets (Vie 21 Ago)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-08-27" onclick="generarQR('PRE_SEM3', 'Pretemporada Sem 3: Bills (Jue 27 Ago)')">Sem 3: Bills (Jue 27 Ago)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-08-13" onclick="generarQR('PRE_SEM1', 'Pretemporada Sem 1: Packers (Jue 13 Ago)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/gb.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 1: Packers (13 Ago)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-08-21" onclick="generarQR('PRE_SEM2', 'Pretemporada Sem 2: Jets (Vie 21 Ago)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 2: Jets (21 Ago)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-08-27" onclick="generarQR('PRE_SEM3', 'Pretemporada Sem 3: Bills (Jue 27 Ago)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/buf.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 3: Bills (27 Ago)
+          </button>
         </div>
         
         <h3 style="font-size:14px; color:#888; margin-bottom:8px;">Temporada Regular 2026</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <button class="btn btn-outline btn-sm" data-date="2026-09-13" onclick="generarQR('SEM1', 'Sem 1: Falcons (Dom 13 Sep)')">Sem 1: Falcons (Dom 13 Sep)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-09-20" onclick="generarQR('SEM2', 'Sem 2: Patriots (Dom 20 Sep)')">Sem 2: Patriots (Dom 20 Sep)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-09-27" onclick="generarQR('SEM3', 'Sem 3: Bengals (Dom 27 Sep)')">Sem 3: Bengals (Dom 27 Sep)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-10-01" onclick="generarQR('SEM4', 'Sem 4: Browns (Jue 01 Oct)')">Sem 4: Browns (Jue 01 Oct)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-10-11" onclick="generarQR('SEM5', 'Sem 5: Colts (Dom 11 Oct)')">Sem 5: Colts (Dom 11 Oct)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-10-18" onclick="generarQR('SEM6', 'Sem 6: Buccaneers (Dom 18 Oct)')">Sem 6: Buccaneers (Dom 18 Oct)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-10-25" onclick="generarQR('SEM7', 'Sem 7: Saints (Dom 25 Oct)')">Sem 7: Saints (Dom 25 Oct)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-11-01" onclick="generarQR('SEM8', 'Sem 8: Browns (Dom 01 Nov)')">Sem 8: Browns (Dom 01 Nov)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-11-10" onclick="generarQR('SEM9', 'Sem 9: BYE WEEK (Mar 10 Nov)')" disabled style="opacity: 0.5;">Sem 9: BYE WEEK (Mar 10 Nov)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-11-15" onclick="generarQR('SEM10', 'Sem 10: Bengals (Dom 15 Nov)')">Sem 10: Bengals (Dom 15 Nov)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-11-22" onclick="generarQR('SEM11', 'Sem 11: Eagles (Dom 22 Nov)')">Sem 11: Eagles (Dom 22 Nov)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-11-27" onclick="generarQR('SEM12', 'Sem 12: Broncos (Vie 27 Nov)')">Sem 12: Broncos (Vie 27 Nov)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-12-06" onclick="generarQR('SEM13', 'Sem 13: Texans (Dom 06 Dic)')">Sem 13: Texans (Dom 06 Dic)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-12-14" onclick="generarQR('SEM14', 'Sem 14: Jaguars (Lun 14 Dic)')">Sem 14: Jaguars (Lun 14 Dic)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-12-20" onclick="generarQR('SEM15', 'Sem 15: Ravens (Dom 20 Dic)')">Sem 15: Ravens (Dom 20 Dic)</button>
-          <button class="btn btn-outline btn-sm" data-date="2026-12-27" onclick="generarQR('SEM16', 'Sem 16: Panthers (Dom 27 Dic)')">Sem 16: Panthers (Dom 27 Dic)</button>
-          <button class="btn btn-outline btn-sm" data-date="2027-01-03" onclick="generarQR('SEM17', 'Sem 17: Titans (Dom 03 Ene)')">Sem 17: Titans (Dom 03 Ene)</button>
-          <button class="btn btn-outline btn-sm" data-date="2027-01-10" onclick="generarQR('SEM18', 'Sem 18: Ravens (Dom 10 Ene)')">Sem 18: Ravens (Dom 10 Ene)</button>
+          <button class="btn btn-outline btn-sm" data-date="2026-09-13" onclick="generarQR('SEM1', 'Sem 1: Falcons (Dom 13 Sep)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/atl.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 1: Falcons (13 Sep)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-09-20" onclick="generarQR('SEM2', 'Sem 2: Patriots (Dom 20 Sep)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/ne.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 2: Patriots (20 Sep)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-09-27" onclick="generarQR('SEM3', 'Sem 3: Bengals (Dom 27 Sep)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/cin.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 3: Bengals (27 Sep)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-10-01" onclick="generarQR('SEM4', 'Sem 4: Browns (Jue 01 Oct)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/cle.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 4: Browns (01 Oct)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-10-11" onclick="generarQR('SEM5', 'Sem 5: Colts (Dom 11 Oct)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/ind.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 5: Colts (11 Oct)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-10-18" onclick="generarQR('SEM6', 'Sem 6: Buccaneers (Dom 18 Oct)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/tb.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 6: Buccaneers (18 Oct)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-10-25" onclick="generarQR('SEM7', 'Sem 7: Saints (Dom 25 Oct)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/no.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 7: Saints (25 Oct)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-01" onclick="generarQR('SEM8', 'Sem 8: Browns (Dom 01 Nov)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/cle.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 8: Browns (01 Nov)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-10" onclick="generarQR('SEM9', 'Sem 9: BYE WEEK (Mar 10 Nov)')" disabled style="opacity: 0.5;">
+            <img src="assets/logo.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 9: BYE WEEK
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-15" onclick="generarQR('SEM10', 'Sem 10: Bengals (Dom 15 Nov)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/cin.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 10: Bengals (15 Nov)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-22" onclick="generarQR('SEM11', 'Sem 11: Eagles (Dom 22 Nov)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/phi.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 11: Eagles (22 Nov)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-11-27" onclick="generarQR('SEM12', 'Sem 12: Broncos (Vie 27 Nov)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/den.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 12: Broncos (27 Nov)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-12-06" onclick="generarQR('SEM13', 'Sem 13: Texans (Dom 06 Dic)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/hou.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 13: Texans (06 Dic)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-12-14" onclick="generarQR('SEM14', 'Sem 14: Jaguars (Lun 14 Dic)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/jax.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 14: Jaguars (14 Dic)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-12-20" onclick="generarQR('SEM15', 'Sem 15: Ravens (Dom 20 Dic)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 15: Ravens (20 Dic)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2026-12-27" onclick="generarQR('SEM16', 'Sem 16: Panthers (Dom 27 Dic)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/car.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 16: Panthers (27 Dic)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2027-01-03" onclick="generarQR('SEM17', 'Sem 17: Titans (Dom 03 Ene)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/ten.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 17: Titans (03 Ene)
+          </button>
+          <button class="btn btn-outline btn-sm" data-date="2027-01-10" onclick="generarQR('SEM18', 'Sem 18: Ravens (Dom 10 Ene)')">
+            <img src="https://a.espncdn.com/i/teamlogos/nfl/500/bal.png" style="height:18px; width:18px; object-fit:contain; vertical-align:middle; margin-right:4px;"/> Sem 18: Ravens (10 Ene)
+          </button>
         </div>
       </div>
       
@@ -259,8 +303,12 @@ function generarQR(eventId, eventName) {
   const qrTitle = document.getElementById('qrTitle');
   const qrSubtitle = document.getElementById('qrSubtitle');
   
-  qrTitle.textContent = eventName;
-  qrTitle.style.color = 'var(--gold)';
+  if (window.getMatchHeaderHTML && eventId !== 'VISITA_NORMAL') {
+    qrTitle.innerHTML = window.getMatchHeaderHTML(eventId, { size: 30 });
+  } else {
+    qrTitle.textContent = eventName;
+    qrTitle.style.color = 'var(--gold)';
+  }
   qrSubtitle.textContent = '¡Fans! Abran su credencial y presionen "Escanear Asistencia"';
   
   qrBox.style.display = 'inline-block';
