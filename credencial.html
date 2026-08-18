@@ -1141,36 +1141,44 @@ if ('serviceWorker' in navigator) {
 }
 
 // ---- DESCARGAR CREDENCIAL ----
-document.getElementById('btnDescargar').addEventListener('click', async () => {
-  const btn = document.getElementById('btnDescargar');
-  btn.disabled = true; btn.textContent = '⏳ Generando...';
-  try {
-    const card = document.getElementById('credencialCard');
-    const canvas = await html2canvas(card, {
-      backgroundColor: '#0d0d0d',
-      scale: 3,
-      useCORS: true,
-      allowTaint: true
-    });
-    const link = document.createElement('a');
-    link.download = 'credencial-steelers-qro.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  } catch(e) {
-    alert('Error al generar la imagen. Intenta de nuevo.');
-  }
-  btn.disabled = false; btn.textContent = '⬇️ Descargar credencial';
-});
+const btnDescargarBottom = document.getElementById('btnDescargar');
+if (btnDescargarBottom) {
+  btnDescargarBottom.addEventListener('click', async () => {
+    const btn = document.getElementById('btnDescargar');
+    btn.disabled = true; btn.textContent = '⏳ Generando...';
+    try {
+      const card = document.getElementById('credencialCard');
+      const canvas = await html2canvas(card, {
+        backgroundColor: '#0d0d0d',
+        scale: 3,
+        useCORS: true,
+        allowTaint: true
+      });
+      const link = document.createElement('a');
+      link.download = 'credencial-steelers-qro.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch(e) {
+      alert('Error al generar la imagen. Intenta de nuevo.');
+    }
+    btn.disabled = false; btn.textContent = '⬇️ Descargar credencial';
+  });
+}
 
 // ---- LOGOUT ----
-document.getElementById('btnLogout').addEventListener('click', () => {
-  auth.signOut();
-});
+const btnLogoutBottom = document.getElementById('btnLogout');
+if (btnLogoutBottom) {
+  btnLogoutBottom.addEventListener('click', () => {
+    auth.signOut();
+  });
+}
 
 // ---- HELPERS ----
 function showStatus(el, msg, type) {
-  el.textContent = msg;
-  el.className = 'status-msg ' + type;
+  if (el) {
+    el.textContent = msg;
+    el.className = 'status-msg ' + type;
+  }
 }
 
 // ---- ACTUALIZAR FOTO DE PERFIL ----
@@ -1200,25 +1208,32 @@ async function compressImage(file, maxSize) {
   });
 }
 
-document.getElementById('credPhotoInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const originalSrc = document.getElementById('credFoto').src;
-  document.getElementById('credFoto').src = 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif'; // Loading spinner effect
-  try {
-    const base64 = await compressImage(file, 200);
-    document.getElementById('credFoto').src = base64; // Preview instantly
-    document.getElementById('credFoto').style.display = 'block';
-    document.getElementById('credFotoPlaceholder').style.display = 'none';
-    const user = auth.currentUser;
-    if (user) {
-      await db.collection('fans').doc(user.uid).update({ photoURL: base64 });
+const photoInputEl = document.getElementById('credPhotoInput');
+if (photoInputEl) {
+  photoInputEl.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const credFotoEl = document.getElementById('credFoto');
+    const credFotoPlaceholderEl = document.getElementById('credFotoPlaceholder');
+    const originalSrc = credFotoEl ? credFotoEl.src : '';
+    if (credFotoEl) credFotoEl.src = 'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif';
+    try {
+      const base64 = await compressImage(file, 200);
+      if (credFotoEl) {
+        credFotoEl.src = base64;
+        credFotoEl.style.display = 'block';
+      }
+      if (credFotoPlaceholderEl) credFotoPlaceholderEl.style.display = 'none';
+      const user = auth.currentUser;
+      if (user) {
+        await db.collection('fans').doc(user.uid).update({ photoURL: base64 });
+      }
+    } catch (err) {
+      if (credFotoEl) credFotoEl.src = originalSrc;
+      alert(err.message);
     }
-  } catch (err) {
-    document.getElementById('credFoto').src = originalSrc;
-    alert(err.message);
-  }
-});
+  });
+}
 </script>
 </body>
 </html>
