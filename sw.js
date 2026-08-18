@@ -1,8 +1,11 @@
-const CACHE_NAME = 'steelers-qro-v6';
+const CACHE_NAME = 'steelers-qro-v7';
 const urlsToCache = [
   './',
   './index.html',
   './credencial.html',
+  './partidos.html',
+  './avisos.html',
+  './promos.html',
   './admin.html',
   './scanner.html',
   './manifest.json',

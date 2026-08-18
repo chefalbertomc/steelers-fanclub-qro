@@ -157,25 +157,10 @@
       </button>
     </div>
 
-    <!-- ASISTENCIA AL PARTIDO (COMPACTO Y TOCABLE CON MODAL UNIFICADO) -->
-    <div class="card mt-4" id="cardAsistenciaPartido" style="border:2px solid var(--gold); margin-bottom:16px; cursor:pointer;" onclick="openModalAsistencia()">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-        <div>
-          <div style="font-weight:900; color:var(--gold); font-size:15px;" id="partyTitle">🏈 Partido vs Green Bay Packers</div>
-          <div class="text-muted" style="font-size:12px; margin-top:2px;">Toca para ver asistentes y votar en "El Fanático del Partido" 🏆👁️</div>
-        </div>
-        <div style="text-align:right;">
-          <span id="partyFanCount" style="font-size:13px; background:var(--gold); color:#000; padding:4px 12px; border-radius:14px; font-weight:900; display:inline-block;">0 Asistentes</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- TARJETA DESTACADA DEL GANADOR DE LA SEMANA (SE ACTUALIZA AUTOMÁTICAMENTE) -->
-    <div id="winnerSpotlightContainer" class="mt-4"></div>
-
-    <div style="margin-top:16px; display:flex; justify-content:center; gap:12px;">
-      <button class="btn btn-outline btn-sm" id="btnDescargar" style="width:auto;">⬇️ Descargar credencial</button>
-      <button class="btn btn-outline btn-sm" id="btnLogout" style="width:auto;">Salir</button>
+    <!-- Info nivel (Solo tu nivel actual) -->
+    <div class="card mt-4" id="cardNivelInfo" style="display:none;">
+      <div class="card-title">Mi Nivel de Membresía 🏆</div>
+      <div id="nivelInfoContainer" style="margin-top:12px;"></div>
     </div>
 
     <!-- Historial de visitas -->
@@ -185,62 +170,6 @@
       <div id="visitasList" style="margin-top:8px;"></div>
     </div>
 
-    <!-- Info nivel (Solo tu nivel actual) -->
-    <div class="card" id="cardNivelInfo" style="display:none;">
-      <div class="card-title">Mi Nivel de Membresía 🏆</div>
-      <div id="nivelInfoContainer" style="margin-top:12px;"></div>
-    </div>
-    <!-- Avisos Importantes -->
-    <div id="avisoContainer" class="card mt-4 hidden" style="margin-bottom: 24px; border:2px solid #3b82f6;">
-      <div class="card-title" style="color:#3b82f6;">📢 Avisos / Convocatorias</div>
-      <div id="avisosListCredencial" style="margin-top:16px; display:flex; flex-direction:column; gap:16px;">
-        <!-- Se llenará dinámicamente -->
-      </div>
-    </div>
-    <!-- Tienda Virtual -->
-    <a href="https://chefalbertomc.github.io/catch-sports/?team=steelers" target="_blank" id="btnTienda" class="btn btn-gold" style="width:100%; margin-top:24px; margin-bottom:24px; text-decoration:none; display:flex; justify-content:center; align-items:center; gap:8px; font-size:16px;">
-      🛒 Tienda de Artículos Oficiales
-    </a>
-
-    <!-- Calendarios 2026 -->
-    <div class="card mt-4" id="cardCalendarios" style="margin-bottom: 24px;">
-      <div class="card-title">Calendarios 2026 📅</div>
-      <div style="display:flex; flex-direction:column; gap:20px; margin-top:16px;">
-        <div>
-          <div style="font-weight:700; color:var(--steelers-yellow); margin-bottom:8px; font-size:14px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Pretemporada</div>
-          <a href="assets/calendario-pretemporada.jpg" target="_blank">
-            <img src="assets/calendario-pretemporada.jpg" style="width:100%; border-radius:12px; border:2px solid #333; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="Pretemporada"/>
-          </a>
-        </div>
-        <div>
-          <div style="font-weight:700; color:var(--steelers-yellow); margin-bottom:8px; font-size:14px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Temporada Regular</div>
-          <a href="assets/calendario-temporada.jpg" target="_blank">
-            <img src="assets/calendario-temporada.jpg" style="width:100%; border-radius:12px; border:2px solid #333; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="Temporada Regular"/>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Promociones -->
-    <div id="promosContainer" class="card mt-4 hidden" style="margin-bottom: 24px;">
-      <div class="card-title">Promociones Especiales 🔥</div>
-      <div id="promosListCredencial" style="margin-top:16px; display:flex; flex-direction:column; gap:16px;">
-        <!-- Se llenará dinámicamente -->
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Cumpleañeros de la Semana -->
-  <div id="cumplesContainer" class="card mt-4 hidden" style="margin-bottom: 24px; text-align:center; max-width:400px; margin-left:auto; margin-right:auto;">
-    <div class="card-title">Cumpleañeros de la Semana 🎉</div>
-    <p class="text-muted" id="cumplesMsg" style="font-size:13px; margin:8px 0 16px;">¡Dejen sus felicitaciones en el grupo!</p>
-    <div id="cumplesGrid" style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
-      <!-- Se llenará dinámicamente -->
-    </div>
-  </div>
-
-</div>
 
 <!-- MODAL ASISTENCIA Y DINÁMICA DE PARTIDO -->
 <div class="modal-overlay hidden" id="modalAsistencia" style="z-index:10000;">

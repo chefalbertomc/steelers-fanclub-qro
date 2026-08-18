@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Avisos y Convocatorias — Steelers Fan Club QRO</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FFB612">
+
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      padding-bottom: 85px !important;
+    }
+    .bottom-nav-btn {
+      background: transparent;
+      border: none;
+      color: #999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 2px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+      text-align: center;
+      text-decoration: none;
+    }
+    .bottom-nav-btn:hover, .bottom-nav-btn.active {
+      color: var(--gold);
+      background: rgba(255, 182, 18, 0.16);
+    }
+    .bottom-nav-btn .nav-icon {
+      font-size: 19px;
+      line-height: 1;
+    }
+    .bottom-nav-btn .nav-label {
+      font-size: 10px;
+      font-weight: 800;
+      margin-top: 3px;
+      line-height: 1.1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div style="background:#111; border-bottom:1px solid #333; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <img src="assets/steelers-nation-qro.png" style="height:40px; object-fit:contain;" alt="Steelers Nation Qro"/>
+      <span style="font-weight:900; color:#3b82f6; font-size:16px;">AVISOS & CONVOCATORIAS</span>
+    </div>
+    <a href="credencial.html" style="color:#aaa; text-decoration:none; font-size:13px; font-weight:bold;">← Credencial</a>
+  </div>
+
+  <div class="container mt-4" style="max-width:500px; margin:0 auto; padding:0 12px;">
+    
+    <div class="card" style="margin-bottom:20px; border:2px solid #3b82f6;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <span style="font-weight:900; font-size:16px; color:#3b82f6; text-transform:uppercase;">📢 Convocatorias del Club</span>
+        <span class="badge" style="background:#3b82f6; color:#fff; font-weight:bold; font-size:10px;">OFIClALES</span>
+      </div>
+
+      <div id="avisosListContent" style="display:flex; flex-direction:column; gap:20px;">
+        <p class="text-muted" style="font-size:13px; text-align:center;">⏳ Cargando avisos...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NAVEGACIÓN INFERIOR FIJA (5 BOTONES) -->
+  <nav id="bottomNavDock" style="
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999999;
+    background: rgba(12, 12, 12, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 182, 18, 0.4);
+    box-shadow: 0 -4px 25px rgba(0,0,0,0.95);
+    padding: 8px 6px 10px 6px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  ">
+    <a href="credencial.html" class="bottom-nav-btn">
+      <span class="nav-icon">💳</span>
+      <span class="nav-label">Credencial</span>
+    </a>
+
+    <a href="partidos.html" class="bottom-nav-btn">
+      <span class="nav-icon">🏈</span>
+      <span class="nav-label">Partidos</span>
+    </a>
+
+    <a href="avisos.html" class="bottom-nav-btn active">
+      <span class="nav-icon">📢</span>
+      <span class="nav-label">Avisos</span>
+    </a>
+
+    <a href="promos.html" class="bottom-nav-btn">
+      <span class="nav-icon">🔥</span>
+      <span class="nav-label">Promos</span>
+    </a>
+
+    <a href="https://chefalbertomc.github.io/catch-sports/?team=steelers" target="_blank" class="bottom-nav-btn">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">Tienda</span>
+    </a>
+  </nav>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        location.href = 'index.html';
+        return;
+      }
+      loadAvisos();
+    });
+
+    async function loadAvisos() {
+      const container = document.getElementById('avisosListContent');
+      try {
+        const snap = await db.collection('settings').doc('avisos').collection('items')
+          .orderBy('createdAt', 'desc').get();
+        
+        const validDocs = snap.docs.filter(doc => doc.data().active !== false && doc.data().deleted !== true);
+
+        if (validDocs.length === 0) {
+          container.innerHTML = '<p class="text-muted" style="font-size:13px; text-align:center; padding:20px;">No hay avisos o convocatorias activas en este momento.</p>';
+          return;
+        }
+
+        container.innerHTML = validDocs.map(doc => {
+          const d = doc.data();
+          return `
+            <div style="background:#1a1a1a; border-radius:14px; overflow:hidden; border:1px solid #333; box-shadow:0 6px 16px rgba(0,0,0,0.6);">
+              ${d.titulo ? `<div style="font-weight:900; color:#3b82f6; padding:12px 14px 6px; font-size:15px; text-transform:uppercase; letter-spacing:1px;">${d.titulo}</div>` : ''}
+              <img src="${d.imageUrl}" style="width:100%; border-radius:0 0 12px 12px; display:block;" alt="${d.titulo || 'Aviso'}"/>
+            </div>`;
+        }).join('');
+      } catch(e) {
+        container.innerHTML = '<p style="color:#ef4444; font-size:13px; text-align:center;">Error al cargar avisos.</p>';
+      }
+    }
+  </script>
+</body>
+</html>

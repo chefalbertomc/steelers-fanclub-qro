@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Partidos & Calendario — Steelers Fan Club QRO</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/styles.css"/>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FFB612">
+
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      padding-bottom: 85px !important;
+    }
+    .bottom-nav-btn {
+      background: transparent;
+      border: none;
+      color: #999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 2px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1;
+      text-align: center;
+      text-decoration: none;
+    }
+    .bottom-nav-btn:hover, .bottom-nav-btn.active {
+      color: var(--gold);
+      background: rgba(255, 182, 18, 0.16);
+    }
+    .bottom-nav-btn .nav-icon {
+      font-size: 19px;
+      line-height: 1;
+    }
+    .bottom-nav-btn .nav-label {
+      font-size: 10px;
+      font-weight: 800;
+      margin-top: 3px;
+      line-height: 1.1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div style="background:#111; border-bottom:1px solid #333; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <img src="assets/steelers-nation-qro.png" style="height:40px; object-fit:contain;" alt="Steelers Nation Qro"/>
+      <span style="font-weight:900; color:var(--gold); font-size:16px;">PARTIDOS & CALENDARIO</span>
+    </div>
+    <a href="credencial.html" style="color:#aaa; text-decoration:none; font-size:13px; font-weight:bold;">← Credencial</a>
+  </div>
+
+  <div class="container mt-4" style="max-width:500px; margin:0 auto; padding:0 12px;">
+
+    <!-- SELECTOR DE PARTIDOS -->
+    <div class="card" style="margin-bottom:16px; background:#161616; border:1px solid #333;">
+      <label style="font-size:12px; color:var(--gold); font-weight:bold; margin-bottom:8px; display:block;">📅 Seleccionar Partido / Evento:</label>
+      <select id="selectPartido" onchange="onPartidoChange()" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid var(--gold); border-radius:8px; font-weight:bold; font-size:13px; outline:none;">
+        <option value="PRE_SEM1">Pretemporada Sem 1: Packers (13 Ago)</option>
+        <option value="PRE_SEM2">Pretemporada Sem 2: Jets (21 Ago)</option>
+        <option value="PRE_SEM3">Pretemporada Sem 3: Bills (27 Ago)</option>
+        <option value="SEM1">Sem 1: Falcons (13 Sep)</option>
+        <option value="SEM2">Sem 2: Patriots (20 Sep)</option>
+        <option value="SEM3">Sem 3: Bengals (27 Sep)</option>
+        <option value="SEM4">Sem 4: Browns (01 Oct)</option>
+        <option value="SEM5">Sem 5: Colts (11 Oct)</option>
+        <option value="SEM6">Sem 6: Buccaneers (18 Oct)</option>
+        <option value="SEM7">Sem 7: Saints (25 Oct)</option>
+        <option value="SEM8">Sem 8: Browns (01 Nov)</option>
+        <option value="SEM9">Sem 9: BYE WEEK (10 Nov)</option>
+        <option value="SEM10">Sem 10: Bengals (15 Nov)</option>
+        <option value="SEM11">Sem 11: Eagles (22 Nov)</option>
+        <option value="SEM12">Sem 12: Broncos (27 Nov)</option>
+        <option value="SEM13">Sem 13: Texans (06 Dic)</option>
+        <option value="SEM14">Sem 14: Jaguars (14 Dic)</option>
+        <option value="SEM15">Sem 15: Ravens (20 Dic)</option>
+        <option value="SEM16">Sem 16: Panthers (27 Dic)</option>
+        <option value="SEM17">Sem 17: Titans (03 Ene)</option>
+        <option value="SEM18">Sem 18: Ravens (10 Ene)</option>
+        <option value="VISITA_NORMAL">Visita Regular (Restaurante)</option>
+      </select>
+    </div>
+
+    <!-- ENCABEZADO PARTIDO SELECCIONADO Y MARCADOR -->
+    <div class="card" id="cardPartidoHeader" style="border:2px solid var(--gold); text-align:center; margin-bottom:16px;">
+      <div id="partyTitle" style="font-size:16px; font-weight:bold;">🏈 Cargar partido...</div>
+    </div>
+
+    <!-- TARJETA DESTACADA DEL GANADOR DE LA SEMANA -->
+    <div id="winnerSpotlightContainer" style="margin-bottom:16px;"></div>
+
+    <!-- LISTA DE ASISTENTES AL PARTIDO -->
+    <div class="card" style="margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <span id="modalAsistentesLegend" style="font-weight:900; font-size:15px; color:#fff;">👥 Asistentes al Partido (<span id="modalAsistentesCount" style="color:var(--gold);">0</span>)</span>
+        <span class="badge" style="background:#333; color:#aaa; font-weight:bold; font-size:10px;">REGISTRO DE ASISTENCIA</span>
+      </div>
+
+      <div id="asistentesListContent">
+        <p class="text-muted" style="font-size:12px; text-align:center;">⏳ Cargando asistentes...</p>
+      </div>
+    </div>
+
+    <!-- VOTACIÓN FANÁTICO DEL PARTIDO -->
+    <div class="card" id="fanaticoVotingSection" style="border:1px solid #eab308; background: linear-gradient(180deg, #1c1917 0%, #111111 100%); margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span style="font-weight:900; font-size:15px; color:#eab308; text-transform:uppercase;">🏆 El Fanático del Partido</span>
+        <span class="badge" style="background:#eab308; color:#000; font-weight:bold; font-size:10px;">VOTACIÓN DE ASISTENTES</span>
+      </div>
+      <div id="fanaticoVotingContent">
+        <p class="text-muted" style="font-size:12px; text-align:center;">⏳ Cargando votación...</p>
+      </div>
+    </div>
+
+    <!-- CALENDARIOS 2026 -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Calendarios 2026 📅</div>
+      <div style="display:flex; flex-direction:column; gap:16px; margin-top:14px;">
+        <div>
+          <div style="font-weight:700; color:var(--steelers-yellow); margin-bottom:6px; font-size:13px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Pretemporada</div>
+          <a href="assets/calendario-pretemporada.jpg" target="_blank">
+            <img src="assets/calendario-pretemporada.jpg" style="width:100%; border-radius:12px; border:2px solid #333;" alt="Pretemporada"/>
+          </a>
+        </div>
+        <div>
+          <div style="font-weight:700; color:var(--steelers-yellow); margin-bottom:6px; font-size:13px; text-transform:uppercase; letter-spacing:1px; text-align:center;">Temporada Regular</div>
+          <a href="assets/calendario-temporada.jpg" target="_blank">
+            <img src="assets/calendario-temporada.jpg" style="width:100%; border-radius:12px; border:2px solid #333;" alt="Temporada Regular"/>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUMPLEAÑEROS DE LA SEMANA -->
+    <div id="cumplesContainer" class="card hidden" style="margin-bottom:24px; text-align:center;">
+      <div class="card-title">Cumpleañeros de la Semana 🎉</div>
+      <p class="text-muted" style="font-size:12px; margin:6px 0 12px;">¡Dejen sus felicitaciones en el grupo del club!</p>
+      <div id="cumplesGrid" style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;"></div>
+    </div>
+
+  </div>
+
+  <!-- NAVEGACIÓN INFERIOR FIJA (5 BOTONES) -->
+  <nav id="bottomNavDock" style="
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999999;
+    background: rgba(12, 12, 12, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 182, 18, 0.4);
+    box-shadow: 0 -4px 25px rgba(0,0,0,0.95);
+    padding: 8px 6px 10px 6px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  ">
+    <a href="credencial.html" class="bottom-nav-btn">
+      <span class="nav-icon">💳</span>
+      <span class="nav-label">Credencial</span>
+    </a>
+
+    <a href="partidos.html" class="bottom-nav-btn active">
+      <span class="nav-icon">🏈</span>
+      <span class="nav-label">Partidos</span>
+    </a>
+
+    <a href="avisos.html" class="bottom-nav-btn">
+      <span class="nav-icon">📢</span>
+      <span class="nav-label">Avisos</span>
+    </a>
+
+    <a href="promos.html" class="bottom-nav-btn">
+      <span class="nav-icon">🔥</span>
+      <span class="nav-label">Promos</span>
+    </a>
+
+    <a href="https://chefalbertomc.github.io/catch-sports/?team=steelers" target="_blank" class="bottom-nav-btn">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">Tienda</span>
+    </a>
+  </nav>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    let currentPartidoId = 'PRE_SEM1';
+    let currentUid = null;
+
+    const NIVEL_ICON = {
+      'Nuevo Fan':   '🆕',
+      'Fan':         '🏈',
+      'Steel Fan':   '⭐',
+      'Organizador': '🏆'
+    };
+
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        location.href = 'index.html';
+        return;
+      }
+      currentUid = user.uid;
+      loadCumples();
+      onPartidoChange();
+    });
+
+    async function onPartidoChange() {
+      const select = document.getElementById('selectPartido');
+      if (!select) return;
+      currentPartidoId = select.value;
+      
+      loadSpotlightGanador();
+      loadAsistenciaYVotacion();
+    }
+
+    async function loadSpotlightGanador() {
+      const spotlightContainer = document.getElementById('winnerSpotlightContainer');
+      if (!spotlightContainer) return;
+
+      try {
+        let winnerSnap = await db.collection('fanatico_ganadores').doc(currentPartidoId).get();
+        if (!winnerSnap.exists) {
+          const allWinnersSnap = await db.collection('fanatico_ganadores').orderBy('declaredAt', 'desc').limit(1).get();
+          if (!allWinnersSnap.empty) winnerSnap = allWinnersSnap.docs[0];
+        }
+
+        if (winnerSnap && winnerSnap.exists) {
+          const wData = winnerSnap.data();
+          let winnerProfile = null;
+          if (wData.winnerUid) {
+            const profileSnap = await db.collection('fans').doc(wData.winnerUid).get();
+            if (profileSnap.exists) winnerProfile = profileSnap.data();
+          }
+          spotlightContainer.innerHTML = window.renderWinnerCardHTML(wData, winnerProfile);
+        } else {
+          spotlightContainer.innerHTML = '';
+        }
+      } catch(e) {
+        console.error('Error spotlight:', e);
+      }
+    }
+
+    async function loadAsistenciaYVotacion() {
+      const targetId = currentPartidoId;
+      const partyTitle = document.getElementById('partyTitle');
+      const countEl = document.getElementById('modalAsistentesCount');
+      const legendEl = document.getElementById('modalAsistentesLegend');
+      const asistentesContainer = document.getElementById('asistentesListContent');
+      const votingContainer = document.getElementById('fanaticoVotingContent');
+
+      // Marcador
+      try {
+        let sData = null;
+        const scoreSnap = await db.collection('partidos_scores').doc(targetId).get();
+        if (scoreSnap.exists) {
+          sData = scoreSnap.data();
+        } else if (window.fetchAutoMatchScore) {
+          sData = await window.fetchAutoMatchScore(targetId);
+        }
+
+        if (sData && window.getMatchHeaderHTML) {
+          partyTitle.innerHTML = window.getMatchHeaderHTML(targetId, sData);
+        } else if (window.getMatchHeaderHTML) {
+          partyTitle.innerHTML = window.getMatchHeaderHTML(targetId);
+        }
+      } catch(e) {}
+
+      // Asistentes
+      try {
+        const snap = await db.collectionGroup('visitas').get();
+        const matchingDocs = snap.docs.filter(d => {
+          const data = d.data();
+          return data.partidoId === targetId || d.id === targetId || (targetId === 'VISITA_NORMAL' && (d.id === 'VISITA_NORMAL' || d.id.startsWith('VISITA_')));
+        });
+
+        const asistentesUids = [...new Set(matchingDocs.map(d => d.ref.parent.parent.id))];
+        const totalCount = asistentesUids.length;
+
+        if (countEl) countEl.textContent = totalCount;
+        if (legendEl && window.getAttendeesLegendTitle) {
+          legendEl.innerHTML = window.getAttendeesLegendTitle(targetId, totalCount);
+        }
+
+        if (totalCount === 0) {
+          asistentesContainer.innerHTML = `<div style="background:#1c1917; border:1px solid #333; padding:14px; border-radius:8px; text-align:center; color:#aaa; font-size:12px;">🏈 Aún no hay asistentes registrados para este partido.</div>`;
+          votingContainer.innerHTML = `<p class="text-muted" style="font-size:12px; text-align:center;">Se requieren asistentes registrados para iniciar la votación.</p>`;
+          return;
+        }
+
+        const profileSnaps = await Promise.all(asistentesUids.map(uid => db.collection('fans').doc(uid).get()));
+        const todosAsistentes = profileSnaps.filter(s => s.exists).map(s => ({ uid: s.id, ...s.data() }));
+
+        asistentesContainer.innerHTML = `
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap:8px; max-height:220px; overflow-y:auto;">
+            ${todosAsistentes.map(fan => {
+              const isMe = fan.uid === currentUid;
+              const photo = fan.photoURL || '';
+              const imgHtml = photo 
+                ? `<img src="${photo}" style="width:42px; height:42px; border-radius:50%; object-fit:cover; border:2px solid ${isMe ? 'var(--gold)' : '#555'};"/>` 
+                : `<div style="width:42px; height:42px; border-radius:50%; background:#262626; border:2px solid ${isMe ? 'var(--gold)' : '#555'}; display:flex; align-items:center; justify-content:center; font-size:18px;">🏈</div>`;
+              
+              return `
+                <div style="background:#222; border:1px solid ${isMe ? 'var(--gold)' : '#333'}; border-radius:10px; padding:6px; text-align:center;">
+                  ${imgHtml}
+                  <div style="font-weight:bold; font-size:10px; color:#fff; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                    ${fan.nombre || 'Fan'}
+                  </div>
+                  <div style="font-size:9px; color:var(--gold);">
+                    ${NIVEL_ICON[fan.nivel] || '🏈'} ${fan.nivel || 'Fan'}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>`;
+
+        // Votación
+        loadVotacionContent(asistentesUids, todosAsistentes);
+
+      } catch(e) {
+        console.error('Error asistencia:', e);
+      }
+    }
+
+    async function loadVotacionContent(asistentesUids, todosAsistentes) {
+      const votingContainer = document.getElementById('fanaticoVotingContent');
+      const targetId = currentPartidoId;
+
+      try {
+        const winnerSnap = await db.collection('fanatico_ganadores').doc(targetId).get();
+        if (winnerSnap.exists) {
+          const w = winnerSnap.data();
+          votingContainer.innerHTML = `
+            <div style="background:#14532d; border:1px solid #22c55e; padding:12px; border-radius:8px; text-align:center;">
+              <div style="font-size:13px; font-weight:bold; color:#86efac;">🏆 Ganador Oficial Declarado</div>
+              <div style="font-size:16px; font-weight:900; color:#fff; margin-top:2px;">${w.winnerNombre}</div>
+            </div>`;
+          return;
+        }
+
+        const isUserAttendee = asistentesUids.includes(currentUid);
+        if (!isUserAttendee) {
+          votingContainer.innerHTML = `<p class="text-muted" style="font-size:12px; text-align:center;">Solo los fans que asistieron a este partido pueden votar.</p>`;
+          return;
+        }
+
+        const userVoteSnap = await db.collection('fanatico_votos').doc(`${targetId}_${currentUid}`).get();
+
+        if (userVoteSnap.exists) {
+          const myVote = userVoteSnap.data();
+          votingContainer.innerHTML = `
+            <div style="background:#1c1917; border:1px solid #444; padding:12px; border-radius:8px; text-align:center;">
+              <div style="font-size:12px; color:#aaa;">✅ Ya registraste tu voto por:</div>
+              <div style="font-size:15px; font-weight:bold; color:var(--gold); margin-top:2px;">${myVote.candidateNombre}</div>
+            </div>`;
+          return;
+        }
+
+        const candidates = todosAsistentes.filter(f => f.uid !== currentUid);
+        if (candidates.length === 0) {
+          votingContainer.innerHTML = `<p class="text-muted" style="font-size:12px; text-align:center;">No hay otros asistentes por quienes votar.</p>`;
+          return;
+        }
+
+        votingContainer.innerHTML = `
+          <div>
+            <div style="font-size:12px; color:#fff; font-weight:bold; margin-bottom:8px;">Selecciona al Fanático del Partido:</div>
+            <select id="voteCandidateSelect" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid var(--gold); border-radius:8px; font-weight:bold; font-size:13px; margin-bottom:10px;">
+              ${candidates.map(c => `<option value="${c.uid}">${c.nombre} ${c.apellidoPaterno || ''}</option>`).join('')}
+            </select>
+            <button onclick="submitVote()" style="width:100%; background:var(--gold); color:#000; font-weight:900; padding:10px; border:none; border-radius:8px; cursor:pointer;">🗳️ Emitir Voto</button>
+          </div>`;
+
+      } catch(e) {
+        console.error('Error votación:', e);
+      }
+    }
+
+    async function submitVote() {
+      const select = document.getElementById('voteCandidateSelect');
+      if (!select) return;
+      const candidateUid = select.value;
+      const candidateNombre = select.options[select.selectedIndex].text;
+      const targetId = currentPartidoId;
+
+      try {
+        await db.collection('fanatico_votos').doc(`${targetId}_${currentUid}`).set({
+          partidoId: targetId,
+          voterUid: currentUid,
+          candidateUid: candidateUid,
+          candidateNombre: candidateNombre,
+          votedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert('✅ ¡Voto registrado con éxito!');
+        loadAsistenciaYVotacion();
+      } catch(e) {
+        alert('Error al votar: ' + e.message);
+      }
+    }
+
+    async function loadCumples() {
+      try {
+        const snap = await db.collection('settings').doc('cumpleaneros').get();
+        if (snap.exists && snap.data().active !== false && snap.data().fans && snap.data().fans.length > 0) {
+          const fans = snap.data().fans;
+          const grid = document.getElementById('cumplesGrid');
+          grid.innerHTML = fans.map(f => {
+            const photo = f.photoURL || '';
+            const imgHtml = photo ? `<img src="${photo}" style="width:55px; height:55px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);"/>` : `<div style="width:55px; height:55px; border-radius:50%; background:#333; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:22px;">🥳</div>`;
+            return `<div style="display:flex; flex-direction:column; align-items:center; width:65px; text-align:center;">
+              ${imgHtml}
+              <span style="font-size:10px; font-weight:bold; margin-top:3px; color:#fff;">${f.nombre}</span>
+            </div>`;
+          }).join('');
+          document.getElementById('cumplesContainer').classList.remove('hidden');
+        }
+      } catch(e) {}
+    }
+  </script>
+</body>
+</html>
