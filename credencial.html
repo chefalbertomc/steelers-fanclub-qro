@@ -641,10 +641,15 @@ async function loadAviso() {
   try {
     const snap = await db.collection('settings').doc('avisos').collection('items')
       .orderBy('createdAt', 'desc').get();
-    if (snap.empty) return;
+    
+    const validDocs = snap.docs.filter(doc => doc.data().active !== false && doc.data().deleted !== true);
+    if (validDocs.length === 0) {
+      document.getElementById('avisoContainer').classList.add('hidden');
+      return;
+    }
 
     const container = document.getElementById('avisosListCredencial');
-    container.innerHTML = snap.docs.map(doc => {
+    container.innerHTML = validDocs.map(doc => {
       const d = doc.data();
       return `<div>
         ${d.titulo ? `<div style="font-weight:700; color:#3b82f6; margin-bottom:6px; font-size:13px; text-transform:uppercase; letter-spacing:1px;">${d.titulo}</div>` : ''}
@@ -662,10 +667,15 @@ async function loadPromo() {
   try {
     const snap = await db.collection('settings').doc('promos').collection('items')
       .orderBy('createdAt', 'desc').get();
-    if (snap.empty) return;
+    
+    const validDocs = snap.docs.filter(doc => doc.data().active !== false && doc.data().deleted !== true);
+    if (validDocs.length === 0) {
+      document.getElementById('promosContainer').classList.add('hidden');
+      return;
+    }
 
     const container = document.getElementById('promosListCredencial');
-    container.innerHTML = snap.docs.map(doc => {
+    container.innerHTML = validDocs.map(doc => {
       const d = doc.data();
       return `<div>
         ${d.titulo ? `<div style="font-weight:700; color:var(--gold); margin-bottom:6px; font-size:13px; text-transform:uppercase; letter-spacing:1px;">${d.titulo}</div>` : ''}
