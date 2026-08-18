@@ -497,10 +497,6 @@ auth.onAuthStateChanged(async user => {
   const fan = snap.data();
   renderCredencial(fan, user.uid);
   loadVisitas(user.uid, fan.totalVisitas);
-  loadAviso();
-  loadPromo();
-  loadCumples();
-  onPartidoCredencialChange();
   initPushNotifSystem();
 });
 
