@@ -392,78 +392,96 @@ function scrollToSectionGroup(groupKey, evt) {
 }
 
 // ---- DESCARGAR CREDENCIAL ----
-document.getElementById('btnDescargar').addEventListener('click', async () => {
-  const btn = document.getElementById('btnDescargar');
-  const originalText = btn.innerHTML;
-  btn.innerHTML = '⏳ Generando...';
-  btn.disabled = true;
-  
-  try {
-    const cardEl = document.getElementById('miCredencialCard');
-    const canvas = await html2canvas(cardEl, {
-      scale: 3, // Alta resolución
-      backgroundColor: '#111',
-      useCORS: true
-    });
+const btnDescargarEl = document.getElementById('btnDescargar');
+if (btnDescargarEl) {
+  btnDescargarEl.addEventListener('click', async () => {
+    const btn = document.getElementById('btnDescargar');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '⏳ Generando...';
+    btn.disabled = true;
     
-    const link = document.createElement('a');
-    link.download = `Credencial-Steelers-${document.getElementById('credFanId').textContent}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    try {
+      const cardEl = document.getElementById('credencialWrapper');
+      const canvas = await html2canvas(cardEl, {
+        scale: 3, // Alta resolución
+        backgroundColor: '#111',
+        useCORS: true
+      });
+      
+      const link = document.createElement('a');
+      link.download = `Credencial-Steelers-${document.getElementById('credFanId').textContent}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      btn.innerHTML = '✅ Guardada';
+    } catch(e) {
+      console.error(e);
+      alert('Hubo un error al guardar tu credencial. Intenta tomar una captura de pantalla.');
+      btn.innerHTML = originalText;
+    }
     
-    btn.innerHTML = '✅ Guardada';
-  } catch(e) {
-    console.error(e);
-    alert('Hubo un error al guardar tu credencial. Intenta tomar una captura de pantalla.');
-    btn.innerHTML = originalText;
-  }
-  
-  setTimeout(() => {
-    btn.innerHTML = originalText;
-    btn.disabled = false;
-  }, 3000);
-});
+    setTimeout(() => {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }, 3000);
+  });
+}
+
+// ---- LOGOUT ----
+const btnLogoutEl = document.getElementById('btnLogout');
+if (btnLogoutEl) {
+  btnLogoutEl.addEventListener('click', async () => {
+    await auth.signOut();
+    location.reload();
+  });
+}
 
 // ---- LOGIN ----
-document.getElementById('btnLogin').addEventListener('click', async () => {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pw    = document.getElementById('loginPassword').value;
-  const btn   = document.getElementById('btnLogin');
-  const st    = document.getElementById('loginStatus');
+const btnLoginEl = document.getElementById('btnLogin');
+if (btnLoginEl) {
+  btnLoginEl.addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pw    = document.getElementById('loginPassword').value;
+    const btn   = document.getElementById('btnLogin');
+    const st    = document.getElementById('loginStatus');
 
-  if (!email || !pw) { showStatus(st, 'Completa email y contraseña.', 'error'); return; }
-  btn.disabled = true; btn.textContent = '⏳ Entrando...';
+    if (!email || !pw) { showStatus(st, 'Completa email y contraseña.', 'error'); return; }
+    btn.disabled = true; btn.textContent = '⏳ Entrando...';
 
-  try {
-    await auth.signInWithEmailAndPassword(email, pw);
-    // onAuthStateChanged toma el control
-  } catch(e) {
-    let msg = 'Error al iniciar sesión.';
-    if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') msg = 'Email o contraseña incorrectos.';
-    if (e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Intenta más tarde.';
-    showStatus(st, '❌ ' + msg, 'error');
-    btn.disabled = false; btn.textContent = 'Entrar →';
-  }
-});
+    try {
+      await auth.signInWithEmailAndPassword(email, pw);
+      // onAuthStateChanged toma el control
+    } catch(e) {
+      let msg = 'Error al iniciar sesión.';
+      if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') msg = 'Email o contraseña incorrectos.';
+      if (e.code === 'auth/too-many-requests') msg = 'Demasiados intentos. Intenta más tarde.';
+      showStatus(st, '❌ ' + msg, 'error');
+      btn.disabled = false; btn.textContent = 'Entrar →';
+    }
+  });
+}
 
 // ---- RECUPERAR CONTRASEÑA ----
-document.getElementById('btnForgotPw').addEventListener('click', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim();
-  const st    = document.getElementById('loginStatus');
-  if (!email) {
-    showStatus(st, '⚠️ Ingresa tu correo arriba y presiona este botón de nuevo.', 'error');
-    return;
-  }
-  try {
-    await auth.sendPasswordResetEmail(email);
-    showStatus(st, '✅ ¡Enlace enviado! Revisa tu correo (y tu carpeta de spam).', 'success');
-  } catch(err) {
-    let msg = err.message;
-    if (err.code === 'auth/user-not-found') msg = 'No hay ninguna cuenta con ese correo.';
-    showStatus(st, '❌ ' + msg, 'error');
-  }
-});
+const btnForgotPwEl = document.getElementById('btnForgotPw');
+if (btnForgotPwEl) {
+  btnForgotPwEl.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const st    = document.getElementById('loginStatus');
+    if (!email) {
+      showStatus(st, '⚠️ Ingresa tu correo arriba y presiona este botón de nuevo.', 'error');
+      return;
+    }
+    try {
+      await auth.sendPasswordResetEmail(email);
+      showStatus(st, '✅ ¡Enlace enviado! Revisa tu correo (y tu carpeta de spam).', 'success');
+    } catch(err) {
+      let msg = err.message;
+      if (err.code === 'auth/user-not-found') msg = 'No hay ninguna cuenta con ese correo.';
+      showStatus(st, '❌ ' + msg, 'error');
+    }
+  });
+}
 
 // ---- AUTH STATE ----
 auth.onAuthStateChanged(async user => {
@@ -476,8 +494,21 @@ auth.onAuthStateChanged(async user => {
   document.getElementById('sectionCredencial').classList.remove('hidden');
 
   if (!user.emailVerified) {
-    document.getElementById('alertVerification').classList.remove('hidden');
-    document.getElementById('btnResendVerif').addEventListener('click', async (e) => {
+    const verifAlert = document.getElementById('alertVerification');
+    if (verifAlert) verifAlert.classList.remove('hidden');
+    const resendBtn = document.getElementById('btnResendVerif');
+    if (resendBtn) {
+      resendBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+          await user.sendEmailVerification();
+          alert('Se ha enviado un nuevo enlace de verificación a tu correo.');
+        } catch(error) {
+          alert('Demasiados intentos. Espera unos minutos y vuelve a intentar.');
+        }
+      });
+    }
+  }
       e.preventDefault();
       try {
         await user.sendEmailVerification();
