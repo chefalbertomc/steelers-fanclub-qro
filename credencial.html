@@ -509,15 +509,6 @@ auth.onAuthStateChanged(async user => {
       });
     }
   }
-      e.preventDefault();
-      try {
-        await user.sendEmailVerification();
-        alert('Se ha enviado un nuevo enlace de verificación a tu correo.');
-      } catch(error) {
-        alert('Demasiados intentos. Espera unos minutos y vuelve a intentar.');
-      }
-    });
-  }
 
   // Cargar datos del fan
   const snap = await db.collection('fans').doc(user.uid).get();
