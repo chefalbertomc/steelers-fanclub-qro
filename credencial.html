@@ -279,7 +279,7 @@
     <div style="border:1px solid #333; background: #161616; border-radius:10px; padding:14px; margin-bottom:14px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <div style="font-weight:900; font-size:15px; color:#fff; display:flex; align-items:center; gap:6px;">
-          <span>👥 Asistentes al Partido (<span id="modalAsistentesCount" style="color:var(--gold);">0</span>)</span>
+          <span id="modalAsistentesLegend">👥 Asistentes al Partido (<span id="modalAsistentesCount" style="color:var(--gold);">0</span>)</span>
         </div>
         <span class="badge" style="background:#333; color:#aaa; font-weight:bold; font-size:10px;">REGISTRO DE ASISTENCIA</span>
       </div>
@@ -789,9 +789,24 @@ async function loadAsistenciaPartidoCredencial() {
   const countEl = document.getElementById('partyFanCount');
   const modalCountEl = document.getElementById('modalAsistentesCount');
   const asistentesContainer = document.getElementById('asistentesListContent');
+  const legendEl = document.getElementById('modalAsistentesLegend');
 
   if (countEl) countEl.textContent = 'Cargando...';
   if (asistentesContainer) asistentesContainer.innerHTML = '<p class="text-muted" style="font-size:12px; text-align:center; padding:12px;">⏳ Cargando asistentes...</p>';
+
+  // Cargar marcador del partido si existe
+  try {
+    const scoreSnap = await db.collection('partidos_scores').doc(targetId).get();
+    if (scoreSnap.exists && window.getMatchHeaderHTML) {
+      const sData = scoreSnap.data();
+      const partyTitle = document.getElementById('partyTitle');
+      const modalPartyTitle = document.getElementById('modalPartyTitle');
+      if (partyTitle) partyTitle.innerHTML = window.getMatchHeaderHTML(targetId, sData);
+      if (modalPartyTitle) modalPartyTitle.innerHTML = window.getMatchHeaderHTML(targetId, sData);
+    }
+  } catch(errScore) {
+    console.warn('Sin marcador para este partido');
+  }
 
   try {
     const snap = await db.collectionGroup('visitas').get();
@@ -805,6 +820,9 @@ async function loadAsistenciaPartidoCredencial() {
 
     if (countEl) countEl.textContent = `${totalCount} Asistente${totalCount !== 1 ? 's' : ''}`;
     if (modalCountEl) modalCountEl.textContent = totalCount;
+    if (legendEl && window.getAttendeesLegendTitle) {
+      legendEl.innerHTML = window.getAttendeesLegendTitle(targetId, totalCount);
+    }
 
     if (totalCount === 0) {
       if (asistentesContainer) {

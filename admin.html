@@ -107,6 +107,19 @@
 
       <div id="adminMatchHeader" style="margin-bottom:12px; text-align:center;"></div>
 
+      <!-- CONTROL DE MARCADOR DEL PARTIDO -->
+      <div id="adminScoreControl" style="margin-bottom:14px; background:#1c1917; padding:10px 14px; border-radius:8px; border:1px solid #333; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="font-size:12px; font-weight:bold; color:var(--gold);">🏈 Marcador Final del Partido:</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:12px; font-weight:bold; color:var(--steelers-yellow);">PIT</span>
+          <input type="number" id="inputScorePit" style="width:55px; padding:4px 6px; background:#000; border:1px solid var(--gold); border-radius:4px; color:#fff; text-align:center; font-weight:bold; font-size:14px;" placeholder="0"/>
+          <span style="font-size:12px; color:#888;">vs</span>
+          <input type="number" id="inputScoreRiv" style="width:55px; padding:4px 6px; background:#000; border:1px solid var(--gold); border-radius:4px; color:#fff; text-align:center; font-weight:bold; font-size:14px;" placeholder="0"/>
+          <span style="font-size:12px; font-weight:bold; color:#fff;" id="adminRivalCode">RIV</span>
+          <button class="btn btn-gold btn-sm" onclick="savePartidoScore()" style="width:auto; padding:5px 12px; font-size:11px; font-weight:bold;">💾 Guardar Marcador</button>
+        </div>
+      </div>
+
       <!-- Desglose Asistentes -->
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap:10px; background:#181818; padding:12px; border-radius:10px; text-align:center;">
         <div>
@@ -370,10 +383,39 @@ async function loadAsistenciaPartidoAdmin() {
   const select = document.getElementById('selectPartidoAdmin');
   if (!select) return;
   const targetId = select.value;
+  const matchInfo = (window.PARTIDOS_INFO && window.PARTIDOS_INFO[targetId]) ? window.PARTIDOS_INFO[targetId] : {};
   
+  const rivalCodeEl = document.getElementById('adminRivalCode');
+  if (rivalCodeEl) rivalCodeEl.textContent = (matchInfo.code || 'RIV').toUpperCase();
+
+  const scoreControl = document.getElementById('adminScoreControl');
+  if (scoreControl) {
+    scoreControl.style.display = targetId === 'VISITA_NORMAL' || targetId === 'SEM9' ? 'none' : 'flex';
+  }
+
   const headerEl = document.getElementById('adminMatchHeader');
-  if (headerEl && window.getMatchHeaderHTML) {
-    headerEl.innerHTML = window.getMatchHeaderHTML(targetId, { size: 26 });
+  
+  // Cargar marcador guardado si existe
+  try {
+    const scoreSnap = await db.collection('partidos_scores').doc(targetId).get();
+    if (scoreSnap.exists) {
+      const sData = scoreSnap.data();
+      document.getElementById('inputScorePit').value = sData.scoreSteelers !== undefined ? sData.scoreSteelers : '';
+      document.getElementById('inputScoreRiv').value = sData.scoreRival !== undefined ? sData.scoreRival : '';
+      if (headerEl && window.getMatchHeaderHTML) {
+        headerEl.innerHTML = window.getMatchHeaderHTML(targetId, sData);
+      }
+    } else {
+      document.getElementById('inputScorePit').value = '';
+      document.getElementById('inputScoreRiv').value = '';
+      if (headerEl && window.getMatchHeaderHTML) {
+        headerEl.innerHTML = window.getMatchHeaderHTML(targetId, { size: 26 });
+      }
+    }
+  } catch(e) {
+    if (headerEl && window.getMatchHeaderHTML) {
+      headerEl.innerHTML = window.getMatchHeaderHTML(targetId, { size: 26 });
+    }
   }
 
   try {
@@ -395,6 +437,33 @@ async function loadAsistenciaPartidoAdmin() {
 
   } catch(e) {
     console.error('Error al cargar asistencia:', e);
+  }
+}
+
+async function savePartidoScore() {
+  const select = document.getElementById('selectPartidoAdmin');
+  if (!select) return;
+  const targetId = select.value;
+  const pitVal = document.getElementById('inputScorePit').value;
+  const rivVal = document.getElementById('inputScoreRiv').value;
+
+  if (pitVal === '' || rivVal === '') {
+    alert('Ingresa el marcador de ambos equipos.');
+    return;
+  }
+
+  try {
+    await db.collection('partidos_scores').doc(targetId).set({
+      partidoId: targetId,
+      scoreSteelers: Number(pitVal),
+      scoreRival: Number(rivVal),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    alert('✅ Marcador guardado con éxito.');
+    loadAsistenciaPartidoAdmin();
+  } catch(e) {
+    alert('Error al guardar marcador: ' + e.message);
   }
 }
 
