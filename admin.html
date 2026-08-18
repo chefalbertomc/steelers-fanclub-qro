@@ -395,11 +395,17 @@ async function loadAsistenciaPartidoAdmin() {
 
   const headerEl = document.getElementById('adminMatchHeader');
   
-  // Cargar marcador guardado si existe
+  // Cargar marcador guardado o automático en vivo de ESPN API
   try {
+    let sData = null;
     const scoreSnap = await db.collection('partidos_scores').doc(targetId).get();
     if (scoreSnap.exists) {
-      const sData = scoreSnap.data();
+      sData = scoreSnap.data();
+    } else if (window.fetchAutoMatchScore) {
+      sData = await window.fetchAutoMatchScore(targetId);
+    }
+
+    if (sData) {
       document.getElementById('inputScorePit').value = sData.scoreSteelers !== undefined ? sData.scoreSteelers : '';
       document.getElementById('inputScoreRiv').value = sData.scoreRival !== undefined ? sData.scoreRival : '';
       if (headerEl && window.getMatchHeaderHTML) {

@@ -794,11 +794,17 @@ async function loadAsistenciaPartidoCredencial() {
   if (countEl) countEl.textContent = 'Cargando...';
   if (asistentesContainer) asistentesContainer.innerHTML = '<p class="text-muted" style="font-size:12px; text-align:center; padding:12px;">⏳ Cargando asistentes...</p>';
 
-  // Cargar marcador del partido si existe
+  // Cargar marcador (Manual de Firestore o Automático en tiempo real de ESPN API)
   try {
+    let sData = null;
     const scoreSnap = await db.collection('partidos_scores').doc(targetId).get();
-    if (scoreSnap.exists && window.getMatchHeaderHTML) {
-      const sData = scoreSnap.data();
+    if (scoreSnap.exists) {
+      sData = scoreSnap.data();
+    } else if (window.fetchAutoMatchScore) {
+      sData = await window.fetchAutoMatchScore(targetId);
+    }
+
+    if (sData && window.getMatchHeaderHTML) {
       const partyTitle = document.getElementById('partyTitle');
       const modalPartyTitle = document.getElementById('modalPartyTitle');
       if (partyTitle) partyTitle.innerHTML = window.getMatchHeaderHTML(targetId, sData);

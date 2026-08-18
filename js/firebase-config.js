@@ -88,8 +88,14 @@ window.getMatchHeaderHTML = function(partidoId, opts = {}) {
     const p2 = Number(scoreRiv);
     const isWin = p1 > p2;
     const isTie = p1 === p2;
-    const badgeBg = isWin ? '#22c55e' : (isTie ? '#eab308' : '#ef4444');
-    const badgeText = isWin ? 'GANADO 🏈' : (isTie ? 'EMPATE 🤝' : 'FINAL');
+    
+    let badgeBg = isWin ? '#22c55e' : (isTie ? '#eab308' : '#ef4444');
+    let badgeText = isWin ? 'GANADO 🏈' : (isTie ? 'EMPATE 🤝' : 'FINAL');
+
+    if (opts.isLive) {
+      badgeBg = '#dc2626';
+      badgeText = `🔴 EN VIVO ${opts.detail ? `(${opts.detail})` : ''}`;
+    }
 
     return `
       <div style="display:inline-flex; flex-direction:column; align-items:center; gap:4px;">
@@ -107,8 +113,8 @@ window.getMatchHeaderHTML = function(partidoId, opts = {}) {
           </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px; font-size:10px; margin-top:2px;">
-          <span style="background:${badgeBg}; color:#000; font-weight:900; padding:1px 6px; border-radius:4px; text-transform:uppercase;">${badgeText}</span>
-          <span style="color:#aaa; font-weight:bold;">MARCADOR FINAL ${info.date ? `(${info.date})` : ''}</span>
+          <span style="background:${badgeBg}; color:#fff; font-weight:900; padding:1px 6px; border-radius:4px; text-transform:uppercase;">${badgeText}</span>
+          <span style="color:#aaa; font-weight:bold;">MARCADOR OFICIAL ${info.date ? `(${info.date})` : ''}</span>
         </div>
       </div>
     `;
@@ -128,6 +134,59 @@ window.getMatchHeaderHTML = function(partidoId, opts = {}) {
       ${info.date ? `<span style="font-size:11px; color:#aaa; font-weight:600;">(${info.date})</span>` : ''}
     </div>
   `;
+};
+
+// ============================================
+// CONEXIÓN AUTOMÁTICA CON ESPN NFL LIVE SCORES
+// ============================================
+window.fetchAutoMatchScore = async function(partidoId) {
+  const info = window.PARTIDOS_INFO[partidoId];
+  if (!info || partidoId === 'VISITA_NORMAL' || partidoId === 'SEM9') return null;
+
+  try {
+    const res = await fetch('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/pit/schedule');
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.events) return null;
+
+    const rivalName = (info.rival || '').toLowerCase();
+    const rivalCode = (info.code || '').toLowerCase();
+
+    const matchEvent = data.events.find(evt => {
+      const name = (evt.name || '').toLowerCase();
+      if (name.includes(rivalName)) return true;
+      const comps = evt.competitions && evt.competitions[0] ? evt.competitions[0].competitors : [];
+      return comps.some(c => (c.team.abbreviation || '').toLowerCase() === rivalCode || (c.team.name || '').toLowerCase().includes(rivalName));
+    });
+
+    if (!matchEvent) return null;
+
+    const comp = matchEvent.competitions[0];
+    const pitComp = comp.competitors.find(c => (c.team.abbreviation || '').toUpperCase() === 'PIT');
+    const rivComp = comp.competitors.find(c => (c.team.abbreviation || '').toUpperCase() !== 'PIT');
+
+    if (!pitComp || !rivComp) return null;
+
+    const isCompleted = comp.status && comp.status.type && comp.status.type.completed;
+    const isLive = comp.status && comp.status.type && comp.status.type.state === 'in';
+    const detail = comp.status && comp.status.type ? (comp.status.type.shortDetail || comp.status.type.detail) : '';
+
+    const pitScore = pitComp.score ? Number(pitComp.score.value) : null;
+    const rivScore = rivComp.score ? Number(rivComp.score.value) : null;
+
+    if (pitScore !== null && rivScore !== null && !isNaN(pitScore) && !isNaN(rivScore)) {
+      return {
+        scoreSteelers: pitScore,
+        scoreRival: rivScore,
+        isCompleted: isCompleted,
+        isLive: isLive,
+        detail: detail
+      };
+    }
+  } catch(e) {
+    console.warn('Error fetching auto score from ESPN:', e);
+  }
+  return null;
 };
 
 // ============================================
