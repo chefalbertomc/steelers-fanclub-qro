@@ -259,7 +259,7 @@
   </div>
 </div>
 
-<!-- NAVEGACIÓN INFERIOR FIJA TIPO APP NATIVA (4 SECCIONES PRINCIPALES) -->
+<!-- NAVEGACIÓN INFERIOR FIJA TIPO APP NATIVA (5 PÁGINAS DEDICADAS) -->
 <nav id="bottomNavDock" style="
   position: fixed;
   bottom: 0;
@@ -271,9 +271,9 @@
   -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid rgba(255, 182, 18, 0.4);
   box-shadow: 0 -4px 25px rgba(0,0,0,0.95);
-  padding: 8px 10px 10px 10px;
+  padding: 8px 4px 10px 4px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
 ">
   <style>
@@ -285,25 +285,26 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 6px 4px;
-      border-radius: 12px;
+      padding: 6px 2px;
+      border-radius: 10px;
       cursor: pointer;
       transition: all 0.2s ease;
       flex: 1;
       text-align: center;
+      text-decoration: none;
     }
     .bottom-nav-btn:hover, .bottom-nav-btn.active {
       color: var(--gold);
       background: rgba(255, 182, 18, 0.16);
     }
     .bottom-nav-btn .nav-icon {
-      font-size: 20px;
+      font-size: 19px;
       line-height: 1;
     }
     .bottom-nav-btn .nav-label {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
-      margin-top: 4px;
+      margin-top: 3px;
       line-height: 1.1;
     }
     body {
@@ -311,25 +312,30 @@
     }
   </style>
 
-  <button onclick="scrollToSectionGroup('credencial', event)" class="bottom-nav-btn active">
+  <a href="credencial.html" class="bottom-nav-btn active">
     <span class="nav-icon">💳</span>
     <span class="nav-label">Credencial</span>
-  </button>
+  </a>
 
-  <button onclick="scrollToSectionGroup('partidos', event)" class="bottom-nav-btn">
+  <a href="partidos.html" class="bottom-nav-btn">
     <span class="nav-icon">🏈</span>
     <span class="nav-label">Partidos</span>
-  </button>
+  </a>
 
-  <button onclick="scrollToSectionGroup('avisos', event)" class="bottom-nav-btn">
+  <a href="avisos.html" class="bottom-nav-btn">
     <span class="nav-icon">📢</span>
     <span class="nav-label">Avisos</span>
-  </button>
+  </a>
 
-  <button onclick="scrollToSectionGroup('promos', event)" class="bottom-nav-btn">
+  <a href="promos.html" class="bottom-nav-btn">
     <span class="nav-icon">🔥</span>
     <span class="nav-label">Promos</span>
-  </button>
+  </a>
+
+  <a href="https://chefalbertomc.github.io/catch-sports/?team=steelers" target="_blank" class="bottom-nav-btn">
+    <span class="nav-icon">🛒</span>
+    <span class="nav-label">Tienda</span>
+  </a>
 </nav>
 
 <!-- Firebase SDKs -->
