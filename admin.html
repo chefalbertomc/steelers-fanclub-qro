@@ -434,9 +434,19 @@ async function loadFanaticoAdmin() {
     let html = '';
 
     if (winnerData) {
+      let winnerProfile = null;
+      if (winnerData.winnerUid) {
+        const profileSnap = await db.collection('fans').doc(winnerData.winnerUid).get();
+        if (profileSnap.exists) winnerProfile = profileSnap.data();
+      }
+      
+      if (window.renderWinnerCardHTML) {
+        html += window.renderWinnerCardHTML(winnerData, winnerProfile);
+      }
+      
       html += `
         <div style="background:#15803d; color:#fff; padding:12px 16px; border-radius:8px; margin-bottom:12px; font-weight:bold; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
-          <span>🎉 Ganador Declarado: <b>${winnerData.winnerNombre}</b> (${winnerData.totalVotes || 0} voto(s) ${winnerData.isTieBreak ? '+ Voto Desempate Org' : ''})</span>
+          <span>🎉 Ganador Oficial Registrado: <b>${winnerData.winnerNombre}</b> (${winnerData.totalVotes || 0} voto(s) ${winnerData.isTieBreak ? '+ Voto Desempate Org' : ''})</span>
           <button class="btn btn-outline btn-sm" onclick="resetFanaticoGanador('${targetId}')" style="color:#fff; border-color:#fff; width:auto; font-size:11px;">Reabrir Votación</button>
         </div>`;
     }
@@ -487,10 +497,19 @@ async function loadFanaticoAdmin() {
 async function declararGanadorFanatico(partidoId, winnerUid, winnerNombre, totalVotes, isTieBreak) {
   if (!confirm(`¿Confirmas a ${winnerNombre} como el Ganador Oficial de la Semana?`)) return;
   try {
+    let winnerPhotoURL = '';
+    if (winnerUid) {
+      const pSnap = await db.collection('fans').doc(winnerUid).get();
+      if (pSnap.exists && pSnap.data().photoURL) {
+        winnerPhotoURL = pSnap.data().photoURL;
+      }
+    }
+
     await db.collection('fanatico_ganadores').doc(partidoId).set({
       partidoId: partidoId,
       winnerUid: winnerUid,
       winnerNombre: winnerNombre,
+      winnerPhotoURL: winnerPhotoURL,
       totalVotes: totalVotes,
       isTieBreak: isTieBreak,
       declaredAt: firebase.firestore.FieldValue.serverTimestamp()

@@ -161,6 +161,9 @@
       </div>
     </div>
 
+    <!-- TARJETA DESTACADA DEL GANADOR DE LA SEMANA (SE ACTUALIZA AUTOMÁTICAMENTE) -->
+    <div id="winnerSpotlightContainer" class="mt-4"></div>
+
     <div style="margin-top:16px; display:flex; justify-content:center; gap:12px;">
       <button class="btn btn-outline btn-sm" id="btnDescargar" style="width:auto;">⬇️ Descargar credencial</button>
       <button class="btn btn-outline btn-sm" id="btnLogout" style="width:auto;">Salir</button>
@@ -712,6 +715,40 @@ function onPartidoCredencialChange() {
         loadFanaticoPartidoCredencial(auth.currentUser.uid, data.asistentesUids, data.todosAsistentes);
       }
     });
+
+    loadSpotlightGanadorSemana();
+  }
+}
+
+// ---- TARJETA DESTACADA DEL GANADOR DE LA SEMANA ----
+async function loadSpotlightGanadorSemana() {
+  const spotlightContainer = document.getElementById('winnerSpotlightContainer');
+  if (!spotlightContainer) return;
+
+  try {
+    // Buscar si el partido seleccionado tiene ganador o obtener el ganador más reciente
+    let winnerSnap = await db.collection('fanatico_ganadores').doc(currentCredencialPartidoId).get();
+    
+    if (!winnerSnap.exists) {
+      const allWinnersSnap = await db.collection('fanatico_ganadores').orderBy('declaredAt', 'desc').limit(1).get();
+      if (!allWinnersSnap.empty) {
+        winnerSnap = allWinnersSnap.docs[0];
+      }
+    }
+
+    if (winnerSnap && winnerSnap.exists) {
+      const wData = winnerSnap.data();
+      let winnerProfile = null;
+      if (wData.winnerUid) {
+        const profileSnap = await db.collection('fans').doc(wData.winnerUid).get();
+        if (profileSnap.exists) winnerProfile = profileSnap.data();
+      }
+      spotlightContainer.innerHTML = window.renderWinnerCardHTML(wData, winnerProfile);
+    } else {
+      spotlightContainer.innerHTML = '';
+    }
+  } catch(e) {
+    console.error('Error al cargar spotlight de ganador:', e);
   }
 }
 
@@ -802,13 +839,12 @@ async function loadFanaticoPartidoCredencial(uid, preloadedUids, preloadedAsiste
     const winnerSnap = await db.collection('fanatico_ganadores').doc(targetId).get();
     if (winnerSnap.exists) {
       const wData = winnerSnap.data();
-      container.innerHTML = `
-        <div style="background:linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color:#000; border-radius:12px; padding:14px; text-align:center; box-shadow:0 4px 15px rgba(234,179,8,0.4);">
-          <div style="font-size:22px;">🏆</div>
-          <div style="font-weight:900; font-size:16px; text-transform:uppercase; margin-bottom:4px;">¡GANADOR OFICIAL DEL PARTIDO!</div>
-          <div style="font-size:15px; font-weight:800; margin-bottom:6px;">${wData.winnerNombre || 'Fan'}</div>
-          <div style="font-size:11px; font-weight:600; opacity:0.9;">¡Felicidades! Disfruta tu premio de BWW (1 Nachos + 2 Bebidas + Mesa Reservada) y regalo sorpresa 🎉.</div>
-        </div>`;
+      let winnerProfile = null;
+      if (wData.winnerUid) {
+        const profileSnap = await db.collection('fans').doc(wData.winnerUid).get();
+        if (profileSnap.exists) winnerProfile = profileSnap.data();
+      }
+      container.innerHTML = window.renderWinnerCardHTML(wData, winnerProfile);
       return;
     }
 

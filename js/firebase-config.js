@@ -76,4 +76,69 @@ window.getMatchHeaderHTML = function(partidoId, opts = {}) {
   `;
 };
 
+// ============================================
+// COMPONENTE VISUAL: TARJETA DEL GANADOR OFICIAL
+// ============================================
+window.renderWinnerCardHTML = function(wData, winnerProfile) {
+  const winnerNombre = (winnerProfile ? `${winnerProfile.nombre || ''} ${winnerProfile.apellidoPaterno || ''}` : wData.winnerNombre || 'Fan').trim().toUpperCase();
+  const winnerPhoto = (winnerProfile && winnerProfile.photoURL) ? winnerProfile.photoURL : (wData.winnerPhotoURL || '');
+  const partidoId = wData.partidoId || '';
+  const matchInfo = window.PARTIDOS_INFO[partidoId] || {};
+  const matchRival = matchInfo.rival ? `vs ${matchInfo.rival.toUpperCase()}` : '';
+  
+  const photoHtml = winnerPhoto 
+    ? `<img src="${winnerPhoto}" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(255, 182, 18, 0.6), inset 0 0 10px rgba(0,0,0,0.8);" alt="${winnerNombre}"/>`
+    : `<div style="width: 110px; height: 110px; border-radius: 50%; background: #262626; border: 4px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 50px; box-shadow: 0 0 25px rgba(255, 182, 18, 0.6);">🏆</div>`;
+
+  return `
+    <div style="background: linear-gradient(145deg, #1f1a0e 0%, #0d0d0d 100%); border: 2px solid var(--gold); border-radius: 16px; padding: 20px 16px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 8px 30px rgba(255, 182, 18, 0.25); margin-bottom:16px;">
+      
+      <!-- Glow superior -->
+      <div style="position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 180px; height: 180px; background: radial-gradient(circle, rgba(255, 182, 18, 0.25) 0%, rgba(0,0,0,0) 70%); pointer-events: none;"></div>
+
+      <!-- Subtítulo Superior -->
+      <div style="font-size: 11px; font-weight: 900; color: #aaa; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;">
+        🛡️ GUARDIÁN DE LA CORTINA DE ACERO 🛡️
+      </div>
+
+      <!-- Título Principal -->
+      <div style="font-size: 17px; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;">
+        🏆 ¡GANADOR OFICIAL DEL PARTIDO!
+      </div>
+
+      <!-- Foto de Perfil con Insignias BWW y Steelers -->
+      <div style="position: relative; display: inline-block; margin-bottom: 12px;">
+        ${photoHtml}
+        
+        <!-- Insignia Izquierda: BWW -->
+        <div style="position: absolute; bottom: 2px; left: -8px; background: #000; border: 2px solid var(--gold); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.9);" title="Buffalo Wild Wings">
+          <img src="assets/bww-buffalo.png" style="width: 26px; height: 26px; object-fit: contain;"/>
+        </div>
+
+        <!-- Insignia Derecha: Steelers Nation -->
+        <div style="position: absolute; bottom: 2px; right: -8px; background: #000; border: 2px solid var(--gold); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.9);" title="Steelers Nation Qro">
+          <img src="assets/logo.png" style="width: 24px; height: 24px; object-fit: contain;"/>
+        </div>
+      </div>
+
+      <!-- Nombre del Ganador -->
+      <div style="font-size: 22px; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+        ${winnerNombre}
+      </div>
+
+      <!-- Badge Fanático de la Semana -->
+      <div style="display: inline-block; background: rgba(255, 182, 18, 0.15); border: 1px solid var(--gold); color: var(--gold); font-size: 11px; font-weight: 800; padding: 4px 14px; border-radius: 20px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+        ⭐ FANÁTICO DE LA SEMANA ${matchRival}
+      </div>
+
+      <!-- Descripción del Premio -->
+      <div style="font-size: 12px; color: #ddd; max-width: 440px; margin: 0 auto; line-height: 1.5; background: rgba(0,0,0,0.6); padding: 10px 14px; border-radius: 10px; border: 1px solid #333;">
+        ¡Felicidades! Disfruta tu premio de <b>Buffalo Wild Wings</b> (1 Orden de Nachos + 2 Bebidas + Mesa Reservada) y tu regalo sorpresa de <b>Steelers Nation Querétaro</b> 🎉.
+      </div>
+
+    </div>
+  `;
+};
+
+
 
