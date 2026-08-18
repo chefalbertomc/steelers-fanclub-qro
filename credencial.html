@@ -330,106 +330,77 @@
   </div>
 </div>
 
-<!-- NAVEGACIÓN INFERIOR FIJA TIPO APP NATIVA (BOTTOM DOCK) -->
+<!-- NAVEGACIÓN INFERIOR FIJA TIPO APP NATIVA (4 SECCIONES PRINCIPALES) -->
 <nav id="bottomNavDock" style="
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 9999;
-  background: rgba(12, 12, 12, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 182, 18, 0.3);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.9);
-  padding: 6px 0;
+  z-index: 999999;
+  background: rgba(12, 12, 12, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 182, 18, 0.4);
+  box-shadow: 0 -4px 25px rgba(0,0,0,0.95);
+  padding: 8px 10px 10px 10px;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
 ">
   <style>
-    #bottomNavDock::-webkit-scrollbar { display: none; }
-    .bottom-nav-item {
+    .bottom-nav-btn {
       background: transparent;
       border: none;
-      color: #888;
+      color: #999;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 6px 12px;
-      border-radius: 10px;
+      padding: 6px 4px;
+      border-radius: 12px;
       cursor: pointer;
       transition: all 0.2s ease;
-      min-width: 68px;
-      flex-shrink: 0;
+      flex: 1;
+      text-align: center;
     }
-    .bottom-nav-item:hover, .bottom-nav-item.active {
+    .bottom-nav-btn:hover, .bottom-nav-btn.active {
       color: var(--gold);
-      background: rgba(255, 182, 18, 0.15);
+      background: rgba(255, 182, 18, 0.16);
     }
-    .bottom-nav-item .nav-icon {
-      font-size: 18px;
+    .bottom-nav-btn .nav-icon {
+      font-size: 20px;
       line-height: 1;
     }
-    .bottom-nav-item .nav-label {
-      font-size: 10px;
+    .bottom-nav-btn .nav-label {
+      font-size: 11px;
       font-weight: 800;
-      margin-top: 3px;
-      white-space: nowrap;
-      letter-spacing: 0.3px;
+      margin-top: 4px;
+      line-height: 1.1;
     }
     body {
-      padding-bottom: 75px !important;
+      padding-bottom: 85px !important;
     }
   </style>
 
-  <div style="display:flex; align-items:center; gap:2px; padding:0 8px; margin:0 auto;">
-    
-    <button onclick="scrollToSection('credencialWrapper', event)" class="bottom-nav-item active">
-      <span class="nav-icon">💳</span>
-      <span class="nav-label">Credencial</span>
-    </button>
+  <button onclick="scrollToSectionGroup('credencial', event)" class="bottom-nav-btn active">
+    <span class="nav-icon">💳</span>
+    <span class="nav-label">Credencial</span>
+  </button>
 
-    <button onclick="scrollToSection('cardVisitas', event)" class="bottom-nav-item">
-      <span class="nav-icon">📋</span>
-      <span class="nav-label">Visitas</span>
-    </button>
+  <button onclick="scrollToSectionGroup('partidos', event)" class="bottom-nav-btn">
+    <span class="nav-icon">🏈</span>
+    <span class="nav-label">Partidos</span>
+  </button>
 
-    <button onclick="scrollToSection('cardNivelInfo', event)" class="bottom-nav-item">
-      <span class="nav-icon">⭐</span>
-      <span class="nav-label">Mi Nivel</span>
-    </button>
+  <button onclick="scrollToSectionGroup('avisos', event)" class="bottom-nav-btn">
+    <span class="nav-icon">📢</span>
+    <span class="nav-label">Avisos</span>
+  </button>
 
-    <button onclick="scrollToSection('cardAsistenciaPartido', event)" class="bottom-nav-item">
-      <span class="nav-icon">🏈</span>
-      <span class="nav-label">Partidos</span>
-    </button>
-
-    <button onclick="scrollToSection('cardCalendarios', event)" class="bottom-nav-item">
-      <span class="nav-icon">📅</span>
-      <span class="nav-label">Calendario</span>
-    </button>
-
-    <button onclick="scrollToSection('cumplesContainer', event)" class="bottom-nav-item">
-      <span class="nav-icon">🎂</span>
-      <span class="nav-label">Cumpleaños</span>
-    </button>
-
-    <button onclick="scrollToSection('avisoContainer', event)" class="bottom-nav-item">
-      <span class="nav-icon">📢</span>
-      <span class="nav-label">Avisos</span>
-    </button>
-
-    <button onclick="scrollToSection('promosContainer', event)" class="bottom-nav-item">
-      <span class="nav-icon">🔥</span>
-      <span class="nav-label">Promos</span>
-    </button>
-
-  </div>
+  <button onclick="scrollToSectionGroup('promos', event)" class="bottom-nav-btn">
+    <span class="nav-icon">🔥</span>
+    <span class="nav-label">Promos</span>
+  </button>
 </nav>
 
 <!-- Firebase SDKs -->
@@ -452,24 +423,40 @@ const NIVEL_ICON = {
   'Organizador': '🏆'
 };
 
-// ---- NAVEGACIÓN DESDE BOTTOM DOCK ----
-function scrollToSection(elementId, evt) {
-  const el = document.getElementById(elementId);
-  if (el) {
-    if (el.classList.contains('hidden') || el.style.display === 'none') {
-      el.style.display = 'block';
-      el.classList.remove('hidden');
-    }
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    if (elementId === 'cardAsistenciaPartido') {
-      setTimeout(() => {
-        openModalAsistencia();
-      }, 400);
-    }
+// ---- NAVEGACIÓN DESDE BOTTOM DOCK (4 NUCLEOS) ----
+function scrollToSectionGroup(groupKey, evt) {
+  let targetId = 'credencialWrapper';
+  
+  if (groupKey === 'credencial') {
+    targetId = 'credencialWrapper';
+    // Asegurar visibilidad de nivel y visitas
+    const nEl = document.getElementById('cardNivelInfo');
+    const vEl = document.getElementById('cardVisitas');
+    if (nEl) { nEl.style.display = 'block'; nEl.classList.remove('hidden'); }
+    if (vEl) { vEl.style.display = 'block'; vEl.classList.remove('hidden'); }
+  } else if (groupKey === 'partidos') {
+    targetId = 'cardAsistenciaPartido';
+    // Asegurar visibilidad de calendarios y cumpleaños
+    const cEl = document.getElementById('cardCalendarios');
+    const bEl = document.getElementById('cumplesContainer');
+    if (cEl) { cEl.style.display = 'block'; cEl.classList.remove('hidden'); }
+    if (bEl) { bEl.style.display = 'block'; bEl.classList.remove('hidden'); }
+  } else if (groupKey === 'avisos') {
+    targetId = 'avisoContainer';
+    const aEl = document.getElementById('avisoContainer');
+    if (aEl) { aEl.style.display = 'block'; aEl.classList.remove('hidden'); }
+  } else if (groupKey === 'promos') {
+    targetId = 'promosContainer';
+    const pEl = document.getElementById('promosContainer');
+    if (pEl) { pEl.style.display = 'block'; pEl.classList.remove('hidden'); }
   }
 
-  document.querySelectorAll('.bottom-nav-item').forEach(btn => btn.classList.remove('active'));
+  const el = document.getElementById(targetId);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.querySelectorAll('.bottom-nav-btn').forEach(btn => btn.classList.remove('active'));
   if (evt && evt.currentTarget) {
     evt.currentTarget.classList.add('active');
   }
