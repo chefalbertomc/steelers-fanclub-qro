@@ -192,6 +192,16 @@
       </div>
       <div id="cumplesPreview" style="margin-top:12px; font-size:13px; color:#fff;"></div>
       <div id="cumplesStatus" style="margin-top:8px; font-size:13px;"></div>
+    <!-- Sección de Notificaciones Push Broadcast -->
+    <div class="card" style="margin-bottom:16px; border:1px solid var(--gold);">
+      <h3 style="font-size:16px; color:var(--gold); margin-bottom:6px; display:flex; align-items:center; gap:8px;">📣 Enviar Notificación Push a los Celulares</h3>
+      <p class="text-muted" style="margin-bottom:12px; font-size:13px;">Envía una alerta o aviso directamente a la pantalla de inicio o de bloqueo del celular de todos los fans que tienen la app instalada.</p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <input type="text" id="notifCustomTitle" placeholder="Título (ej. 📢 ¡Hoy hay reunión previa a las 7 PM!)" style="padding:10px 14px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:#fff; font-weight:bold; font-size:14px; outline:none;"/>
+        <textarea id="notifCustomBody" placeholder="Mensaje (ej. Nos vemos en Buffalo Wild Wings Querétaro para apoyar a los Steelers. ¡Habrá rifa de souvenirs!)" rows="2" style="padding:10px 14px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:#fff; font-size:13px; outline:none; resize:none;"></textarea>
+        <button class="btn btn-gold" onclick="sendCustomPushNotification()" style="font-weight:bold; width:auto; align-self:flex-start; font-size:13px;">🚀 Enviar Notificación Push a Todos</button>
+        <div id="notifBroadcastStatus" style="font-size:13px; font-weight:bold; margin-top:2px;"></div>
+      </div>
     </div>
 
     <!-- Filtros y acciones -->
@@ -841,12 +851,14 @@ async function loadAvisosGallery() {
     }
     gallery.innerHTML = validDocs.map(doc => {
       const d = doc.data();
+      const titleEsc = (d.titulo || 'Nuevo Aviso del Club').replace(/'/g, "\\'");
       return `
         <div style="background:#1a1a1a; border-radius:12px; overflow:hidden; border:1px solid #333; position:relative;">
           <img src="${d.imageUrl}" style="width:100%; aspect-ratio:4/3; object-fit:cover;" alt="${d.titulo || 'Aviso'}"/>
           <div style="padding:8px 10px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
             <span style="font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${d.titulo || 'Sin título'}</span>
-            <button id="btnDelAviso_${doc.id}" onclick="confirmDeleteAviso('${doc.id}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; flex-shrink:0; font-weight:bold;">🗑️ Borrar</button>
+            <button onclick="broadcastNotification('📢 ${titleEsc}', '¡Nuevo aviso disponible en la credencial! Toca para ver la información.')" style="background:var(--gold); color:#000; border:none; border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; flex-shrink:0; font-weight:bold;">🔔 Notificar</button>
+            <button id="btnDelAviso_${doc.id}" onclick="confirmDeleteAviso('${doc.id}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; flex-shrink:0; font-weight:bold;">🗑️</button>
           </div>
         </div>`;
     }).join('');
@@ -970,17 +982,64 @@ async function loadPromosGallery() {
     }
     gallery.innerHTML = validDocs.map(doc => {
       const d = doc.data();
+      const titleEsc = (d.titulo || 'Nueva Promo BWW').replace(/'/g, "\\'");
       return `
         <div style="background:#1a1a1a; border-radius:12px; overflow:hidden; border:1px solid #333; position:relative;">
           <img src="${d.imageUrl}" style="width:100%; aspect-ratio:4/3; object-fit:cover;" alt="${d.titulo || 'Promo'}"/>
           <div style="padding:8px 10px; display:flex; justify-content:space-between; align-items:center; gap:6px;">
             <span style="font-size:12px; font-weight:700; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${d.titulo || 'Sin título'}</span>
-            <button id="btnDelPromo_${doc.id}" onclick="confirmDeletePromo('${doc.id}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; flex-shrink:0; font-weight:bold;">🗑️ Borrar</button>
+            <button onclick="broadcastNotification('🔥 ${titleEsc}', '¡Nueva promoción en Buffalo Wild Wings Querétaro! Toca para ver los detalles.')" style="background:var(--gold); color:#000; border:none; border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; flex-shrink:0; font-weight:bold;">🔔 Notificar</button>
+            <button id="btnDelPromo_${doc.id}" onclick="confirmDeletePromo('${doc.id}')" style="background:#ef4444; color:#fff; border:none; border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; flex-shrink:0; font-weight:bold;">🗑️</button>
           </div>
         </div>`;
     }).join('');
   } catch(e) {
     gallery.innerHTML = '<p style="color:#ef4444; font-size:12px;">Error al cargar promos.</p>';
+  }
+}
+
+// ---- NOTIFICACIONES PUSH BROADCAST ----
+async function broadcastNotification(title, body) {
+  try {
+    await db.collection('pending_notifications').add({
+      title: title,
+      body: body,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert(`✅ Notificación enviada: "${title}"`);
+  } catch(e) {
+    alert('Error al enviar notificación: ' + e.message);
+  }
+}
+
+async function sendCustomPushNotification() {
+  const titleInput = document.getElementById('notifCustomTitle');
+  const bodyInput = document.getElementById('notifCustomBody');
+  const title = titleInput.value.trim();
+  const body = bodyInput.value.trim();
+  const statusEl = document.getElementById('notifBroadcastStatus');
+
+  if (!title || !body) {
+    alert('Escribe un título y un mensaje para enviar la notificación.');
+    return;
+  }
+
+  statusEl.textContent = '⏳ Enviando notificación a los celulares...';
+  statusEl.style.color = 'var(--gold)';
+
+  try {
+    await db.collection('pending_notifications').add({
+      title: title,
+      body: body,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    statusEl.textContent = `✅ Notificación "${title}" enviada con éxito a todos los celulares.`;
+    statusEl.style.color = '#22c55e';
+    titleInput.value = '';
+    bodyInput.value = '';
+  } catch(e) {
+    statusEl.textContent = '❌ Error: ' + e.message;
+    statusEl.style.color = '#ef4444';
   }
 }
 

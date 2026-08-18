@@ -64,6 +64,15 @@
       <a href="#" id="btnResendVerif" style="color:var(--gold); font-weight:bold; text-decoration:underline; display:inline-block; margin-top:4px;">Reenviar correo de verificación</a>
     </div>
 
+    <!-- BANNER NOTIFICACIONES PUSH -->
+    <div id="pushNotifBanner" style="display:none; max-width:400px; margin:0 auto 14px auto; background:linear-gradient(90deg, #1c1917 0%, #292524 100%); border:1px solid var(--gold); border-radius:12px; padding:10px 14px; align-items:center; justify-content:space-between; gap:10px; box-shadow:0 4px 14px rgba(0,0,0,0.4);">
+      <div style="font-size:12px; color:#fff; display:flex; align-items:center; gap:8px;">
+        <span style="font-size:18px;">🔔</span>
+        <span style="font-size:11px; font-weight:600; line-height:1.2;">¡Activa las notificaciones para recibir avisos y promos en tu celular!</span>
+      </div>
+      <button onclick="requestPushPermission()" style="background:var(--gold); color:#000; font-weight:900; border:none; border-radius:6px; padding:6px 10px; font-size:11px; cursor:pointer; flex-shrink:0;">Activar 🔔</button>
+    </div>
+
     <!-- Tarjeta credencial estilo Apple Wallet -->
     <div id="credencialWrapper" style="max-width:400px; margin:0 auto;">
       <div id="credencialCard" style="
@@ -451,6 +460,7 @@ auth.onAuthStateChanged(async user => {
   loadPromo();
   loadCumples();
   onPartidoCredencialChange();
+  initPushNotifSystem();
 });
 
 // ---- RENDER CREDENCIAL ----
@@ -712,6 +722,76 @@ async function loadCumples() {
   } catch(e) {
     console.error('Error cargando cumples', e);
   }
+}
+
+// ---- NOTIFICACIONES PUSH PWA ----
+function initPushNotifSystem() {
+  if (!('Notification' in window)) return;
+  const banner = document.getElementById('pushNotifBanner');
+  if (Notification.permission === 'default' && banner) {
+    banner.style.display = 'flex';
+  } else if (Notification.permission === 'granted' && banner) {
+    banner.style.display = 'none';
+  }
+  listenForPushBroadcasts();
+}
+
+async function requestPushPermission() {
+  if (!('Notification' in window)) {
+    alert('Tu navegador no soporta notificaciones push.');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  const banner = document.getElementById('pushNotifBanner');
+  if (perm === 'granted') {
+    if (banner) banner.style.display = 'none';
+    if (auth.currentUser) {
+      await db.collection('push_tokens').doc(auth.currentUser.uid).set({
+        uid: auth.currentUser.uid,
+        enabled: true,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+    alert('🔔 ¡Notificaciones activadas! Recibirás avisos y promociones en tu celular.');
+    listenForPushBroadcasts();
+  } else {
+    if (banner) banner.style.display = 'none';
+  }
+}
+
+function listenForPushBroadcasts() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+  // Escuchar notificaciones enviadas por Admin en tiempo real
+  db.collection('pending_notifications')
+    .orderBy('createdAt', 'desc')
+    .limit(1)
+    .onSnapshot(snap => {
+      if (snap.empty) return;
+      const n = snap.docs[0].data();
+      const nId = snap.docs[0].id;
+      
+      const lastSeenId = localStorage.getItem('last_seen_notif_id');
+      if (lastSeenId !== nId) {
+        localStorage.setItem('last_seen_notif_id', nId);
+        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(n.title || 'Steelers Nation QRO 🏈', {
+              body: n.body || '¡Nuevo aviso disponible del Club!',
+              icon: 'assets/icon-192.png',
+              badge: 'assets/icon-192.png',
+              vibrate: [200, 100, 200],
+              data: { url: n.url || './credencial.html' }
+            });
+          });
+        } else {
+          new Notification(n.title || 'Steelers Nation QRO 🏈', {
+            body: n.body || '¡Nuevo aviso disponible del Club!',
+            icon: 'assets/icon-192.png'
+          });
+        }
+      }
+    });
 }
 
 // ---- MODAL ASISTENCIA ----
