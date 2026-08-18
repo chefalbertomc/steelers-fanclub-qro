@@ -608,9 +608,30 @@ async function loadVisitas(uid, total) {
   }
   list.innerHTML = snap.docs.map(d => {
     const v = d.data();
-    return `<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #333;">
-      <span style="color:#fff; font-size:14px;">${v.partido}</span>
-      <span style="color:#888; font-size:12px;">${v.timestamp ? new Date(v.timestamp.seconds*1000).toLocaleDateString() : 'Hoy'}</span>
+    let pId = v.partidoId || d.id;
+    if (pId.startsWith('VISITA_')) pId = 'VISITA_NORMAL';
+
+    // Detección si partidoId no estaba guardado
+    if ((!window.PARTIDOS_INFO || !window.PARTIDOS_INFO[pId]) && v.partido) {
+      if (v.partido.includes('Restaurante') || v.partido.includes('Visita Regular')) {
+        pId = 'VISITA_NORMAL';
+      } else if (window.PARTIDOS_INFO) {
+        Object.keys(window.PARTIDOS_INFO).forEach(key => {
+          if (v.partido.includes(window.PARTIDOS_INFO[key].rival)) pId = key;
+        });
+      }
+    }
+
+    const info = (window.PARTIDOS_INFO && window.PARTIDOS_INFO[pId]) ? window.PARTIDOS_INFO[pId] : {};
+    const isRestaurant = pId === 'VISITA_NORMAL' || (v.partido && v.partido.includes('Restaurante'));
+    const logoUrl = isRestaurant ? 'assets/bww-buffalo.png' : (info.logo || 'assets/logo.png');
+
+    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #2a2a2a;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <img src="${logoUrl}" style="height:26px; width:26px; object-fit:contain; flex-shrink:0; background:${isRestaurant ? 'transparent' : '#1a1a1a'}; border-radius:${isRestaurant ? '0' : '50%'}; border:${isRestaurant ? 'none' : '1px solid #444'}; padding:${isRestaurant ? '0' : '2px'};"/>
+        <span style="color:#fff; font-size:14px; font-weight:bold;">${v.partido || 'Visita'}</span>
+      </div>
+      <span style="color:#888; font-size:12px; font-weight:600;">${v.timestamp ? new Date(v.timestamp.seconds*1000).toLocaleDateString('es-MX') : 'Hoy'}</span>
     </div>`;
   }).join('');
 }
