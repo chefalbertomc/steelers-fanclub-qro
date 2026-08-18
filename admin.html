@@ -1093,21 +1093,62 @@ document.getElementById('btnPubCumples').addEventListener('click', async () => {
 document.getElementById('btnCleanCumples').addEventListener('click', async () => {
   const btn = document.getElementById('btnCleanCumples');
   const st = document.getElementById('cumplesStatus');
-  if (!confirm('¿Quitar los cumpleañeros de la semana de todas las credenciales?')) return;
-  btn.disabled = true;
-  try {
-    await db.collection('settings').doc('cumpleaneros').set({
-      fans: [],
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    st.textContent = '✅ Cumpleañeros retirados.';
-    st.style.color = '#22c55e';
-    document.getElementById('cumplesPreview').textContent = '';
-  } catch (e) {
-    st.textContent = '❌ Error: ' + e.message;
-    st.style.color = '#ef4444';
+
+  if (btn.dataset.confirming === 'true') {
+    btn.disabled = true;
+    btn.textContent = '⏳ Quitando...';
+    
+    try {
+      await db.collection('settings').doc('cumpleaneros').set({
+        fans: [],
+        active: false,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      
+      st.textContent = '✅ Cumpleañeros retirados de todas las credenciales.';
+      st.style.color = '#22c55e';
+      document.getElementById('cumplesPreview').textContent = '';
+      const btnPub = document.getElementById('btnPubCumples');
+      if (btnPub) btnPub.disabled = true;
+    } catch (e) {
+      console.warn('Fallo set en cumpleaneros, intentando delete:', e);
+      try {
+        await db.collection('settings').doc('cumpleaneros').delete();
+        st.textContent = '✅ Cumpleañeros retirados de todas las credenciales.';
+        st.style.color = '#22c55e';
+        document.getElementById('cumplesPreview').textContent = '';
+        const btnPub = document.getElementById('btnPubCumples');
+        if (btnPub) btnPub.disabled = true;
+      } catch(err2) {
+        st.textContent = '❌ Error al quitar: ' + err2.message;
+        st.style.color = '#ef4444';
+      }
+    }
+    
+    btn.disabled = false;
+    btn.dataset.confirming = 'false';
+    btn.textContent = 'Quitar Cumpleañeros';
+    btn.style.background = 'transparent';
+    btn.style.color = '#ef4444';
+    btn.style.borderColor = '#ef4444';
+
+  } else {
+    btn.dataset.confirming = 'true';
+    btn.textContent = '¿Confirmar quitar cumpleañeros? ⚠️';
+    btn.style.background = '#dc2626';
+    btn.style.color = '#ffffff';
+    btn.style.borderColor = '#dc2626';
+    
+    setTimeout(() => {
+      if (btn && btn.dataset.confirming === 'true') {
+        btn.dataset.confirming = 'false';
+        btn.textContent = 'Quitar Cumpleañeros';
+        btn.style.background = 'transparent';
+        btn.style.color = '#ef4444';
+        btn.style.borderColor = '#ef4444';
+      }
+    }, 4000);
   }
-  btn.disabled = false;
 });
 
 // ---- HELPERS ----
