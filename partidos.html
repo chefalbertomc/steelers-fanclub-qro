@@ -250,7 +250,15 @@
             const profileSnap = await db.collection('fans').doc(wData.winnerUid).get();
             if (profileSnap.exists) winnerProfile = profileSnap.data();
           }
-          spotlightContainer.innerHTML = window.renderWinnerCardHTML(wData, winnerProfile);
+          if (typeof window.renderWinnerCardHTML === 'function') {
+            spotlightContainer.innerHTML = window.renderWinnerCardHTML(wData, winnerProfile);
+          } else {
+            spotlightContainer.innerHTML = `
+              <div style="background:linear-gradient(145deg, #1f1a0e, #0d0d0d); border:2px solid var(--gold); border-radius:16px; padding:16px; text-align:center;">
+                <div style="font-size:16px; font-weight:900; color:var(--gold);">🏆 GANADOR DEL PARTIDO</div>
+                <div style="font-size:20px; font-weight:900; color:#fff; margin-top:6px;">${wData.winnerNombre || 'Fan'}</div>
+              </div>`;
+          }
         } else {
           spotlightContainer.innerHTML = '';
         }
@@ -277,12 +285,19 @@
           sData = await window.fetchAutoMatchScore(targetId);
         }
 
-        if (sData && window.getMatchHeaderHTML) {
-          partyTitle.innerHTML = window.getMatchHeaderHTML(targetId, sData);
-        } else if (window.getMatchHeaderHTML) {
-          partyTitle.innerHTML = window.getMatchHeaderHTML(targetId);
+        if (partyTitle) {
+          if (sData && typeof window.getMatchHeaderHTML === 'function') {
+            partyTitle.innerHTML = window.getMatchHeaderHTML(targetId, sData);
+          } else if (typeof window.getMatchHeaderHTML === 'function') {
+            partyTitle.innerHTML = window.getMatchHeaderHTML(targetId);
+          } else {
+            const matchInfo = (window.PARTIDOS_INFO && window.PARTIDOS_INFO[targetId]) ? window.PARTIDOS_INFO[targetId] : {};
+            partyTitle.innerHTML = `🏈 Partido vs ${matchInfo.rival || 'Rival'}`;
+          }
         }
-      } catch(e) {}
+      } catch(e) {
+        console.error('Error marcador:', e);
+      }
 
       // Asistentes
       try {
