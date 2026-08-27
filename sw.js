@@ -1,4 +1,4 @@
-const CACHE_NAME = 'steelers-qro-v11';
+const CACHE_NAME = 'steelers-qro-v12';
 const urlsToCache = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const urlsToCache = [
   './css/styles.css',
   './assets/logo.png',
   './assets/bww-buffalo.png',
+  './assets/drinks-and-wins-logo.jpg',
   './assets/icon-192.png',
   './assets/icon-512.png',
   './assets/apple-touch-icon.png',
