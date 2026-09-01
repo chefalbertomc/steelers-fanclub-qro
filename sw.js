@@ -1,4 +1,4 @@
-const CACHE_NAME = 'steelers-qro-v14';
+const CACHE_NAME = 'steelers-qro-v15';
 const urlsToCache = [
   './',
   './index.html',
@@ -20,7 +20,10 @@ const urlsToCache = [
   './assets/apple-touch-icon.png',
   './assets/icon-qr-192.png',
   './assets/icon-qr-512.png',
-  './assets/apple-touch-icon-qr.png'
+  './assets/apple-touch-icon-qr.png',
+  './assets/icon-admin-192.png',
+  './assets/icon-admin-512.png',
+  './assets/apple-touch-icon-admin.png'
 ];
 
 // Instalar y tomar control de inmediato
