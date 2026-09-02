@@ -28,6 +28,7 @@
   </div>
   <div style="display:flex; align-items:center; gap:12px; flex-shrink:0;">
     <img src="assets/bww-buffalo.png" style="height:44px; object-fit:contain;" alt="Buffalo Wild Wings"/>
+    <a href="credencial.html" class="btn btn-gold btn-sm" id="btnGoCredencial" style="width:auto; text-decoration:none; display:none; font-size:12px; font-weight:800; padding:6px 12px; align-items:center; gap:5px;">💳 Mi Credencial</a>
     <button class="btn btn-outline btn-sm" id="btnLogout" style="width:auto; display:none;">Salir</button>
   </div>
 </div>
@@ -339,14 +340,38 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
 });
 
 // ---- AUTH ----
+// Administradores Únicos y Autorizados
+const SUPER_ADMIN_EMAILS = [
+  'chefalbertomc@gmail.com',
+  'sguerra70@hotmail.com',
+  'admin@steelersnationqro.com'
+];
+
 auth.onAuthStateChanged(async user => {
+  const btnCred = document.getElementById('btnGoCredencial');
   if (!user) {
     document.getElementById('sectionLogin').classList.remove('hidden');
     document.getElementById('sectionAdmin').classList.add('hidden');
     document.getElementById('btnLogout').style.display = 'none';
+    if (btnCred) btnCred.style.display = 'none';
     return;
   }
-  if (user.email === 'admin@steelersnationqro.com') {
+
+  const userEmail = (user.email || '').toLowerCase().trim();
+
+  // Validación estricta: Solo Alberto y Samuel
+  if (!SUPER_ADMIN_EMAILS.includes(userEmail)) {
+    await auth.signOut();
+    showSt(document.getElementById('loginStatus'), '❌ Acceso denegado: Solo los administradores autorizados (Alberto y Samuel) pueden acceder a este panel.', 'error');
+    document.getElementById('sectionLogin').classList.remove('hidden');
+    document.getElementById('sectionAdmin').classList.add('hidden');
+    document.getElementById('btnLogout').style.display = 'none';
+    if (btnCred) btnCred.style.display = 'none';
+    return;
+  }
+
+  // Si es admin de emergencia, garantizar registro
+  if (userEmail === 'admin@steelersnationqro.com') {
     await db.collection('fans').doc(user.uid).set({
       nombre: 'Admin',
       apellidoPaterno: 'Emergency',
@@ -355,16 +380,12 @@ auth.onAuthStateChanged(async user => {
       fanId: 'SQ-JUR-ADMIN'
     }, { merge: true });
   }
-  const snap = await db.collection('fans').doc(user.uid).get();
-  if (!snap.exists || snap.data().nivel !== 'Organizador') {
-    await auth.signOut();
-    showSt(document.getElementById('loginStatus'),'❌ Solo los organizadores pueden acceder al panel.','error');
-    document.getElementById('sectionLogin').classList.remove('hidden');
-    return;
-  }
+
   document.getElementById('sectionLogin').classList.add('hidden');
   document.getElementById('sectionAdmin').classList.remove('hidden');
   document.getElementById('btnLogout').style.display = 'flex';
+  if (btnCred) btnCred.style.display = 'inline-flex';
+
   loadFans();
   loadAvisosGallery();
   loadPromosGallery();

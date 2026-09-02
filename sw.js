@@ -1,4 +1,4 @@
-const CACHE_NAME = 'steelers-qro-v15';
+const CACHE_NAME = 'steelers-qro-v16';
 const urlsToCache = [
   './',
   './index.html',

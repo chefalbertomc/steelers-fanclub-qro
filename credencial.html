@@ -157,6 +157,35 @@
       </div>
     </div>
 
+    
+    <!-- ACCESO EXCLUSIVO ADMIN (Solo visible para Alberto y Samuel) -->
+    <div id="adminExclusiveCard" style="display:none; max-width:400px; margin:18px auto 0 auto; text-align:center;">
+      <a href="admin.html" style="
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:12px;
+        width:100%;
+        padding:16px 20px;
+        background:linear-gradient(135deg, #1f1807 0%, #0d0d0d 100%);
+        border:2px solid var(--gold);
+        border-radius:14px;
+        color:var(--gold);
+        font-family:var(--font-display);
+        font-size:16px;
+        font-weight:900;
+        letter-spacing:1px;
+        text-transform:uppercase;
+        text-decoration:none;
+        box-shadow:0 6px 22px rgba(255,182,18,0.35);
+        transition:all 0.25s ease;
+      ">
+        <span style="font-size:22px;">🛡️⚙️</span>
+        <span>PANEL DE ADMINISTRADOR</span>
+        <span style="font-size:18px; margin-left:auto;">➔</span>
+      </a>
+    </div>
+
     <!-- BOTON ESCANEAR VISITA -->
     <div style="margin-top:20px; text-align:center;">
       <button class="btn btn-gold" id="btnEscanearVisita" style="font-size:18px; padding:16px 24px; width:100%; max-width:400px; box-shadow:0 4px 15px rgba(255,182,18,0.4);">
@@ -337,6 +366,11 @@
   <a href="promos.html" class="bottom-nav-btn">
     <span class="nav-icon">🔥</span>
     <span class="nav-label">Promos</span>
+  </a>
+
+  <a href="admin.html" id="bottomNavAdminBtn" class="bottom-nav-btn" style="display:none;" title="Panel Administrador">
+    <span class="nav-icon" style="color:var(--gold);">⚙️</span>
+    <span class="nav-label" style="color:var(--gold); font-weight:900;">Admin</span>
   </a>
 
   <a href="https://chefalbertomc.github.io/catch-sports/?team=steelers" target="_blank" class="bottom-nav-btn">
@@ -538,6 +572,22 @@ auth.onAuthStateChanged(async user => {
   }
   const fan = snap.data();
   renderCredencial(fan, user.uid);
+
+  // Validar y activar acceso a panel de administrador si es Alberto o Samuel
+  const SUPER_ADMIN_EMAILS = [
+    'chefalbertomc@gmail.com',
+    'sguerra70@hotmail.com',
+    'admin@steelersnationqro.com'
+  ];
+  const userEmail = (user.email || '').toLowerCase().trim();
+  const isAdmin = SUPER_ADMIN_EMAILS.includes(userEmail);
+
+  const adminCard = document.getElementById('adminExclusiveCard');
+  if (adminCard) adminCard.style.display = isAdmin ? 'block' : 'none';
+
+  const bottomNavAdmin = document.getElementById('bottomNavAdminBtn');
+  if (bottomNavAdmin) bottomNavAdmin.style.display = isAdmin ? 'flex' : 'none';
+
   loadVisitas(user.uid, fan.totalVisitas);
   initPushNotifSystem();
 });

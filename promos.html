@@ -122,7 +122,12 @@
       <span class="nav-label">Promos</span>
     </a>
 
-    <a href="https://chefalbertomc.github.io/catch-sports/?team=steelers" target="_blank" class="bottom-nav-btn">
+    <a href="admin.html" id="bottomNavAdminBtn" class="bottom-nav-btn" style="display:none;" title="Panel Administrador">
+    <span class="nav-icon" style="color:var(--gold);">⚙️</span>
+    <span class="nav-label" style="color:var(--gold); font-weight:900;">Admin</span>
+  </a>
+
+  <a href="https://chefalbertomc.github.io/catch-sports/?team=steelers" target="_blank" class="bottom-nav-btn">
       <span class="nav-icon">🛒</span>
       <span class="nav-label">Tienda</span>
     </a>
@@ -147,6 +152,14 @@
         location.href = 'index.html';
         return;
       }
+
+  // Mostrar acceso Admin si es Alberto o Samuel
+  const SUPER_ADMIN_EMAILS = ['chefalbertomc@gmail.com', 'sguerra70@hotmail.com', 'admin@steelersnationqro.com'];
+  const userEmail = (user.email || '').toLowerCase().trim();
+  const isAdmin = SUPER_ADMIN_EMAILS.includes(userEmail);
+  const bottomNavAdmin = document.getElementById('bottomNavAdminBtn');
+  if (bottomNavAdmin) bottomNavAdmin.style.display = isAdmin ? 'flex' : 'none';
+
       loadPromos();
     });
 
