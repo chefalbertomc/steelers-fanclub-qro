@@ -219,25 +219,36 @@ auth.onAuthStateChanged(async user => {
     return;
   }
   
-  // Garantizar nivel de organizador para admin de emergencia
-  if (user.email === 'admin@steelersnationqro.com') {
-    await db.collection('fans').doc(user.uid).set({
-      nombre: 'Admin',
-      apellidoPaterno: 'Emergency',
-      email: user.email,
-      nivel: 'Organizador',
-      fanId: 'SQ-JUR-ADMIN'
-    }, { merge: true });
+  const SUPER_ADMIN_EMAILS = [
+    'chefalbertomc@gmail.com',
+    'sguerra70@hotmail.com',
+    'admin@steelersnationqro.com'
+  ];
+  const userEmail = (user.email || '').toLowerCase().trim();
+  const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(userEmail);
+
+  // Garantizar nivel de organizador para administradores
+  if (isSuperAdmin) {
+    try {
+      await db.collection('fans').doc(user.uid).set({
+        nivel: 'Organizador',
+        esAdmin: true,
+        esSuperAdmin: true
+      }, { merge: true });
+    } catch(errSet) {
+      console.warn('Set admin status skipped:', errSet);
+    }
   }
 
   // Validar admin/organizador
   const snap = await db.collection('fans').doc(user.uid).get();
-  if (snap.exists && snap.data().nivel === 'Organizador') {
+  const fanData = snap.exists ? snap.data() : {};
+  if (isSuperAdmin || fanData.nivel === 'Organizador' || fanData.esAdmin === true || fanData.esSuperAdmin === true) {
     document.getElementById('sectionLogin').classList.add('hidden');
     document.getElementById('sectionGenerador').classList.remove('hidden');
     highlightTodayGames();
   } else {
-    auth.signOut();
+    await auth.signOut();
     alert('No tienes permisos de organizador para usar esta herramienta.');
   }
 });

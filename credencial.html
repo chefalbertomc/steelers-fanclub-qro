@@ -851,6 +851,7 @@ function renderCredencial(fan, uid) {
 }
 
 // ---- ESCÁNER DE ASISTENCIA ----
+let currentHtml5Scanner = null;
 const btnEscanearVisitaEl = document.getElementById('btnEscanearVisita');
 if (btnEscanearVisitaEl) {
   btnEscanearVisitaEl.addEventListener('click', async () => {
@@ -861,7 +862,7 @@ if (btnEscanearVisitaEl) {
     try {
       await loadHtml5Qrcode();
     } catch(err) {
-      alert(err.message || 'Error al iniciar la cámara.');
+      alert(err.message || 'Error al iniciar el módulo de cámara.');
       btnEscanearVisitaEl.disabled = false;
       btnEscanearVisitaEl.innerHTML = origText;
       return;
@@ -869,26 +870,73 @@ if (btnEscanearVisitaEl) {
     btnEscanearVisitaEl.disabled = false;
     btnEscanearVisitaEl.innerHTML = origText;
 
-    if (!document.getElementById('qr-reader')) {
+    if (!document.getElementById('qrModal')) {
       const modalHtml = `
-        <div id="qrModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
-          <h2 style="color:var(--gold); margin-bottom:12px; text-align:center;">Escanear Asistencia</h2>
-          <p style="color:#fff; text-align:center; margin-bottom:16px; font-size:13px;">Apunta la cámara al código QR proporcionado por el restaurante o el staff.</p>
-          <div id="qr-reader" style="width:300px; max-width:100%;"></div>
-          <button class="btn btn-outline mt-4" onclick="closeQrModal()">✕ Cancelar</button>
+        <div id="qrModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+          <h2 style="color:var(--gold); margin-bottom:8px; text-align:center;">Escanear Asistencia</h2>
+          <p style="color:#fff; text-align:center; margin-bottom:12px; font-size:13px; max-width:320px;">Apunta tu cámara al código QR proporcionado por el restaurante o staff.</p>
+          
+          <div id="qr-reader" style="width:300px; max-width:100%; background:#111; border-radius:12px; overflow:hidden;"></div>
+          <div id="qr-file-processor" style="display:none;"></div>
+
+          <div style="margin-top:14px; background:rgba(234,179,8,0.12); border:1px solid rgba(234,179,8,0.4); border-radius:8px; padding:10px 14px; max-width:320px; font-size:12px; color:#fef08a; text-align:center; line-height:1.4;">
+            💡 <strong>¿Problemas de permisos con la cámara?</strong><br/>
+            Puedes subir una foto del código QR desde tu galería o pedirle a Beto/Staff que registre tu asistencia con tu Fan ID.
+          </div>
+
+          <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; justify-content:center;">
+            <input type="file" id="qrImgFileInput" accept="image/*" style="display:none;" />
+            <button class="btn btn-outline btn-sm" id="btnUploadQrImg" style="border-color:var(--gold); color:var(--gold); font-size:12px; width:auto;">
+              📁 Subir Foto del QR
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="closeQrModal()" style="border-color:#666; color:#aaa; font-size:12px; width:auto;">
+              ✕ Cancelar
+            </button>
+          </div>
         </div>
       `;
       document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+      // Handler para subir foto del QR
+      const fileInp = document.getElementById('qrImgFileInput');
+      const btnUpload = document.getElementById('btnUploadQrImg');
+      if (btnUpload && fileInp) {
+        btnUpload.addEventListener('click', () => fileInp.click());
+        fileInp.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          try {
+            btnUpload.disabled = true;
+            btnUpload.textContent = '⏳ Analizando imagen...';
+            const html5QrCode = new Html5Qrcode("qr-file-processor");
+            const decodedText = await html5QrCode.scanFile(file, true);
+            closeQrModal();
+            registrarVisitaManual(decodedText);
+          } catch(errScan) {
+            alert('❌ No se detectó un código QR válido en la foto. Intenta con una toma más enfocada o pide al staff tu registro manual.');
+          } finally {
+            btnUpload.disabled = false;
+            btnUpload.textContent = '📁 Subir Foto del QR';
+            fileInp.value = '';
+          }
+        });
+      }
     }
     
     document.getElementById('qrModal').style.display = 'flex';
     
-    const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-    html5QrcodeScanner.render((decodedText, decodedResult) => {
-      html5QrcodeScanner.clear();
-      closeQrModal();
-      registrarVisitaManual(decodedText);
-    }, (error) => {});
+    try {
+      if (currentHtml5Scanner) {
+        try { currentHtml5Scanner.clear(); } catch(e){}
+      }
+      currentHtml5Scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+      currentHtml5Scanner.render((decodedText, decodedResult) => {
+        closeQrModal();
+        registrarVisitaManual(decodedText);
+      }, (error) => {});
+    } catch(errRender) {
+      console.warn('Error renderizando escáner:', errRender);
+    }
   });
 }
 
@@ -896,6 +944,12 @@ function closeQrModal() {
   const modal = document.getElementById('qrModal');
   if(modal) {
     modal.style.display = 'none';
+  }
+  if (currentHtml5Scanner) {
+    try {
+      currentHtml5Scanner.clear();
+    } catch(e) {}
+    currentHtml5Scanner = null;
   }
 }
 
@@ -907,17 +961,16 @@ async function registrarVisitaManual(qrData) {
       return;
     }
     
-    const user = auth.currentUser;
-    if(!user) return alert('Error: No has iniciado sesión.');
+    const targetUid = (auth.currentUser && auth.currentUser.uid) || activeUid;
+    if(!targetUid) return alert('Error: No se pudo identificar al socio. Por favor recarga tu credencial.');
     
     // 1. Verificar si ya se registró este evento (si no es VISITA_NORMAL que se puede repetir cada cierto tiempo, o simplemente usar ID único)
-    // Para VISITA_NORMAL le damos un sufijo de tiempo para que puedan escanearlo múltiples días.
     let docId = data.id;
     if (docId === 'VISITA_NORMAL') {
       docId = 'VISITA_' + new Date().toISOString().split('T')[0]; // Solo 1 vez por día
     }
     
-    const visitaRef = db.collection('fans').doc(user.uid).collection('visitas').doc(docId);
+    const visitaRef = db.collection('fans').doc(targetUid).collection('visitas').doc(docId);
     const doc = await visitaRef.get();
     
     if (doc.exists) {
@@ -929,11 +982,12 @@ async function registrarVisitaManual(qrData) {
     await visitaRef.set({
       partido: data.n,
       partidoId: data.id,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      registradoPor: auth.currentUser ? auth.currentUser.email : 'direct_qr'
     });
     
     // 3. Incrementar total
-    await db.collection('fans').doc(user.uid).update({
+    await db.collection('fans').doc(targetUid).update({
       totalVisitas: firebase.firestore.FieldValue.increment(1)
     });
     
@@ -941,7 +995,7 @@ async function registrarVisitaManual(qrData) {
     location.reload(); // Recargar para ver los cambios
     
   } catch(e) {
-    alert('❌ Error al leer el código QR. Asegúrate de escanear el código oficial del restaurante.');
+    alert('❌ Error al procesar el código QR. Asegúrate de escanear el código oficial del restaurante o pide asistencia al administrador.');
     console.error(e);
   }
 }

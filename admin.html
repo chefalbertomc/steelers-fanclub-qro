@@ -146,6 +146,14 @@
           <div style="font-size:22px; font-weight:900; color:var(--gold);" id="attSteel">0</div>
           <div style="font-size:11px; color:#888;">⭐ Steel Fan</div>
         </div>
+      </div>
+
+      <!-- BOTÓN REGISTRAR ASISTENCIA DIRECTA ADMIN -->
+      <div style="margin-top:14px; display:flex; justify-content:center;">
+        <button class="btn btn-gold btn-sm" onclick="openModalAsistenciaAdmin(null)" style="background:#22c55e; border-color:#22c55e; color:#000; font-weight:bold; width:100%; padding:10px 14px; font-size:13px; display:flex; align-items:center; justify-content:center; gap:8px;">
+          📋 Registrar Asistencia Manual a un Fan
+        </button>
+      </div>
     </div>
 
     <!-- Sección Fanático del Partido Admin -->
@@ -241,7 +249,7 @@
               <th>Colonia</th>
               <th>Visitas</th>
               <th>Nivel</th>
-              <th>Editar Nivel</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="fansTableBody">
@@ -292,6 +300,60 @@
     <div id="detallesContent" style="font-size:14px; line-height:1.6; color:#ccc; display:grid; grid-template-columns: 1fr 1fr; gap:10px;"></div>
     <div class="modal-actions" style="margin-top:20px;">
       <button class="btn btn-outline" onclick="document.getElementById('modalDetalles').classList.add('hidden')" style="width:100%;">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REGISTRAR ASISTENCIA MANUAL -->
+<div class="modal-overlay hidden" id="modalAsistenciaAdmin">
+  <div class="modal-box" style="max-width:480px; text-align:left;">
+    <div class="modal-icon">📋</div>
+    <div class="modal-title" style="text-align:center;">Registrar Asistencia Manual</div>
+    <div class="modal-msg" style="text-align:center; margin-bottom:16px;">
+      Acredita asistencia directa para un socio cuando tenga problemas de escaneo o permisos de cámara.
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px;">
+      <label for="selectFanAsistencia">Fan / Socio:</label>
+      <select id="selectFanAsistencia" style="width:100%; padding:10px 12px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px;">
+      </select>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px;">
+      <label for="selectPartidoAsistencia">Seleccionar Partido o Evento:</label>
+      <select id="selectPartidoAsistencia" style="width:100%; padding:10px 12px; background:var(--black); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px;">
+        <option value="VISITA_NORMAL">Visita Regular (Restaurante Buffalo Wild Wings)</option>
+        <option value="PRE_SEM1">Pretemporada Sem 1: Packers (13 Ago)</option>
+        <option value="PRE_SEM2">Pretemporada Sem 2: Jets (21 Ago)</option>
+        <option value="PRE_SEM3">Pretemporada Sem 3: Bills (27 Ago)</option>
+        <option value="SEM1">Sem 1: Falcons (13 Sep)</option>
+        <option value="SEM2">Sem 2: Patriots (20 Sep)</option>
+        <option value="SEM3">Sem 3: Bengals (27 Sep)</option>
+        <option value="SEM4">Sem 4: Browns (01 Oct)</option>
+        <option value="SEM5">Sem 5: Colts (11 Oct)</option>
+        <option value="SEM6">Sem 6: Buccaneers (18 Oct)</option>
+        <option value="SEM7">Sem 7: Saints (25 Oct)</option>
+        <option value="SEM8">Sem 8: Browns (01 Nov)</option>
+        <option value="SEM9">Sem 9: BYE WEEK (10 Nov)</option>
+        <option value="SEM10">Sem 10: Bengals (15 Nov)</option>
+        <option value="SEM11">Sem 11: Eagles (22 Nov)</option>
+        <option value="SEM12">Sem 12: Broncos (27 Nov)</option>
+        <option value="SEM13">Sem 13: Texans (06 Dic)</option>
+        <option value="SEM14">Sem 14: Jaguars (14 Dic)</option>
+        <option value="SEM15">Sem 15: Ravens (20 Dic)</option>
+        <option value="SEM16">Sem 16: Panthers (27 Dic)</option>
+        <option value="SEM17">Sem 17: Titans (03 Ene)</option>
+        <option value="SEM18">Sem 18: Ravens (10 Ene)</option>
+      </select>
+    </div>
+
+    <div id="statusAsistenciaAdmin" style="margin-bottom:12px; font-size:13px; font-weight:bold;"></div>
+
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-outline" id="btnCancelAsistenciaAdmin">Cancelar</button>
+      <button class="btn btn-gold" id="btnConfirmAsistenciaAdmin" style="background:#22c55e; border-color:#22c55e; color:#000; font-weight:900;">
+        ✅ Registrar Asistencia
+      </button>
     </div>
   </div>
 </div>
@@ -681,11 +743,12 @@ function renderTable(fans) {
       <td style="font-weight:700; color:var(--gold); text-align:center;">${f.totalVisitas || 0}</td>
       <td><span class="badge ${nivelClass(f.nivel)}">${NIVEL_ICON[f.nivel]||'🏈'} ${f.nivel || '—'}</span></td>
       <td>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-outline btn-sm" onclick="openDetalles('${f.uid}')" style="width:auto; border-color:#3b82f6; color:#3b82f6;">👁️ Info</button>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" onclick="openDetalles('${f.uid}')" style="width:auto; border-color:#3b82f6; color:#3b82f6;" title="Ver expediente">👁️ Info</button>
+          <button class="btn btn-sm" onclick="openModalAsistenciaAdmin('${f.uid}')" style="width:auto; background:#22c55e; color:#000; font-weight:bold; border:1px solid #22c55e;" title="Registrar asistencia manual">📋 +Asistencia</button>
           <button class="btn btn-outline btn-sm"
             onclick="openModalNivel('${f.uid}', '${f.fanId}', '${f.nombre} ${f.apellidoPaterno}', '${f.nivel}')"
-            style="width:auto;">
+            style="width:auto;" title="Editar nivel">
             ✏️ Nivel
           </button>
         </div>
@@ -716,12 +779,15 @@ function openDetalles(uid) {
     <div><strong>Miembro Desde:</strong> ${f.memberSinceYear || '—'}</div>
     <div><strong>Visitas:</strong> ${f.totalVisitas || 0}</div>
     <div style="grid-column: span 2; border-top:1px solid #333; margin-top:8px; padding-top:8px;"><strong>Fecha Registro:</strong> ${f.createdAt ? new Date(f.createdAt.seconds * 1000).toLocaleDateString('es-MX') : '—'}</div>
-    <div style="grid-column: span 2; display:flex; gap:10px; margin-top:12px; border-top:1px solid #333; padding-top:12px;">
-      <a href="credencial.html?fanId=${encodeURIComponent(f.fanId || f.uid)}" target="_blank" class="btn btn-outline btn-sm" style="flex:1; text-align:center; text-decoration:none; padding:8px 6px; font-weight:bold; font-size:12px; border-color:var(--gold); color:var(--gold);">
+    <div style="grid-column: span 2; display:flex; gap:8px; margin-top:12px; border-top:1px solid #333; padding-top:12px; flex-wrap:wrap;">
+      <a href="credencial.html?fanId=${encodeURIComponent(f.fanId || f.uid)}" target="_blank" class="btn btn-outline btn-sm" style="flex:1; min-width:110px; text-align:center; text-decoration:none; padding:8px 6px; font-weight:bold; font-size:12px; border-color:var(--gold); color:var(--gold);">
         🎫 Ver Credencial
       </a>
-      <button onclick="compartirCredencialWhatsApp('${f.whatsapp || ''}', '${f.fanId || f.uid}', '${f.nombre || ''}')" class="btn btn-gold btn-sm" style="flex:1; padding:8px 6px; font-weight:bold; font-size:12px;">
-        📲 Enviar por WhatsApp
+      <button onclick="compartirCredencialWhatsApp('${f.whatsapp || ''}', '${f.fanId || f.uid}', '${f.nombre || ''}')" class="btn btn-gold btn-sm" style="flex:1; min-width:120px; padding:8px 6px; font-weight:bold; font-size:12px;">
+        📲 WhatsApp
+      </button>
+      <button onclick="document.getElementById('modalDetalles').classList.add('hidden'); openModalAsistenciaAdmin('${f.uid}');" class="btn btn-sm" style="flex:1; min-width:130px; padding:8px 6px; font-weight:bold; font-size:12px; background:#22c55e; border:1px solid #22c55e; color:#000;">
+        📋 +Asistencia
       </button>
     </div>
   `;
@@ -796,6 +862,129 @@ document.getElementById('btnModalSave').addEventListener('click', async () => {
   }
   btn.disabled = false; btn.textContent = 'Guardar';
 });
+
+// ---- REGISTRAR ASISTENCIA MANUAL ADMIN ----
+let asistenciaTargetUid = null;
+
+function openModalAsistenciaAdmin(uid) {
+  asistenciaTargetUid = uid;
+  const statusEl = document.getElementById('statusAsistenciaAdmin');
+  if (statusEl) { statusEl.textContent = ''; statusEl.style.color = ''; }
+
+  const selectFan = document.getElementById('selectFanAsistencia');
+  if (selectFan) {
+    selectFan.innerHTML = '<option value="">-- Selecciona un Fan / Socio --</option>' + allFans.map(f => {
+      const nombreCompleto = `${f.nombre || ''} ${f.apellidoPaterno || ''}`.trim();
+      return `<option value="${f.uid}" ${f.uid === uid ? 'selected' : ''}>${f.fanId || '—'} - ${nombreCompleto} (${f.totalVisitas || 0} visitas)</option>`;
+    }).join('');
+    if (uid) selectFan.value = uid;
+  }
+
+  // Preseleccionar el partido actual de la vista de admin si está elegido
+  const partidoAdminSelect = document.getElementById('selectPartidoAdmin');
+  const selectPartidoAsistencia = document.getElementById('selectPartidoAsistencia');
+  if (partidoAdminSelect && selectPartidoAsistencia && partidoAdminSelect.value) {
+    selectPartidoAsistencia.value = partidoAdminSelect.value;
+  }
+
+  document.getElementById('modalAsistenciaAdmin').classList.remove('hidden');
+}
+
+const btnCancelAsistenciaEl = document.getElementById('btnCancelAsistenciaAdmin');
+if (btnCancelAsistenciaEl) {
+  btnCancelAsistenciaEl.addEventListener('click', () => {
+    document.getElementById('modalAsistenciaAdmin').classList.add('hidden');
+    asistenciaTargetUid = null;
+  });
+}
+
+const btnConfirmAsistenciaEl = document.getElementById('btnConfirmAsistenciaAdmin');
+if (btnConfirmAsistenciaEl) {
+  btnConfirmAsistenciaEl.addEventListener('click', async () => {
+    const selectFan = document.getElementById('selectFanAsistencia');
+    const selectPartido = document.getElementById('selectPartidoAsistencia');
+    const statusEl = document.getElementById('statusAsistenciaAdmin');
+    const targetUid = (selectFan && selectFan.value) ? selectFan.value : asistenciaTargetUid;
+    const targetPartidoId = (selectPartido && selectPartido.value) ? selectPartido.value : 'VISITA_NORMAL';
+
+    if (!targetUid) {
+      if (statusEl) { statusEl.textContent = '❌ Por favor selecciona un fan.'; statusEl.style.color = '#ef4444'; }
+      return;
+    }
+
+    const fanObj = allFans.find(f => f.uid === targetUid);
+    const fanNombre = fanObj ? `${fanObj.nombre || ''} ${fanObj.apellidoPaterno || ''}`.trim() : 'Fan';
+    const matchInfo = (window.PARTIDOS_INFO && window.PARTIDOS_INFO[targetPartidoId]) ? window.PARTIDOS_INFO[targetPartidoId] : {};
+    const matchLabel = matchInfo.label || (selectPartido ? selectPartido.options[selectPartido.selectedIndex]?.text : targetPartidoId);
+
+    btnConfirmAsistenciaEl.disabled = true;
+    btnConfirmAsistenciaEl.textContent = '⏳ Registrando...';
+
+    try {
+      let docId = targetPartidoId;
+      if (docId === 'VISITA_NORMAL') {
+        docId = 'VISITA_' + new Date().toISOString().split('T')[0];
+      }
+
+      const visitaRef = db.collection('fans').doc(targetUid).collection('visitas').doc(docId);
+      const existing = await visitaRef.get();
+
+      if (existing.exists) {
+        const procede = confirm(`⚠️ ${fanNombre} ya tiene registrada asistencia para este evento hoy. ¿Deseas sobreescribir y confirmarla de todos modos?`);
+        if (!procede) {
+          btnConfirmAsistenciaEl.disabled = false;
+          btnConfirmAsistenciaEl.textContent = '✅ Registrar Asistencia';
+          return;
+        }
+      }
+
+      await visitaRef.set({
+        partido: matchLabel,
+        partidoId: targetPartidoId,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        registradoPor: auth.currentUser ? auth.currentUser.email : 'admin_manual',
+        metodo: 'admin_manual'
+      }, { merge: true });
+
+      if (!existing.exists) {
+        await db.collection('fans').doc(targetUid).update({
+          totalVisitas: firebase.firestore.FieldValue.increment(1)
+        });
+        if (fanObj) {
+          fanObj.totalVisitas = (fanObj.totalVisitas || 0) + 1;
+        }
+      }
+
+      if (statusEl) {
+        statusEl.textContent = `✅ ¡Asistencia registrada exitosamente para ${fanNombre}!`;
+        statusEl.style.color = '#22c55e';
+      }
+
+      // Actualizar tabla y contadores
+      renderTable(allFans);
+      updateStats();
+      if (typeof loadAsistenciaPartidoAdmin === 'function') {
+        loadAsistenciaPartidoAdmin();
+      }
+
+      setTimeout(() => {
+        document.getElementById('modalAsistenciaAdmin').classList.add('hidden');
+        btnConfirmAsistenciaEl.disabled = false;
+        btnConfirmAsistenciaEl.textContent = '✅ Registrar Asistencia';
+        asistenciaTargetUid = null;
+      }, 1200);
+
+    } catch(err) {
+      console.error('Error registrando asistencia manual:', err);
+      if (statusEl) {
+        statusEl.textContent = '❌ Error: ' + err.message;
+        statusEl.style.color = '#ef4444';
+      }
+      btnConfirmAsistenciaEl.disabled = false;
+      btnConfirmAsistenciaEl.textContent = '✅ Registrar Asistencia';
+    }
+  });
+}
 
 // ---- EXPORTAR CSV ----
 document.getElementById('btnExportCSV').addEventListener('click', () => {

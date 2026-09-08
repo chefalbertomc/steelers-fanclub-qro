@@ -70,26 +70,47 @@
     <div id="formStepA">
       <div class="card">
         <div class="card-title">Foto de Perfil 📸</div>
-        <div class="card-subtitle">Tómate una foto ahora para tu credencial. Usa buena iluminación.</div>
+        <div class="card-subtitle">Tómate una selfie ahora para tu credencial o elígela de tu galería.</div>
 
         <!-- Visor de cámara -->
         <div id="cameraSection">
           <video id="videoPreview" autoplay playsinline
             style="width:100%; max-width:300px; display:block; margin:0 auto; border-radius:var(--radius); border:2px solid var(--border); background:#000;"></video>
           <div style="display:flex; gap:10px; margin-top:12px;">
-            <button class="btn btn-gold" id="btnCapture">📸 Tomar foto</button>
-            <button class="btn btn-outline btn-sm" id="btnSwitchCam" style="width:auto; flex-shrink:0;">🔄</button>
+            <button class="btn btn-gold" id="btnCapture" type="button">📸 Tomar foto</button>
+            <button class="btn btn-outline btn-sm" id="btnSwitchCam" type="button" style="width:auto; flex-shrink:0;">🔄</button>
           </div>
+        </div>
+
+        <!-- Mensaje de ayuda si la cámara está bloqueada -->
+        <div id="cameraHelpNotice" style="display:none; background:#1c1917; border:1px solid #eab308; border-radius:10px; padding:12px; margin-top:12px; text-align:center;">
+          <p style="font-size:12px; color:#eab308; margin-bottom:4px; font-weight:bold;">
+            ⚠️ ¿No abrió tu cámara o no diste permisos?
+          </p>
+          <p style="font-size:11px; color:#ccc; margin-bottom:0;">
+            No te preocupes: puedes subir una foto de tu galería aquí abajo o continuar sin foto.
+          </p>
+        </div>
+
+        <!-- Opciones alternativas: Galería o Sin foto -->
+        <div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
+          <input type="file" id="inputPhotoFile" accept="image/*" style="display:none;"/>
+          <button type="button" class="btn btn-outline btn-sm" id="btnUploadGallery" style="width:100%; border-color:var(--gold); color:var(--gold); font-weight:bold; padding:9px;">
+            📁 Elegir foto de mi galería
+          </button>
+          <button type="button" class="btn btn-outline btn-sm" id="btnSkipPhoto" style="width:100%; border-color:#444; color:#aaa; font-size:11px; padding:8px;">
+            Continuar sin foto por ahora ➔
+          </button>
         </div>
 
         <!-- Canvas oculto para captura -->
         <canvas id="captureCanvas" style="display:none;"></canvas>
 
         <!-- Preview de la foto tomada -->
-        <div id="photoPreviewSection" class="hidden" style="text-align:center;">
+        <div id="photoPreviewSection" class="hidden" style="text-align:center; margin-top:14px;">
           <img id="photoPreviewImg" style="width:140px; height:140px; border-radius:50%; object-fit:cover; border:3px solid var(--gold); margin-bottom:12px;" alt="Tu foto"/>
           <br/>
-          <button class="btn btn-outline btn-sm" id="btnRetake" style="width:auto; margin:0 auto;">🔄 Repetir foto</button>
+          <button class="btn btn-outline btn-sm" id="btnRetake" type="button" style="width:auto; margin:0 auto;">🔄 Cambiar foto</button>
         </div>
       </div>
       <button class="btn btn-gold" id="btnNextA" disabled>Continuar →</button>
@@ -204,7 +225,7 @@ let currentStream = null;
 let facingMode = 'user'; // frontal por defecto para selfie
 let formStep = 'A';
 
-// --------------- CÁMARA ---------------
+// --------------- CÁMARA Y FOTO ---------------
 async function startCamera() {
   if (currentStream) currentStream.getTracks().forEach(t => t.stop());
   try {
@@ -213,8 +234,13 @@ async function startCamera() {
       audio: false
     });
     document.getElementById('videoPreview').srcObject = currentStream;
+    const help = document.getElementById('cameraHelpNotice');
+    if (help) help.style.display = 'none';
   } catch (e) {
-    statusMsg('No se pudo acceder a la cámara. Verifica los permisos.', 'error');
+    console.warn('Acceso a cámara denegado o no soportado:', e);
+    const help = document.getElementById('cameraHelpNotice');
+    if (help) help.style.display = 'block';
+    statusMsg('No pudimos acceder a tu cámara. Elige una foto de tu galería o continúa sin foto.', 'info');
   }
 }
 
@@ -241,8 +267,73 @@ document.getElementById('btnCapture').addEventListener('click', () => {
     document.getElementById('photoPreviewSection').classList.remove('hidden');
     document.getElementById('btnNextA').disabled = false;
     if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+    clearStatus();
   }, 'image/jpeg', 0.9);
 });
+
+// Selección desde archivo / galería del celular
+const btnUploadGalleryEl = document.getElementById('btnUploadGallery');
+const inputPhotoFileEl   = document.getElementById('inputPhotoFile');
+if (btnUploadGalleryEl && inputPhotoFileEl) {
+  btnUploadGalleryEl.addEventListener('click', () => {
+    inputPhotoFileEl.click();
+  });
+
+  inputPhotoFileEl.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const img = new Image();
+      img.onload = function() {
+        const smallCanvas = document.createElement('canvas');
+        smallCanvas.width = 200;
+        smallCanvas.height = 200;
+        const ctx = smallCanvas.getContext('2d');
+        
+        // Mantener proporción recortando al centro
+        let sWidth = img.width;
+        let sHeight = img.height;
+        let sx = 0;
+        let sy = 0;
+        if (sWidth > sHeight) {
+          sx = (sWidth - sHeight) / 2;
+          sWidth = sHeight;
+        } else {
+          sy = (sHeight - sWidth) / 2;
+          sHeight = sWidth;
+        }
+
+        ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, 200, 200);
+        smallCanvas.toBlob(blob => {
+          capturedPhotoBlob = blob;
+          document.getElementById('photoPreviewImg').src = URL.createObjectURL(blob);
+          document.getElementById('cameraSection').classList.add('hidden');
+          const help = document.getElementById('cameraHelpNotice');
+          if (help) help.style.display = 'none';
+          document.getElementById('photoPreviewSection').classList.remove('hidden');
+          document.getElementById('btnNextA').disabled = false;
+          if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+          clearStatus();
+        }, 'image/jpeg', 0.9);
+      };
+      img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Continuar sin foto por ahora
+const btnSkipPhotoEl = document.getElementById('btnSkipPhoto');
+if (btnSkipPhotoEl) {
+  btnSkipPhotoEl.addEventListener('click', () => {
+    capturedPhotoBlob = null;
+    if (currentStream) currentStream.getTracks().forEach(t => t.stop());
+    clearStatus();
+    goStep('B');
+  });
+}
 
 document.getElementById('btnRetake').addEventListener('click', () => {
   capturedPhotoBlob = null;
@@ -334,12 +425,16 @@ document.getElementById('btnSubmit').addEventListener('click', async () => {
   setLoading(true);
 
   try {
-    // Verificar WhatsApp duplicado
-    const waCheck = await db.collection('fans')
-      .where('whatsapp', '==', wa).get();
-    if (!waCheck.empty) {
-      statusMsg('❌ Este número de WhatsApp ya está registrado en el club.', 'error');
-      setLoading(false); return;
+    // Verificar WhatsApp duplicado si las reglas lo permiten
+    try {
+      const waCheck = await db.collection('fans')
+        .where('whatsapp', '==', wa).get();
+      if (!waCheck.empty) {
+        statusMsg('❌ Este número de WhatsApp ya está registrado en el club.', 'error');
+        setLoading(false); return;
+      }
+    } catch (waErr) {
+      console.warn('Verificación previa de WhatsApp omitida (permiso de lectura no autenticado):', waErr);
     }
 
     // Crear cuenta Firebase Auth
@@ -348,34 +443,62 @@ document.getElementById('btnSubmit').addEventListener('click', async () => {
       userCred = await auth.createUserWithEmailAndPassword(email, password);
     } catch (e) {
       if (e.code === 'auth/email-already-in-use') {
-        statusMsg('❌ Este email ya está registrado. ¿Ya eres miembro?', 'error');
+        // Si ya existe la cuenta por un intento anterior que falló, intentamos iniciar sesión para completar los datos
+        try {
+          userCred = await auth.signInWithEmailAndPassword(email, password);
+        } catch (errSignIn) {
+          statusMsg('❌ Este email ya está registrado. Si es tu cuenta, inicia sesión en la página de tu credencial.', 'error');
+          setLoading(false); return;
+        }
       } else {
-        statusMsg('❌ Error: ' + e.message, 'error');
+        statusMsg('❌ Error al crear cuenta: ' + e.message, 'error');
+        setLoading(false); return;
       }
-      setLoading(false); return;
     }
 
     const uid = userCred.user.uid;
 
-    // Generar Fan ID único (SQ-001, SQ-002...)
-    const counterRef = db.collection('_meta').doc('fanCounter');
-    let fanId;
-    await db.runTransaction(async tx => {
-      const snap = await tx.get(counterRef);
-      const current = snap.exists ? snap.data().count : 0;
-      const next = current + 1;
-      fanId = 'SQ-' + String(next).padStart(3, '0');
-      tx.set(counterRef, { count: next }, { merge: true });
-    });
+    // Generar Fan ID único (SQ-001, SQ-002...) con respaldo ultra robusto
+    let fanId = null;
+    try {
+      const counterRef = db.collection('_meta').doc('fanCounter');
+      await db.runTransaction(async tx => {
+        const snap = await tx.get(counterRef);
+        const current = snap.exists && snap.data().count ? snap.data().count : 103;
+        const next = current + 1;
+        fanId = 'SQ-' + String(next).padStart(3, '0');
+        tx.set(counterRef, { count: next }, { merge: true });
+      });
+    } catch (errCounter) {
+      console.warn('Transacción de contador _meta omitida, usando fallback:', errCounter);
+    }
 
-    // Subir foto — guardamos como base64 en Firestore (sin necesidad de Storage)
+    // Fallback si _meta no estuviera accesible o fallaran permisos
+    if (!fanId) {
+      try {
+        const lastSnap = await db.collection('fans').orderBy('fanId', 'desc').limit(1).get();
+        if (!lastSnap.empty) {
+          const lastStr = lastSnap.docs[0].data().fanId || '';
+          const match = lastStr.match(/\d+/);
+          const num = match ? parseInt(match[0], 10) : 105;
+          fanId = 'SQ-' + String(num + 1).padStart(3, '0');
+        }
+      } catch (e2) {}
+    }
+    if (!fanId) {
+      fanId = 'SQ-' + Math.floor(100 + Math.random() * 900);
+    }
+
+    // Procesar foto
     let photoURL = '';
     if (capturedPhotoBlob) {
-      photoURL = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(capturedPhotoBlob);
-      });
+      try {
+        photoURL = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(capturedPhotoBlob);
+        });
+      } catch (ePhoto) {}
     }
 
     // Guardar en Firestore
@@ -394,12 +517,16 @@ document.getElementById('btnSubmit').addEventListener('click', async () => {
       visitasConsecutivas: 0,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       verificado: false
-    });
+    }, { merge: true });
 
-    // Enviar email de verificación
-    await userCred.user.sendEmailVerification();
+    // Enviar email de verificación (sin interrumpir si hay límite de cuota en Firebase)
+    try {
+      await userCred.user.sendEmailVerification();
+    } catch (errVerif) {
+      console.warn('Verificación por correo pendiente:', errVerif);
+    }
 
-    // Mostrar éxito
+    // Mostrar éxito y enlace a su credencial
     document.getElementById('stepForm').classList.add('hidden');
     document.getElementById('stepSuccess').classList.remove('hidden');
     document.getElementById('successFanCard').innerHTML = `
@@ -411,10 +538,19 @@ document.getElementById('btnSubmit').addEventListener('click', async () => {
           <span class="badge badge-gold">Nuevo Fan</span>
         </div>
       </div>
+      <div style="margin-top:16px;">
+        <a href="credencial.html?fanId=${encodeURIComponent(fanId)}" class="btn btn-gold" style="display:block; text-decoration:none; text-align:center; font-weight:bold;">
+          🎫 Ver mi Credencial Digital
+        </a>
+      </div>
     `;
 
   } catch (e) {
-    statusMsg('❌ ' + e.message, 'error');
+    let msg = e.message || 'Ocurrió un error inesperado.';
+    if (msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('permisos')) {
+      msg = 'Error de permisos al registrar datos. Si ya tienes credencial, inicia sesión directamente; si es nueva, reintenta o pide asistencia al staff.';
+    }
+    statusMsg('❌ ' + msg, 'error');
     setLoading(false);
   }
 });
