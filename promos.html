@@ -148,18 +148,13 @@
 
   <script>
     auth.onAuthStateChanged(user => {
-      if (!user) {
-        location.href = 'index.html';
-        return;
+      if (user) {
+        const SUPER_ADMIN_EMAILS = ['chefalbertomc@gmail.com', 'sguerra70@hotmail.com', 'admin@steelersnationqro.com'];
+        const userEmail = (user.email || '').toLowerCase().trim();
+        const isAdmin = SUPER_ADMIN_EMAILS.includes(userEmail);
+        const bottomNavAdmin = document.getElementById('bottomNavAdminBtn');
+        if (bottomNavAdmin) bottomNavAdmin.style.display = isAdmin ? 'flex' : 'none';
       }
-
-  // Mostrar acceso Admin si es Alberto o Samuel
-  const SUPER_ADMIN_EMAILS = ['chefalbertomc@gmail.com', 'sguerra70@hotmail.com', 'admin@steelersnationqro.com'];
-  const userEmail = (user.email || '').toLowerCase().trim();
-  const isAdmin = SUPER_ADMIN_EMAILS.includes(userEmail);
-  const bottomNavAdmin = document.getElementById('bottomNavAdminBtn');
-  if (bottomNavAdmin) bottomNavAdmin.style.display = isAdmin ? 'flex' : 'none';
-
       loadPromos();
     });
 
@@ -187,6 +182,15 @@
       } catch(e) {
         container.innerHTML = '<p style="color:#ef4444; font-size:13px; text-align:center;">Error al cargar promos.</p>';
       }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          reg.update();
+        }).catch(() => {});
+      });
     }
   </script>
 </body>

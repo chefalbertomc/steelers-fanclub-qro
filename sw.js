@@ -1,4 +1,9 @@
-const CACHE_NAME = 'steelers-qro-v16';
+// ============================================
+// STEELERS FAN CLUB QRO — Service Worker
+// Version: steelers-qro-v18
+// ============================================
+
+const CACHE_NAME = 'steelers-qro-v18';
 const urlsToCache = [
   './',
   './index.html',
@@ -12,26 +17,34 @@ const urlsToCache = [
   './manifest-admin.json',
   './manifest-qr.json',
   './css/styles.css',
+  './js/firebase-config.js',
   './assets/logo.png',
   './assets/bww-buffalo.png',
   './assets/drinks-and-wins-logo.jpg',
   './assets/icon-192.png',
   './assets/icon-512.png',
   './assets/apple-touch-icon.png',
-  './assets/icon-qr-192.png',
-  './assets/icon-qr-512.png',
-  './assets/apple-touch-icon-qr.png',
-  './assets/icon-admin-192.png',
-  './assets/icon-admin-512.png',
-  './assets/apple-touch-icon-admin.png'
+  './assets/steelers-nation-qro.png'
 ];
 
-// Instalar y tomar control de inmediato
+// Instalar y tomar control de inmediato sin fallar si un recurso individual falla
 self.addEventListener('install', event => {
-  self.skipWaiting(); // No esperar a que el viejo SW se desactive
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(async cache => {
+      await Promise.allSettled(
+        urlsToCache.map(async url => {
+          try {
+            const res = await fetch(url, { cache: 'no-cache' });
+            if (res && res.ok) {
+              await cache.put(url, res);
+            }
+          } catch (e) {
+            // Ignorar fallo de precache individual
+          }
+        })
+      );
+    })
   );
 });
 
@@ -42,30 +55,63 @@ self.addEventListener('activate', event => {
       Promise.all(
         keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
       )
-    ).then(() => self.clients.claim()) // Tomar control de todas las pestañas abiertas
+    ).then(() => self.clients.claim())
   );
 });
 
+// Mensaje para forzar skipWaiting
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('fetch', event => {
-  // Ignorar peticiones que no son GET
+  // 1. Solo interceptar peticiones GET
   if (event.request.method !== 'GET') return;
 
-  // Ignorar Firebase, Google APIs y firebasestorage (datos dinámicos)
-  const url = event.request.url;
-  if (url.includes('googleapis.com') || url.includes('firebase') || url.includes('gstatic.com')) {
+  const reqUrl = new URL(event.request.url);
+
+  // 2. CRÍTICO: Dejar pasar de forma nativa TODAS las peticiones externas
+  // (Firebase, Firestore, Google APIs, CDNs unpkg/cdnjs, ESPN, fonts, etc.)
+  // NUNCA interceptar dominios de terceros en el SW.
+  if (reqUrl.origin !== self.location.origin) {
     return;
   }
 
-  // Network-first: siempre intenta la red, si falla usa caché
+  // 3. Network-first para recursos propios de la PWA
   event.respondWith(
-    fetch(event.request).then(response => {
-      return caches.open(CACHE_NAME).then(cache => {
-        cache.put(event.request, response.clone());
+    fetch(event.request)
+      .then(response => {
+        // Solo guardar en caché si la respuesta es exitosa (200), del mismo origen y sin redirección
+        if (response && response.status === 200 && response.type === 'basic' && !response.redirected) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone).catch(() => {});
+          }).catch(() => {});
+        }
         return response;
-      });
-    }).catch(() => {
-      return caches.match(event.request);
-    })
+      })
+      .catch(async () => {
+        // Si no hay red, buscar en caché
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // Si es una navegación HTML y falló la red, servir página principal en caché
+        if (event.request.mode === 'navigate') {
+          const fallback = await caches.match('./credencial.html') || await caches.match('./index.html');
+          if (fallback) return fallback;
+        }
+
+        // Respuesta limpia en vez de lanzar error de red (evita ERR_FAILED)
+        return new Response('Sin conexión a internet. Revisa tu red y recarga.', {
+          status: 503,
+          statusText: 'Offline',
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        });
+      })
   );
 });
 

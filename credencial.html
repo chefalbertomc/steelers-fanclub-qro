@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi Credencial — Steelers Fan Club Querétaro</title>
+  <meta name="description" content="Credencial digital con código QR único para miembros del Steelers Fan Club Querétaro."/>
+  
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png?v=2"/>
   <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png?v=2"/>
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=2">
@@ -8,18 +13,7 @@
   <link rel="apple-touch-icon" sizes="192x192" href="assets/icon-192.png?v=2">
   <link rel="apple-touch-icon" sizes="512x512" href="assets/icon-512.png?v=2">
   <link rel="manifest" href="manifest.json?v=2">
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mi Credencial — Steelers Fan Club Querétaro</title>
-  <meta name="description" content="Credencial digital con código QR único para miembros del Steelers Fan Club Querétaro."/>
-  
-  
-  
   <link rel="stylesheet" href="css/styles.css"/>
-  <!-- QRCode.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- html2canvas para descargar credencial -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -56,6 +50,25 @@
       <div style="text-align:center; margin-top:12px;">
         <a href="#" id="btnForgotPw" class="text-muted" style="font-size:13px; text-decoration:underline;">¿Olvidaste tu contraseña?</a>
       </div>
+
+      <!-- ACCESO RÁPIDO PARA ENLACES DE WHATSAPP / SIN CONTRASEÑA -->
+      <div style="margin-top:20px; border-top:1px solid #2a2a2a; padding-top:16px; text-align:center;">
+        <p style="font-size:12px; color:#aaa; margin-bottom:10px; line-height:1.4;">
+          📲 ¿Te enviaron tu credencial por WhatsApp o no recuerdas tu contraseña?
+        </p>
+        <button type="button" class="btn btn-outline btn-sm" id="btnToggleQuickSearch" style="width:100%; border-color:var(--gold); color:var(--gold); font-weight:bold; font-size:12px; padding:9px 12px;">
+          🔍 Ver mi credencial con Fan ID o Celular
+        </button>
+
+        <div id="quickSearchBox" style="display:none; margin-top:12px; background:#0d0d0d; border:1px solid #333; border-radius:10px; padding:12px; text-align:left;">
+          <label for="quickSearchInput" style="font-size:11px; color:#eab308; font-weight:bold; display:block; margin-bottom:6px;">Ingresa tu Fan ID (ej. SQ-046) o tu Celular (10 dígitos):</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="quickSearchInput" placeholder="SQ-046 o 4421234567" style="flex:1; padding:8px 10px; background:#1a1a1a; border:1px solid #444; border-radius:6px; color:#fff; font-size:13px;"/>
+            <button type="button" id="btnQuickSearchSubmit" class="btn btn-gold btn-sm" style="width:auto; padding:8px 14px; font-weight:bold; flex-shrink:0;">Ver ➔</button>
+          </div>
+          <div id="quickSearchStatus" class="status-msg" style="margin-top:8px;"></div>
+        </div>
+      </div>
     </div>
     <div style="text-align:center; margin-top:16px;">
       <a href="index.html" class="text-muted" style="font-size:14px;">¿No tienes cuenta? Regístrate aquí</a>
@@ -64,6 +77,12 @@
 
   <!-- CREDENCIAL -->
   <div id="sectionCredencial" class="hidden">
+
+    <!-- AVISO MODO CONSULTA DIRECTA (si entró por link o búsqueda rápida) -->
+    <div id="bannerDirectMode" style="display:none; max-width:400px; margin:0 auto 12px auto; background:#1c1917; border:1px solid #333; border-radius:12px; padding:10px 14px; font-size:12px; color:#aaa; justify-content:space-between; align-items:center; box-shadow:0 4px 12px rgba(0,0,0,0.4);">
+      <span>🎫 Credencial de <b id="directMemberName" style="color:#fff;">Miembro</b></span>
+      <a href="#" id="btnShowLoginDirect" style="color:var(--gold); font-weight:bold; text-decoration:underline; font-size:11px; margin-left:8px;">Iniciar sesión</a>
+    </div>
 
     <!-- Aviso verificación pendiente -->
     <div id="alertVerification" class="status-msg info hidden">
@@ -191,6 +210,16 @@
       <button class="btn btn-gold" id="btnEscanearVisita" style="font-size:18px; padding:16px 24px; width:100%; max-width:400px; box-shadow:0 4px 15px rgba(255,182,18,0.4);">
         📸 Escanear Asistencia (Código QR)
       </button>
+
+      <!-- ACCIONES DE TARJETA: Guardar y Salir -->
+      <div style="margin-top:12px; display:flex; gap:10px; justify-content:center; max-width:400px; margin-left:auto; margin-right:auto;">
+        <button class="btn btn-outline btn-sm" id="btnDescargar" style="flex:1; padding:10px; font-weight:bold; font-size:12px; border-color:var(--gold); color:var(--gold);">
+          ⬇️ Guardar Imagen
+        </button>
+        <button class="btn btn-outline btn-sm" id="btnLogout" style="flex:1; padding:10px; font-weight:bold; font-size:12px; border-color:#444; color:#aaa;">
+          🚪 Cerrar Sesión
+        </button>
+      </div>
     </div>
 
     <!-- Info nivel (Solo tu nivel actual) -->
@@ -205,6 +234,9 @@
       <div class="card-subtitle" id="visitasResumen">Cargando...</div>
       <div id="visitasList" style="margin-top:8px;"></div>
     </div>
+
+  </div> <!-- /sectionCredencial -->
+</div> <!-- /container -->
 
 
 <!-- MODAL ASISTENCIA Y DINÁMICA DE PARTIDO -->
@@ -393,11 +425,29 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 <script>
 // ============================================================
 //  CREDENCIAL — Steelers Fan Club Querétaro
 // ============================================================
+
+// ---- CARGA BAJO DEMANDA DE ESCÁNER QR (No bloquea la página en móviles) ----
+let html5QrcodePromise = null;
+function loadHtml5Qrcode() {
+  if (window.Html5QrcodeScanner) return Promise.resolve();
+  if (html5QrcodePromise) return html5QrcodePromise;
+  html5QrcodePromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => {
+      html5QrcodePromise = null;
+      reject(new Error('No se pudo conectar con el escáner de cámara. Verifica tu conexión a internet.'));
+    };
+    document.head.appendChild(s);
+  });
+  return html5QrcodePromise;
+}
 
 const NIVEL_ICON = {
   'Nuevo Fan':   '🆕',
@@ -537,59 +587,210 @@ if (btnForgotPwEl) {
   });
 }
 
-// ---- AUTH STATE ----
-auth.onAuthStateChanged(async user => {
-  if (!user) {
-    document.getElementById('sectionLogin').classList.remove('hidden');
-    document.getElementById('sectionCredencial').classList.add('hidden');
-    return;
-  }
-  document.getElementById('sectionLogin').classList.add('hidden');
-  document.getElementById('sectionCredencial').classList.remove('hidden');
+// ---- DETECCIÓN DE ACCESO DIRECTO VÍA URL ----
+const urlParams   = new URLSearchParams(window.location.search);
+const directFanId = (urlParams.get('fanId') || urlParams.get('id') || urlParams.get('fan') || '').trim();
+const directUid   = (urlParams.get('uid') || '').trim();
+const directWa    = (urlParams.get('wa') || urlParams.get('whatsapp') || urlParams.get('tel') || '').trim();
 
-  if (!user.emailVerified) {
-    const verifAlert = document.getElementById('alertVerification');
-    if (verifAlert) verifAlert.classList.remove('hidden');
-    const resendBtn = document.getElementById('btnResendVerif');
-    if (resendBtn) {
-      resendBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        try {
-          await user.sendEmailVerification();
-          alert('Se ha enviado un nuevo enlace de verificación a tu correo.');
-        } catch(error) {
-          alert('Demasiados intentos. Espera unos minutos y vuelve a intentar.');
-        }
-      });
+let activeUid = null;
+let isDirectAccess = false;
+
+async function findFanRecord(fanId, uid, wa) {
+  try {
+    if (uid) {
+      const snap = await db.collection('fans').doc(uid).get();
+      if (snap.exists) return { uid: snap.id, fan: snap.data() };
+    }
+    if (fanId) {
+      const clean = fanId.toUpperCase();
+      let q = await db.collection('fans').where('fanId', '==', clean).limit(1).get();
+      if (!q.empty) return { uid: q.docs[0].id, fan: q.docs[0].data() };
+
+      if (!clean.startsWith('SQ-')) {
+        q = await db.collection('fans').where('fanId', '==', 'SQ-' + clean).limit(1).get();
+        if (!q.empty) return { uid: q.docs[0].id, fan: q.docs[0].data() };
+      }
+
+      const digits = clean.replace('SQ-', '').replace('SQ-JUR-', '');
+      q = await db.collection('fans').where('fanId', '==', 'SQ-JUR-' + digits).limit(1).get();
+      if (!q.empty) return { uid: q.docs[0].id, fan: q.docs[0].data() };
+    }
+    if (wa) {
+      const cleanWa = wa.replace(/\D/g, '');
+      let q = await db.collection('fans').where('whatsapp', '==', cleanWa).limit(1).get();
+      if (!q.empty) return { uid: q.docs[0].id, fan: q.docs[0].data() };
+      q = await db.collection('fans').where('whatsapp', '==', wa).limit(1).get();
+      if (!q.empty) return { uid: q.docs[0].id, fan: q.docs[0].data() };
+    }
+  } catch (err) {
+    console.warn('Error buscando fan directo:', err);
+  }
+  return null;
+}
+
+function displayMemberCard(fan, uid, direct = false) {
+  activeUid = uid;
+  isDirectAccess = direct;
+
+  const secLogin = document.getElementById('sectionLogin');
+  const secCred  = document.getElementById('sectionCredencial');
+  if (secLogin) secLogin.classList.add('hidden');
+  if (secCred)  secCred.classList.remove('hidden');
+
+  renderCredencial(fan, uid);
+
+  const directBanner = document.getElementById('bannerDirectMode');
+  if (directBanner) {
+    if (direct) {
+      const memberName = document.getElementById('directMemberName');
+      if (memberName) memberName.textContent = fan.nombre || 'Miembro';
+      directBanner.style.display = 'flex';
+    } else {
+      directBanner.style.display = 'none';
     }
   }
 
-  // Cargar datos del fan
-  const snap = await db.collection('fans').doc(user.uid).get();
-  if (!snap.exists) {
-    document.getElementById('sectionCredencial').innerHTML = '<p class="text-muted text-center mt-4">No encontramos tu registro. Intenta registrarte de nuevo.</p>';
+  loadVisitas(uid, fan.totalVisitas);
+  if (typeof loadAsistenciaPartidoCredencial === 'function') {
+    loadAsistenciaPartidoCredencial().then(data => {
+      if (uid && data && typeof loadFanaticoPartidoCredencial === 'function') {
+        loadFanaticoPartidoCredencial(uid, data.asistentesUids, data.todosAsistentes);
+      }
+    });
+  }
+  if (typeof loadSpotlightGanadorSemana === 'function') {
+    loadSpotlightGanadorSemana();
+  }
+}
+
+// Botón para volver al login desde modo directo
+const btnShowLoginDirectEl = document.getElementById('btnShowLoginDirect');
+if (btnShowLoginDirectEl) {
+  btnShowLoginDirectEl.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('sectionLogin').classList.remove('hidden');
+    document.getElementById('sectionCredencial').classList.add('hidden');
+  });
+}
+
+// Buscador rápido con Fan ID o Celular
+const btnToggleQuickSearchEl = document.getElementById('btnToggleQuickSearch');
+const quickSearchBoxEl = document.getElementById('quickSearchBox');
+if (btnToggleQuickSearchEl && quickSearchBoxEl) {
+  btnToggleQuickSearchEl.addEventListener('click', () => {
+    const isHidden = quickSearchBoxEl.style.display === 'none';
+    quickSearchBoxEl.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) {
+      const inp = document.getElementById('quickSearchInput');
+      if (inp) inp.focus();
+    }
+  });
+}
+
+const btnQuickSearchSubmitEl = document.getElementById('btnQuickSearchSubmit');
+const quickSearchInputEl     = document.getElementById('quickSearchInput');
+const quickSearchStatusEl    = document.getElementById('quickSearchStatus');
+
+async function performQuickSearch() {
+  const query = (quickSearchInputEl ? quickSearchInputEl.value : '').trim();
+  if (!query) {
+    showStatus(quickSearchStatusEl, '⚠️ Ingresa tu Fan ID o Celular.', 'error');
     return;
   }
-  const fan = snap.data();
-  renderCredencial(fan, user.uid);
+  if (btnQuickSearchSubmitEl) {
+    btnQuickSearchSubmitEl.disabled = true;
+    btnQuickSearchSubmitEl.textContent = '⏳';
+  }
+  showStatus(quickSearchStatusEl, 'Buscando tu credencial...', 'info');
 
-  // Validar y activar acceso a panel de administrador si es Alberto o Samuel
-  const SUPER_ADMIN_EMAILS = [
-    'chefalbertomc@gmail.com',
-    'sguerra70@hotmail.com',
-    'admin@steelersnationqro.com'
-  ];
-  const userEmail = (user.email || '').toLowerCase().trim();
-  const isAdmin = SUPER_ADMIN_EMAILS.includes(userEmail);
+  const isNumeric = /^\d{7,13}$/.test(query.replace(/\s+/g, ''));
+  const found = await findFanRecord(isNumeric ? null : query, null, isNumeric ? query : null);
 
-  const adminCard = document.getElementById('adminExclusiveCard');
-  if (adminCard) adminCard.style.display = isAdmin ? 'block' : 'none';
+  if (btnQuickSearchSubmitEl) {
+    btnQuickSearchSubmitEl.disabled = false;
+    btnQuickSearchSubmitEl.textContent = 'Ver ➔';
+  }
 
-  const bottomNavAdmin = document.getElementById('bottomNavAdminBtn');
-  if (bottomNavAdmin) bottomNavAdmin.style.display = isAdmin ? 'flex' : 'none';
+  if (found) {
+    displayMemberCard(found.fan, found.uid, true);
+  } else {
+    showStatus(quickSearchStatusEl, '❌ No encontramos tu registro con ese dato. Verifica que esté bien escrito o regístrate.', 'error');
+  }
+}
 
-  loadVisitas(user.uid, fan.totalVisitas);
-  initPushNotifSystem();
+if (btnQuickSearchSubmitEl) {
+  btnQuickSearchSubmitEl.addEventListener('click', performQuickSearch);
+}
+if (quickSearchInputEl) {
+  quickSearchInputEl.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') performQuickSearch();
+  });
+}
+
+// ---- AUTH STATE ----
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    // Usuario con sesión iniciada
+    try {
+      const snap = await db.collection('fans').doc(user.uid).get();
+      if (snap.exists) {
+        const fan = snap.data();
+        displayMemberCard(fan, user.uid, false);
+
+        // Verificación de email
+        if (!user.emailVerified) {
+          const verifAlert = document.getElementById('alertVerification');
+          if (verifAlert) verifAlert.classList.remove('hidden');
+          const resendBtn = document.getElementById('btnResendVerif');
+          if (resendBtn) {
+            resendBtn.addEventListener('click', async (e) => {
+              e.preventDefault();
+              try {
+                await user.sendEmailVerification();
+                alert('Se ha enviado un nuevo enlace de verificación a tu correo.');
+              } catch(error) {
+                alert('Demasiados intentos. Espera unos minutos y vuelve a intentar.');
+              }
+            });
+          }
+        }
+
+        // Acceso Admin si corresponde
+        const SUPER_ADMIN_EMAILS = [
+          'chefalbertomc@gmail.com',
+          'sguerra70@hotmail.com',
+          'admin@steelersnationqro.com'
+        ];
+        const userEmail = (user.email || '').toLowerCase().trim();
+        const isAdmin = SUPER_ADMIN_EMAILS.includes(userEmail);
+
+        const adminCard = document.getElementById('adminExclusiveCard');
+        if (adminCard) adminCard.style.display = isAdmin ? 'block' : 'none';
+
+        const bottomNavAdmin = document.getElementById('bottomNavAdminBtn');
+        if (bottomNavAdmin) bottomNavAdmin.style.display = isAdmin ? 'flex' : 'none';
+
+        initPushNotifSystem();
+        return;
+      }
+    } catch(err) {
+      console.error('Error cargando usuario autenticado:', err);
+    }
+  }
+
+  // Si no hay sesión, comprobar si viene por enlace directo con parámetro
+  if (directFanId || directUid || directWa) {
+    const found = await findFanRecord(directFanId, directUid, directWa);
+    if (found) {
+      displayMemberCard(found.fan, found.uid, true);
+      return;
+    }
+  }
+
+  // Sin sesión ni enlace directo: mostrar pantalla de login
+  document.getElementById('sectionLogin').classList.remove('hidden');
+  document.getElementById('sectionCredencial').classList.add('hidden');
 });
 
 // ---- RENDER CREDENCIAL ----
@@ -650,33 +851,46 @@ function renderCredencial(fan, uid) {
 }
 
 // ---- ESCÁNER DE ASISTENCIA ----
-document.getElementById('btnEscanearVisita').addEventListener('click', () => {
-  // Check if camera permission is available or prompt
-  if (!document.getElementById('qr-reader')) {
-    // Add QR reader div dynamically inside a modal
-    const modalHtml = `
-      <div id="qrModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
-        <h2 style="color:var(--gold); margin-bottom:20px; text-align:center;">Escanear Asistencia</h2>
-        <p style="color:#fff; text-align:center; margin-bottom:20px; font-size:14px;">Apunta la cámara al código QR proporcionado por el restaurante o el staff.</p>
-        <div id="qr-reader" style="width:300px; max-width:100%;"></div>
-        <button class="btn btn-outline mt-4" onclick="closeQrModal()">Cancelar</button>
-      </div>
-    `;
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
-  }
-  
-  document.getElementById('qrModal').style.display = 'flex';
-  
-  const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
-  html5QrcodeScanner.render((decodedText, decodedResult) => {
-    // Handle the scanned code
-    html5QrcodeScanner.clear();
-    closeQrModal();
-    registrarVisitaManual(decodedText);
-  }, (error) => {
-    // parse error, ignore
+const btnEscanearVisitaEl = document.getElementById('btnEscanearVisita');
+if (btnEscanearVisitaEl) {
+  btnEscanearVisitaEl.addEventListener('click', async () => {
+    const origText = btnEscanearVisitaEl.innerHTML;
+    btnEscanearVisitaEl.disabled = true;
+    btnEscanearVisitaEl.innerHTML = '⏳ Iniciando cámara...';
+
+    try {
+      await loadHtml5Qrcode();
+    } catch(err) {
+      alert(err.message || 'Error al iniciar la cámara.');
+      btnEscanearVisitaEl.disabled = false;
+      btnEscanearVisitaEl.innerHTML = origText;
+      return;
+    }
+    btnEscanearVisitaEl.disabled = false;
+    btnEscanearVisitaEl.innerHTML = origText;
+
+    if (!document.getElementById('qr-reader')) {
+      const modalHtml = `
+        <div id="qrModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+          <h2 style="color:var(--gold); margin-bottom:12px; text-align:center;">Escanear Asistencia</h2>
+          <p style="color:#fff; text-align:center; margin-bottom:16px; font-size:13px;">Apunta la cámara al código QR proporcionado por el restaurante o el staff.</p>
+          <div id="qr-reader" style="width:300px; max-width:100%;"></div>
+          <button class="btn btn-outline mt-4" onclick="closeQrModal()">✕ Cancelar</button>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+    
+    document.getElementById('qrModal').style.display = 'flex';
+    
+    const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: {width: 250, height: 250} }, false);
+    html5QrcodeScanner.render((decodedText, decodedResult) => {
+      html5QrcodeScanner.clear();
+      closeQrModal();
+      registrarVisitaManual(decodedText);
+    }, (error) => {});
   });
-});
+}
 
 function closeQrModal() {
   const modal = document.getElementById('qrModal');
@@ -777,25 +991,29 @@ async function loadVisitas(uid, total) {
 
 // ---- AVISOS (MÚLTIPLES) ----
 async function loadAviso() {
+  const containerBox = document.getElementById('avisoContainer');
+  if (!containerBox) return;
   try {
     const snap = await db.collection('settings').doc('avisos').collection('items')
       .orderBy('createdAt', 'desc').get();
     
     const validDocs = snap.docs.filter(doc => doc.data().active !== false && doc.data().deleted !== true);
     if (validDocs.length === 0) {
-      document.getElementById('avisoContainer').classList.add('hidden');
+      containerBox.classList.add('hidden');
       return;
     }
 
     const container = document.getElementById('avisosListCredencial');
-    container.innerHTML = validDocs.map(doc => {
-      const d = doc.data();
-      return `<div>
-        ${d.titulo ? `<div style="font-weight:700; color:#3b82f6; margin-bottom:6px; font-size:13px; text-transform:uppercase; letter-spacing:1px;">${d.titulo}</div>` : ''}
-        <img src="${d.imageUrl}" style="width:100%; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="${d.titulo || 'Aviso'}"/>
-      </div>`;
-    }).join('');
-    document.getElementById('avisoContainer').classList.remove('hidden');
+    if (container) {
+      container.innerHTML = validDocs.map(doc => {
+        const d = doc.data();
+        return `<div>
+          ${d.titulo ? `<div style="font-weight:700; color:#3b82f6; margin-bottom:6px; font-size:13px; text-transform:uppercase; letter-spacing:1px;">${d.titulo}</div>` : ''}
+          <img src="${d.imageUrl}" style="width:100%; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="${d.titulo || 'Aviso'}"/>
+        </div>`;
+      }).join('');
+    }
+    containerBox.classList.remove('hidden');
   } catch(e) {
     console.error('Error cargando avisos', e);
   }
@@ -803,25 +1021,29 @@ async function loadAviso() {
 
 // ---- PROMOS (MÚLTIPLES) ----
 async function loadPromo() {
+  const containerBox = document.getElementById('promosContainer');
+  if (!containerBox) return;
   try {
     const snap = await db.collection('settings').doc('promos').collection('items')
       .orderBy('createdAt', 'desc').get();
     
     const validDocs = snap.docs.filter(doc => doc.data().active !== false && doc.data().deleted !== true);
     if (validDocs.length === 0) {
-      document.getElementById('promosContainer').classList.add('hidden');
+      containerBox.classList.add('hidden');
       return;
     }
 
     const container = document.getElementById('promosListCredencial');
-    container.innerHTML = validDocs.map(doc => {
-      const d = doc.data();
-      return `<div>
-        ${d.titulo ? `<div style="font-weight:700; color:var(--gold); margin-bottom:6px; font-size:13px; text-transform:uppercase; letter-spacing:1px;">${d.titulo}</div>` : ''}
-        <img src="${d.imageUrl}" style="width:100%; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="${d.titulo || 'Promo'}"/>
-      </div>`;
-    }).join('');
-    document.getElementById('promosContainer').classList.remove('hidden');
+    if (container) {
+      container.innerHTML = validDocs.map(doc => {
+        const d = doc.data();
+        return `<div>
+          ${d.titulo ? `<div style="font-weight:700; color:var(--gold); margin-bottom:6px; font-size:13px; text-transform:uppercase; letter-spacing:1px;">${d.titulo}</div>` : ''}
+          <img src="${d.imageUrl}" style="width:100%; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5);" alt="${d.titulo || 'Promo'}"/>
+        </div>`;
+      }).join('');
+    }
+    containerBox.classList.remove('hidden');
   } catch(e) {
     console.error('Error cargando promos', e);
   }
@@ -829,24 +1051,28 @@ async function loadPromo() {
 
 // ---- CUMPLEAÑEROS ----
 async function loadCumples() {
+  const containerBox = document.getElementById('cumplesContainer');
+  if (!containerBox) return;
   try {
     const snap = await db.collection('settings').doc('cumpleaneros').get();
     if (snap.exists && snap.data().fans && snap.data().fans.length > 0) {
       const fans = snap.data().fans;
       const grid = document.getElementById('cumplesGrid');
-      grid.innerHTML = fans.map(f => {
-        const photo = f.photoURL || '';
-        const imgHtml = photo ? `<img src="${photo}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);"/>` : `<div style="width:60px; height:60px; border-radius:50%; background:#333; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:24px;">🥳</div>`;
-        const dateHtml = f.fecha ? `<span style="font-size:10px; color:var(--gold); margin-top:2px;">${new Date(f.fecha + 'T12:00:00').toLocaleDateString('es-MX', {day: 'numeric', month: 'short'})}</span>` : '';
-        return `<div style="display:flex; flex-direction:column; align-items:center; width:70px; text-align:center;">
-          ${imgHtml}
-          <span style="font-size:11px; font-weight:bold; margin-top:4px; color:#fff; line-height:1.2;">${f.nombre}</span>
-          ${dateHtml}
-        </div>`;
-      }).join('');
-      document.getElementById('cumplesContainer').classList.remove('hidden');
+      if (grid) {
+        grid.innerHTML = fans.map(f => {
+          const photo = f.photoURL || '';
+          const imgHtml = photo ? `<img src="${photo}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);"/>` : `<div style="width:60px; height:60px; border-radius:50%; background:#333; border:2px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:24px;">🥳</div>`;
+          const dateHtml = f.fecha ? `<span style="font-size:10px; color:var(--gold); margin-top:2px;">${new Date(f.fecha + 'T12:00:00').toLocaleDateString('es-MX', {day: 'numeric', month: 'short'})}</span>` : '';
+          return `<div style="display:flex; flex-direction:column; align-items:center; width:70px; text-align:center;">
+            ${imgHtml}
+            <span style="font-size:11px; font-weight:bold; margin-top:4px; color:#fff; line-height:1.2;">${f.nombre}</span>
+            ${dateHtml}
+          </div>`;
+        }).join('');
+      }
+      containerBox.classList.remove('hidden');
     } else {
-      document.getElementById('cumplesContainer').classList.add('hidden');
+      containerBox.classList.add('hidden');
     }
   } catch(e) {
     console.error('Error cargando cumples', e);
@@ -1206,40 +1432,17 @@ async function votarFanatico(partidoId, voterUid, candidateUid, candidateNombre)
   }
 }
 
+// ---- REGISTRO SEGURO DE SERVICE WORKER ----
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-
-// ---- DESCARGAR CREDENCIAL ----
-const btnDescargarBottom = document.getElementById('btnDescargar');
-if (btnDescargarBottom) {
-  btnDescargarBottom.addEventListener('click', async () => {
-    const btn = document.getElementById('btnDescargar');
-    btn.disabled = true; btn.textContent = '⏳ Generando...';
-    try {
-      const card = document.getElementById('credencialCard');
-      const canvas = await html2canvas(card, {
-        backgroundColor: '#0d0d0d',
-        scale: 3,
-        useCORS: true,
-        allowTaint: true
-      });
-      const link = document.createElement('a');
-      link.download = 'credencial-steelers-qro.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch(e) {
-      alert('Error al generar la imagen. Intenta de nuevo.');
-    }
-    btn.disabled = false; btn.textContent = '⬇️ Descargar credencial';
-  });
-}
-
-// ---- LOGOUT ----
-const btnLogoutBottom = document.getElementById('btnLogout');
-if (btnLogoutBottom) {
-  btnLogoutBottom.addEventListener('click', () => {
-    auth.signOut();
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      reg.update();
+    }).catch(err => {
+      console.warn('SW registration skipped:', err);
+    });
   });
 }
 

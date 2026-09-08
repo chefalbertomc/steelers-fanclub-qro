@@ -233,19 +233,14 @@
     };
 
     auth.onAuthStateChanged(user => {
-      if (!user) {
-        location.href = 'index.html';
-        return;
+      if (user) {
+        const SUPER_ADMIN_EMAILS = ['chefalbertomc@gmail.com', 'sguerra70@hotmail.com', 'admin@steelersnationqro.com'];
+        const userEmail = (user.email || '').toLowerCase().trim();
+        const isAdmin = SUPER_ADMIN_EMAILS.includes(userEmail);
+        const bottomNavAdmin = document.getElementById('bottomNavAdminBtn');
+        if (bottomNavAdmin) bottomNavAdmin.style.display = isAdmin ? 'flex' : 'none';
+        currentUid = user.uid;
       }
-
-  // Mostrar acceso Admin si es Alberto o Samuel
-  const SUPER_ADMIN_EMAILS = ['chefalbertomc@gmail.com', 'sguerra70@hotmail.com', 'admin@steelersnationqro.com'];
-  const userEmail = (user.email || '').toLowerCase().trim();
-  const isAdmin = SUPER_ADMIN_EMAILS.includes(userEmail);
-  const bottomNavAdmin = document.getElementById('bottomNavAdminBtn');
-  if (bottomNavAdmin) bottomNavAdmin.style.display = isAdmin ? 'flex' : 'none';
-
-      currentUid = user.uid;
       loadCumples();
       onPartidoChange();
     });
@@ -398,6 +393,11 @@
           return;
         }
 
+        if (!currentUid) {
+          votingContainer.innerHTML = `<p class="text-muted" style="font-size:12px; text-align:center;"><a href="credencial.html" style="color:var(--gold); font-weight:bold; text-decoration:underline;">Inicia sesión con tu credencial</a> para ver la votación oficial de este partido.</p>`;
+          return;
+        }
+
         const isUserAttendee = asistentesUids.includes(currentUid);
         if (!isUserAttendee) {
           votingContainer.innerHTML = `<p class="text-muted" style="font-size:12px; text-align:center;">Solo los fans que asistieron a este partido pueden votar.</p>`;
@@ -476,6 +476,15 @@
           document.getElementById('cumplesContainer').classList.remove('hidden');
         }
       } catch(e) {}
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          reg.update();
+        }).catch(() => {});
+      });
     }
   </script>
 </body>

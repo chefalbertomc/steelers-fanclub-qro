@@ -716,9 +716,27 @@ function openDetalles(uid) {
     <div><strong>Miembro Desde:</strong> ${f.memberSinceYear || '—'}</div>
     <div><strong>Visitas:</strong> ${f.totalVisitas || 0}</div>
     <div style="grid-column: span 2; border-top:1px solid #333; margin-top:8px; padding-top:8px;"><strong>Fecha Registro:</strong> ${f.createdAt ? new Date(f.createdAt.seconds * 1000).toLocaleDateString('es-MX') : '—'}</div>
+    <div style="grid-column: span 2; display:flex; gap:10px; margin-top:12px; border-top:1px solid #333; padding-top:12px;">
+      <a href="credencial.html?fanId=${encodeURIComponent(f.fanId || f.uid)}" target="_blank" class="btn btn-outline btn-sm" style="flex:1; text-align:center; text-decoration:none; padding:8px 6px; font-weight:bold; font-size:12px; border-color:var(--gold); color:var(--gold);">
+        🎫 Ver Credencial
+      </a>
+      <button onclick="compartirCredencialWhatsApp('${f.whatsapp || ''}', '${f.fanId || f.uid}', '${f.nombre || ''}')" class="btn btn-gold btn-sm" style="flex:1; padding:8px 6px; font-weight:bold; font-size:12px;">
+        📲 Enviar por WhatsApp
+      </button>
+    </div>
   `;
   document.getElementById('detallesContent').innerHTML = content;
   document.getElementById('modalDetalles').classList.remove('hidden');
+}
+
+function compartirCredencialWhatsApp(phone, fanId, nombre) {
+  const cleanPhone = (phone || '').replace(/\D/g, '');
+  const link = `https://chefalbertomc.github.io/steelers-fanclub-qro/credencial.html?fanId=${encodeURIComponent(fanId)}`;
+  const msg = `¡Hola ${nombre || 'Fan'}! 🏈 Aquí tienes el enlace directo a tu credencial digital de Steelers Nation Querétaro:\n\n${link}\n\n¡Preséntala en Buffalo Wild Wings Juriquilla para tus beneficios y registrar tus asistencias! 🟡⚫`;
+  const waUrl = cleanPhone 
+    ? `https://wa.me/52${cleanPhone}?text=${encodeURIComponent(msg)}`
+    : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
 }
 
 // ---- MODAL EDITAR NIVEL ----
@@ -1251,7 +1269,16 @@ function showSt(el, msg, type) {
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      reg.update();
+    }).catch(err => {
+      console.warn('SW registration skipped:', err);
+    });
+  });
 }
 </script>
 </body>

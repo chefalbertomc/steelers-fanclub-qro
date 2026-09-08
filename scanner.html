@@ -347,7 +347,16 @@ function showStatus(el, msg, type) {
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+      reg.update();
+    }).catch(err => {
+      console.warn('SW registration skipped:', err);
+    });
+  });
 }
 </script>
 </body>
